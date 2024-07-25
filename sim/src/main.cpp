@@ -1,20 +1,21 @@
 #include <iostream>
-#include <iomanip>
+#include <sg14/fixed_point>
+#include <typeinfo>
+#include <cxxabi.h>
 
-#include "../inc/fixed.hpp"
-#include "../inc/math.hpp"
-#include "../inc/ios.hpp"
+int main() {
+    // Create a fixed-point number with 12 integer bits and 7 fractional bits
+    auto x = sg14::make_fixed<4, 6>{1.25};
 
-namespace fpm {
-    using fixed_16_16 = fixed<std::int32_t, std::int64_t, 16>;  // Q16.16 format
-    using fixed_24_8  = fixed<std::int32_t, std::int64_t, 8>;   // Q24.8 format
-    using fixed_8_24  = fixed<std::int32_t, std::int64_t, 24>;  // Q8.24 format
-}
+    // Output the underlying representation and the actual value
+    std::cout << "x.data() (raw integer) = " << static_cast<int>(x.data()) << std::endl;
+    std::cout << "x (fixed-point value) = " << x << std::endl;
 
-int main()
-{
-    fpm::fixed_16_16 a {2.3425};
-    std::cout << std::setprecision(3) << std::scientific << a << std::endl;
-    
+    // Print the type of the fixed-point object
+    int status;
+    char* demangled = abi::__cxa_demangle(typeid(x).name(), 0, 0, &status);
+    std::cout << "Type of x: " << (status == 0 ? demangled : typeid(x).name()) << std::endl;
+    free(demangled);
+
     return 0;
 }
