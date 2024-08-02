@@ -40,27 +40,24 @@ public:
 
     // Arithmetic operations
     FixedPoint operator+(const FixedPoint& other) const {
-        if (nFrac != other.nFrac) {
-            throw std::invalid_argument("Mismatched fractional bits!");
-        }
+        checkCompatibility(other);
         int32_t result = value + other.value;
         return FixedPoint::fromRawValue(result, nFrac, totalBits, mode);
     }
 
+    // Multiplies two FixedPoint numbers and returns a result with a higher precision
     FixedPoint operator*(const FixedPoint& other) const {
-        // Perform multiplication in double precision to avoid loss of information
-        int64_t result = int64_t(value) * int64_t(other.value);
-        result += (1 << (nFrac - 1)); // Add rounding term
-        // Shift result to the correct number of fractional bits
-        return FixedPoint::fromRawValue(static_cast<int32_t>(result >> nFrac), nFrac, totalBits, mode);
+        int64_t extendedResult = int64_t(value) * int64_t(other.value);
+        // No need to shift yet, as we want to maintain full precision for further operations
+        return FixedPoint::fromRawValueExtended(extendedResult, nFrac + other.nFrac, totalBits * 2, mode);
     }
 
-    // Assignment operator to handle resizing and conversion after multiplication
+    // Assignment operator with downscaling of precision
     FixedPoint& operator=(const FixedPoint& other) {
-        // Adjust the result to fit the current object's fractional bit configuration
-        int64_t adjustedValue = int64_t(other.value) << (nFrac - other.nFrac); // Adjust precision
-        applyOverflowOrSaturation(adjustedValue); // Apply overflow or saturation based on the mode
-        value = static_cast<int32_t>(adjustedValue);
+        // Scale the result down to the target precision
+        int64_t scaledValue = other.value >> (other.nFrac - nFrac); // Adjust the fractional part
+        value = static_cast<int32_t>(scaledValue);
+        applyOverflowOrSaturation();
         return *this;
     }
 
@@ -89,7 +86,6 @@ private:
         }
     }
 
-    // Apply overflow or saturation based on the mode for the adjusted value
     void applyOverflowOrSaturation(int64_t& adjustedValue) {
         if (mode == OverflowMode::Saturate) {
             saturate(adjustedValue);
@@ -98,7 +94,6 @@ private:
         }
     }
 
-    // Saturate the value to the given total number of bits
     void saturate() {
         int32_t maxVal = (1 << (totalBits - 1)) - 1;
         int32_t minVal = -(1 << (totalBits - 1));
@@ -107,71 +102,82 @@ private:
     }
 
     void saturate(int64_t& extendedValue) {
-        int32_t maxVal = (1 << (totalBits - 1)) - 1;
-        int32_t minVal = -(1 << (totalBits - 1));
+        int64_t maxVal = (1LL << (totalBits - 1)) - 1;
+        int64_t minVal = -(1LL << (totalBits - 1));
         if (extendedValue > maxVal) extendedValue = maxVal;
         if (extendedValue < minVal) extendedValue = minVal;
     }
 
-    // Mask the value to simulate overflow
     void maskOverflow() {
-        int32_t mask = (1 << totalBits) - 1;  // Mask to keep only `totalBits` bits
-        int32_t signMask = 1 << (totalBits - 1); // Mask to extract the sign bit
+        int32_t mask = (1 << totalBits) - 1;
+        int32_t signMask = 1 << (totalBits - 1);
 
-        value &= mask;  // Apply the mask
+        value &= mask;
 
-        // Sign extend the value if necessary
         if (value & signMask) {
-            value |= ~mask;  // If the sign bit is set, extend the sign
+            value |= ~mask;
         }
     }
 
     void maskOverflow(int64_t& extendedValue) {
-        int64_t mask = (1 << totalBits) - 1;  // Mask to keep only `totalBits` bits
-        int64_t signMask = 1 << (totalBits - 1); // Mask to extract the sign bit
+        int64_t mask = (1LL << totalBits) - 1;
+        int64_t signMask = 1LL << (totalBits - 1);
 
-        extendedValue &= mask;  // Apply the mask
+        extendedValue &= mask;
 
-        // Sign extend the value if necessary
         if (extendedValue & signMask) {
-            extendedValue |= ~mask;  // If the sign bit is set, extend the sign
+            extendedValue |= ~mask;
         }
     }
 
-    // Private constructor to create from raw value
+    // Used for intermediate results with extended precision
+    static FixedPoint fromRawValueExtended(int64_t rawValue, uint32_t fb, uint32_t tb, OverflowMode om) {
+        FixedPoint fp;
+        fp.value = static_cast<int32_t>(rawValue >> fb); // Right shift to get back to original precision
+        fp.nFrac = fb / 2;  // Adjust back to the original fractional bits
+        fp.totalBits = tb / 2;  // Adjust back to the original total bits
+        fp.mode = om;
+        fp.applyOverflowOrSaturation();
+        return fp;
+    }
+
     static FixedPoint fromRawValue(int32_t rawValue, uint32_t fb, uint32_t tb, OverflowMode om) {
         FixedPoint fp;
         fp.value = rawValue;
         fp.nFrac = fb;
         fp.totalBits = tb;
         fp.mode = om;
-        fp.applyOverflowOrSaturation();  // Ensure that the value fits within the total bits or overflows
+        fp.applyOverflowOrSaturation();
         return fp;
+    }
+
+    void checkCompatibility(const FixedPoint& other) const {
+        if (nFrac != other.nFrac || totalBits != other.totalBits) {
+            throw std::invalid_argument("Mismatched FixedPoint configurations!");
+        }
     }
 };
 
 int main() {
-    uint32_t totalBitsA = 4;
-    uint32_t fracBitsA = 2;
-
-    uint32_t totalBitsB = 4;
-    uint32_t fracBitsB = 2;
-
-    uint32_t totalBitsC = 9;
-    uint32_t fracBitsC = 5;
+    uint32_t totalBits = 8;
+    uint32_t fracBits = 2;
 
     double da = 1.25;
-    double db = 0.5;
+    double db = 0.25;
+    double dc = 1.5;
 
-    // Define FixedPoint objects a, b with specific precision
-    FixedPoint a(da, fracBitsA, totalBitsA, OverflowMode::Overflow);
-    FixedPoint b(db, fracBitsB, totalBitsB, OverflowMode::Overflow);
+    // Initialize `a`, `b`, and `c` with specific values
+    FixedPoint a(da, fracBits, totalBits, OverflowMode::Overflow);
+    FixedPoint b(db, fracBits, totalBits, OverflowMode::Overflow);
+    FixedPoint c(dc, fracBits, totalBits, OverflowMode::Overflow);
 
-    // Define FixedPoint object c with different precision
-    FixedPoint c(fracBitsC, totalBitsC, OverflowMode::Overflow);
+    // Declare `d` with higher precision
+    uint32_t totalBitsD = totalBits * 3;
+    uint32_t fracBitsD = fracBits * 3;
+    FixedPoint d(fracBitsD, totalBitsD, OverflowMode::Overflow);
 
-    // Perform multiplication with c = a * b
-    c = a * b;
+    // Perform the multiplication with higher precision result
+    d = a * b * c;
 
     // Output the results
     std::cout << "a (Overflow) = " << a.GetDoubleValue() << " (" << a.GetIntValue() << ")" << std::endl;
@@ -182,6 +188,9 @@ int main() {
 
     std::cout << "c (Overflow) = " << c.GetDoubleValue() << " (" << c.GetIntValue() << ")" << std::endl;
     c.printConfig();
+
+    std::cout << "d (Overflow) = " << d.GetDoubleValue() << " (" << d.GetIntValue() << ")" << std::endl;
+    d.printConfig();
 
     return 0;
 }

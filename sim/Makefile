@@ -1,4 +1,4 @@
-BIN_FILE = bin
+BIN_FILE = bin.exe
 SRC_FILE = main
 
 BIN_DIR = bin
@@ -18,8 +18,8 @@ all: $(BIN_DIR)/$(BIN_FILE)
 $(BIN_DIR)/$(BIN_FILE): $(OBJS) | $(BIN_DIR)
 	$(CPP) $(CFLAGS) -o $@ $^ -g
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CPP) $(CFLAGS) -I$(INC_DIR) -I../fixed_point/include -c $< -o $@ -g
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp Makefile | $(OBJ_DIR)
+	$(CPP) $(CFLAGS) -I$(INC_DIR) -c $< -o $@ -g
 
 $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
