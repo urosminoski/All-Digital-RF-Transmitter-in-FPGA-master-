@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <cmath>
 
+namespace fxp{
+
 enum class OverflowMode {
     Saturate,
     Overflow
@@ -24,15 +26,24 @@ public:
     // Convert to integer
     int32_t ToInt() const;
 
+    // Getters
+    uint8_t GetTotalBits() const;
+    uint8_t GetFracBits() const;
+    OverflowMode GetOverflowMode() const;
+
     // Print the configuration of FixedPoint object
     void PrintConfig() const;
 
+    // Resize method
+    void Resize(uint8_t newTotalBits, uint8_t newFracBits);
+
     // Arithmetic operators
     FixedPoint operator+(const FixedPoint& other) const;
+    FixedPoint operator-(const FixedPoint& other) const;
     FixedPoint operator*(const FixedPoint& other) const;
 
     // Assignment operator with precision adjustment
-    FixedPoint& operator=(const FixedPoint& other);
+    // FixedPoint& operator=(const FixedPoint& other);
 
 private:
     int32_t rawValue;           // Raw fixed-point value
@@ -58,5 +69,7 @@ private:
     // Ensure the two FixedPoint objects are compatible for arithmetic operations
     void checkCompatibility(const FixedPoint& other) const;
 };
+
+}   // End of namespace fxp
 
 #endif // FIXEDPOINT_H

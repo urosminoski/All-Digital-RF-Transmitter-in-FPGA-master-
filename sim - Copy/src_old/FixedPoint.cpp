@@ -1,5 +1,7 @@
 #include "../inc/FixedPoint.hpp"
 
+namespace fxp {
+
 // Constructors
 FixedPoint::FixedPoint() : rawValue(0), fracBits(0), totalBits(0), overflowMode(OverflowMode::Overflow) {}
 
@@ -22,11 +24,47 @@ int32_t FixedPoint::ToInt() const {
     return rawValue;
 }
 
+// Getter methods
+uint8_t FixedPoint::GetTotalBits() const {
+    return totalBits;
+}
+
+uint8_t FixedPoint::GetFracBits() const {
+    return fracBits;
+}
+
+OverflowMode FixedPoint::GetOverflowMode() const {
+    return overflowMode;
+}
+
 // Print the configuration of FixedPoint object
 void FixedPoint::PrintConfig() const {
     std::cout << "Configuration: " << (std::is_signed<decltype(rawValue)>::value ? "s" : "u")
               << totalBits << "." << fracBits << " format\n" << std::endl;
 }
+
+void FixedPoint::Resize(uint8_t newTotalBits, uint8_t newFracBits) {
+    // Step 1: Adjust the raw value if the number of fractional bits changes
+    if (newFracBits > fracBits) {
+        // Increase precision: shift raw value left
+        rawValue <<= (newFracBits - fracBits);
+    } else if (newFracBits < fracBits) {
+        // Decrease precision: shift raw value right with rounding
+        int32_t roundingFactor = (1 << (fracBits - newFracBits - 1));
+        if(rawValue < 0){
+            roundingFactor = -roundingFactor;
+        }
+        rawValue = (rawValue + roundingFactor) >> (fracBits - newFracBits);
+    }
+    
+    // Step 2: Update the internal fracBits and totalBits
+    fracBits = newFracBits;
+    totalBits = newTotalBits;
+
+    // Step 3: Handle overflow or saturation if needed
+    applyOverflowOrSaturation();
+}
+
 
 // Addition operator
 FixedPoint FixedPoint::operator+(const FixedPoint& other) const {
@@ -35,29 +73,18 @@ FixedPoint FixedPoint::operator+(const FixedPoint& other) const {
     return fromRawValue(result, fracBits, totalBits, overflowMode);
 }
 
+// Subtraction operator
+FixedPoint FixedPoint::operator-(const FixedPoint& other) const {
+    checkCompatibility(other);
+    int32_t result = rawValue - other.rawValue;
+    return fromRawValue(result, fracBits, totalBits, overflowMode);
+}
+
 // Multiplication operator
 FixedPoint FixedPoint::operator*(const FixedPoint& other) const {
     checkCompatibility(other);
     int32_t extendedResult = rawValue * other.rawValue;
     return fromRawValue(extendedResult, fracBits + other.fracBits, totalBits + other.totalBits, overflowMode);
-}
-
-// Assignment operator with precision adjustment
-FixedPoint& FixedPoint::operator=(const FixedPoint& other) {
-    if (fracBits > other.fracBits) {
-        rawValue = other.rawValue << (fracBits - other.fracBits);
-    } else if (fracBits < other.fracBits) {
-        int32_t roundingFactor = (1 << (other.fracBits - fracBits - 1));
-        if (other.rawValue < 0) {
-            roundingFactor = -roundingFactor;
-        }
-        rawValue = (other.rawValue + roundingFactor) >> (other.fracBits - fracBits);
-    } else {
-        rawValue = other.rawValue;
-    }
-
-    applyOverflowOrSaturation();
-    return *this;
 }
 
 // Convert from double to fixed-point
@@ -108,3 +135,5 @@ void FixedPoint::checkCompatibility(const FixedPoint& other) const {
         throw std::invalid_argument("Mismatched FixedPoint overflow mode configurations!");
     }
 }
+
+} // End of namespace fxp

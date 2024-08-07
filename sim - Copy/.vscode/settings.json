@@ -84,13 +84,6 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "fstream": "cpp",
-        "chrono": "cpp",
-        "forward_list": "cpp",
-        "queue": "cpp",
-        "ranges": "cpp",
-        "span": "cpp",
-        "xhash": "cpp",
-        "xtree": "cpp"
+        "fstream": "cpp"
     }
 }
