@@ -24,4 +24,10 @@ def mul_fixed(x_fixed, y_fixed, n_int, n_frac):
     y = fixed_to_float(y_fixed, n_frac)
     result = x*y
     return float_to_fixed(result, 2*n_int, 2*n_frac)
+
+def add_fixed(x_fixed, y_fixed, n_int, n_frac):
+    x = fixed_to_float(x_fixed, n_frac)
+    y = fixed_to_float(y_fixed, n_frac)
+    result = x+y
+    return float_to_fixed(result, n_int, n_frac)
     
