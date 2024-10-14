@@ -1,0 +1,66 @@
+----------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use std.textio.all;
+-- use work.fixed_generic_pkg.all;
+----------------------------------------------------------------------
+
+entity delta_sigma_tst is
+end entity;
+
+architecture testbench of delta_sigma_tst is
+	
+	signal clk	: std_logic := '1';
+	signal rst 	: std_logic := '1';
+	signal x 	: sfixed(4 downto -8) := (others => '0');
+	signal y 	: sfixed(4 downto 0);
+	
+	type x_input is array(1023 downto 0) of real;
+	
+	constant C_CLK_PERIOD 	: time 		:= 1 ns;
+	constant x_in 			: x_input 	:= ();
+	
+begin
+	I1 : entity work.delta_sigma
+	port map(
+		clk => clk,
+		rst => rst,
+		x => x,
+		y => y
+	);
+	
+	clk <= not clk after C_CLK_PERIOD / 2;
+	
+	ALWAYS : process
+	begin
+		wait for C_CLK_PERIOD;
+		rst <= '0';
+		wait;
+	end process;
+	
+	INPUT : process(clk)
+		iable i : integer := 0;
+	begin
+		if(rst = '1') then
+		i := 0;
+		elsif rising_edge(clk) then
+		x <= to_sfixed(x_in(i), 3, -8);
+		i := i + 1;
+		end if;
+	end process;
+	
+	OUTPUT : process(clk)
+		file file_pointer : TEXT OPEN WRITE_MODE is
+		".\simulator_output.txt";
+		variable line_el : LINE;
+		variable y_integer : INTEGER;
+	begin
+		if rising_edge(clk) then
+			y_integer := to_integer(signed(y));
+			write(line_el, y_integer);
+			writeline(file_pointer, line_el);
+		end if;
+	end process;
+	
+end architecture;

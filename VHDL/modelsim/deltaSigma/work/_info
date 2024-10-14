@@ -1,0 +1,127 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma
+Edeltasigma
+Z1 w1728924663
+Z2 DPx13 ieee_proposed 9 fixed_pkg 0 22 :UafQEYfLi1K;HoB:B]b61
+Z3 DPx13 ieee_proposed 16 math_utility_pkg 0 22 z@7O6nF30IDzaLY1kkifM0
+Z4 DPx4 work 14 deltasigma_pkg 0 22 <YXaFzb;>A:LA^zmaomHI0
+Z5 DPx4 ieee 11 numeric_std 0 22 :ASDNFgHXf_ih3J@9F3Ze1
+Z6 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z7 DPx4 ieee 14 std_logic_1164 0 22 eNV`TJ_GofJTzYa?f<@Oe1
+R0
+Z8 8C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma.vhd
+Z9 FC:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma.vhd
+l0
+L12
+VN;9ghSC]WM;>04i04;a>N1
+!s100 OkSMU<na]c?^7e>acGczB2
+Z10 OV;C;10.5b;63
+32
+Z11 !s110 1728924803
+!i10b 1
+Z12 !s108 1728924803.000000
+Z13 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma.vhd|
+Z14 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma.vhd|
+!i113 1
+Z15 o-work work -2002 -explicit
+Z16 tExplicit 1 CvgOpt 0
+Arti
+R2
+R3
+R4
+R5
+R6
+R7
+Z17 DEx4 work 10 deltasigma 0 22 N;9ghSC]WM;>04i04;a>N1
+l36
+L20
+V<L@oD_>44`9R32BIDZMWH2
+!s100 d3^LKkf@zdf^REWil:3zB2
+R10
+32
+R11
+!i10b 1
+R12
+R13
+R14
+!i113 1
+R15
+R16
+Pdeltasigma_pkg
+R5
+R6
+R7
+w1728924501
+R0
+8C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_pkg.vhd
+FC:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_pkg.vhd
+l0
+L5
+V<YXaFzb;>A:LA^zmaomHI0
+!s100 znUQE<@bSm`9?^2Q]1>_Z3
+R10
+32
+!s110 1728924799
+!i10b 1
+!s108 1728924799.000000
+!s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_pkg.vhd|
+!s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_pkg.vhd|
+!i113 1
+R15
+R16
+Edeltasigma_tb
+Z18 w1728924721
+R2
+R3
+R4
+R5
+R6
+R7
+R0
+Z19 8C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_tb.vhd
+Z20 FC:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_tb.vhd
+l0
+L11
+Vg:lE=mni8=SLc]Qk5Nd0<0
+!s100 CTnRo^JRiYHm`fYB2<en_0
+R10
+32
+Z21 !s110 1728924806
+!i10b 1
+Z22 !s108 1728924806.000000
+Z23 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_tb.vhd|
+Z24 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/VHDL/modelsim/deltaSigma/src/deltaSigma_tb.vhd|
+!i113 1
+R15
+R16
+Atestbench
+R17
+R2
+R3
+R4
+R5
+R6
+R7
+DEx4 work 13 deltasigma_tb 0 22 g:lE=mni8=SLc]Qk5Nd0<0
+l27
+L14
+V9mBGb@CoZH7hCzZ^>fPPZ0
+!s100 >P=<jD:XV8BMYFoajEc<B1
+R10
+32
+R21
+!i10b 1
+R22
+R23
+R24
+!i113 1
+R15
+R16
