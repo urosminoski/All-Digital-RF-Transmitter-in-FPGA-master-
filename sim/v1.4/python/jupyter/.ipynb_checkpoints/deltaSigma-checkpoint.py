@@ -1,53 +1,5 @@
-%matplotlib inline
-import matplotlib as mpl
-mpl.rc('text', usetex = True)
-mpl.rc('font', family = 'serif', size = 18)
-
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy.signal as signal
-
 from fxpmath import Fxp
-
-import funcs
-import importlib
-importlib.reload(funcs)  # Importing the latest version of funcs.py
-
-
-# Filter coefficients
-b = [3.19382974, -8.02002256, 8.73762976, -4.61756997, 0.97458298]
-a = [1, -1.63632004, 1.47600867, -0.75840147, 0.2125798, -0.02541702]
-
-
-# Decompos IIR filter to parallel IIR sections
-[b_parallel, a_parallel] = funcs.decompose_iir_to_parallel(b, a)
-
-print("Parallel Decomposition:")
-for i in range(len(a_parallel)):
-    print("Section " + str(i+1) + ":")
-    print("\tb =", b_parallel[i])
-    print("\ta =", a_parallel[i], "\n")
-
-
-N = 8*1024
-M = 3
-OSR = 8
-n = np.arange(N)
-
-x = 2**(M-1) * np.sin(2*np.pi*np.floor(2/7 * N/OSR) * n/N)
-xfxp = [Fxp(val, signed=True, n_word=12, n_frac=8, overflow='saturate', rounding='around') for val in x]
-
-yfxp = funcs.deltaSigma(xfxp)
-
-
-w = signal.blackman(len(yfxp), False)
-yfxp_fft = np.fft.fft(yfxp*w)
-yfxp_fft_dB = 20*np.log10(np.abs(yfxp_fft))
-yfxp_fft_dB -= np.max(yfxp_fft_dB)
-yfxp_fft_dB = yfxp_fft_dB[:N//2]
-
-plt.plot(np.linspace(0, 0.5, N//2), yfxp_fft_dB)
-
+import numpy as np
 
 def deltaSigma(x, n_word, n_frac, overflow='saturate', rounding='around'):
     # Coefficients of H0.
@@ -102,25 +54,3 @@ def deltaSigma(x, n_word, n_frac, overflow='saturate', rounding='around'):
         w2dd( w2d() )
         w2d( w2() )
     return y
-
-N = 1*1024
-M = 3
-OSR = 8
-n = np.arange(N)
-
-x = 2**(M-1) * np.sin(2*np.pi*np.floor(2/7 * N/OSR) * n/N)
-xfxp = [Fxp(val, signed=True, n_word=12, n_frac=8, overflow='saturate', rounding='around')() for val in x]
-
-yfxp = deltaSigma(xfxp, 0, 0)
-
-
-w = signal.blackman(len(yfxp), False)
-yfxp_fft = np.fft.fft(yfxp*w)
-yfxp_fft_dB = 20*np.log10(np.abs(yfxp_fft))
-yfxp_fft_dB -= np.max(yfxp_fft_dB)
-yfxp_fft_dB = yfxp_fft_dB[:N//2]
-
-plt.plot(np.linspace(0, 0.5, N//2), yfxp_fft_dB)
-
-
-

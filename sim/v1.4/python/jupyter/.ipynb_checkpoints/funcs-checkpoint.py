@@ -7,98 +7,151 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 from fxpmath import Fxp
 
-def plot_fft_dB(signals_x, signals_y, title1=None, title2=None, legend1=None, legend2=None):
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.ticker import MaxNLocator, FuncFormatter
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator, FuncFormatter
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator, FuncFormatter
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator, FuncFormatter
+
+def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend1=None, legend2=None, 
+                xlim1=(0, 0.5), ylim1=None, xlim2=(0, 0.5), ylim2=None):
     """
     Plots the FFT of multiple signals (signals_x and signals_y) in dB scale, normalizes them, and adds 2 dB to the max value.
     
     Args:
-    - signals_x: List of signals or a single signal for the first subplot (each signal is a list or array).
-    - signals_y: List of signals or a single signal for the second subplot (each signal is a list or array).
+    - signals_x: List of signals or a single signal for the first subplot (each signal is a list or array). Can be None.
+    - signals_y: List of signals or a single signal for the second subplot (each signal is a list or array). Can be None.
     - title1: Title for the first subplot (optional, default is 'FFT of Signal 1').
     - title2: Title for the second subplot (optional, default is 'FFT of Signal 2').
     - legend1: List of legends for the first subplot (optional, default is None).
     - legend2: List of legends for the second subplot (optional, default is None).
+    - xlim1: Tuple specifying the x-axis limits for the first subplot (optional, default is (0, 0.5)).
+    - ylim1: Tuple specifying the y-axis limits for the first subplot (optional, auto-calculated).
+    - xlim2: Tuple specifying the x-axis limits for the second subplot (optional, default is (0, 0.5)).
+    - ylim2: Tuple specifying the y-axis limits for the second subplot (optional, auto-calculated).
     
     Returns:
     - None
-    
-    Example of calling:
-    x1 = np.random.randn(1024)
-    x2 = np.random.randn(1024)
-    y1 = np.random.randn(1024)
-    y2 = np.random.randn(1024)
-    plot_fft_dB([x1, x2], [y1, y2], title1="FFT of X Signals", title2="FFT of Y Signals", legend1=["X1", "X2"], legend2=["Y1", "Y2"])
     """
 
-    # If a single signal is passed instead of a list, convert it to a list with one element
-    if not isinstance(signals_x, list):
-        signals_x = [signals_x]
-    if not isinstance(signals_y, list):
-        signals_y = [signals_y]
+    # If signals_x or signals_y is None, handle them gracefully
+    plots_to_draw = 0
+    if signals_x is not None:
+        if not isinstance(signals_x, list):
+            signals_x = [signals_x]
+        plots_to_draw += 1
 
-    N = len(signals_x[0])  # Assuming all signals have the same length
+    if signals_y is not None:
+        if not isinstance(signals_y, list):
+            signals_y = [signals_y]
+        plots_to_draw += 1
 
+    if plots_to_draw == 0:
+        raise ValueError("At least one of signals_x or signals_y must be provided.")
+
+    N = len(signals_x[0]) if signals_x else len(signals_y[0])
     freqs = np.linspace(0, 0.5, N//2)
-
     fontsize = 8
 
-    # Create subplots
-    fig, axs = plt.subplots(2, 1, figsize=(10, 6))
+    fig, axs = plt.subplots(plots_to_draw, 1, figsize=(10, 6))
 
-    # Use custom or default titles
-    if title1 is None:
-        title1 = 'FFT of Signal 1'
-    if title2 is None:
-        title2 = 'FFT of Signal 2'
+    # If there's only one plot, axs will not be a list, so we handle it
+    if plots_to_draw == 1:
+        axs = [axs]
+
+    subplot_idx = 0
+    epsilon = 1e-12  # Small value to avoid log of zero
 
     # Plot for the first subplot (x signals)
-    max_value_x = float('-inf')
-    for i, x in enumerate(signals_x):
-        x_fft = np.fft.fft(x)
-        x_dB = 20 * np.log10(np.abs(x_fft[:N//2]))
-        x_dB -= np.max(x_dB)
-        max_value_x = max(max_value_x, np.max(x_dB))
-        axs[0].plot(freqs, x_dB, label=legend1[i] if legend1 else f"Signal {i+1}")
-    
-    axs[0].set_title(title1)
-    axs[0].set_ylabel('Magnitude [dB]')
-    axs[0].grid(True)
+    if signals_x is not None:
+        if title1 is None:
+            title1 = 'FFT of Signal 1'
+
+        max_value_x = float('-inf')
+        min_value_x = float('inf')
+        for i, x in enumerate(signals_x):
+            x_fft = np.fft.fft(x)
+            x_dB = 20 * np.log10(np.abs(x_fft[:N//2]) + epsilon)  # Adding epsilon to avoid log of zero
+            x_dB -= np.max(x_dB)
+            max_value_x = max(max_value_x, np.max(x_dB))
+            min_value_x = min(min_value_x, np.min(x_dB))
+            axs[subplot_idx].plot(freqs, x_dB, label=legend1[i] if legend1 else f"Signal {i+1}")
+
+        axs[subplot_idx].set_title(title1)
+        axs[subplot_idx].set_ylabel('Magnitude [dB]')
+        axs[subplot_idx].grid(True)
+
+        # Apply custom y-limits for the first subplot, if provided
+        if ylim1 is not None:
+            axs[subplot_idx].set_ylim(ylim1)
+        else:
+            axs[subplot_idx].set_ylim(min_value_x - 2, max_value_x + 5)
+
+        # Apply custom x-limits for the first subplot, if provided
+        if xlim1 is not None:
+            axs[subplot_idx].set_xlim(xlim1)
+        else:
+            axs[subplot_idx].set_xlim(0, 0.5)
+
+        def format_func(value, tick_number):
+            return f'{value:.1f}'
+
+        axs[subplot_idx].yaxis.set_major_formatter(FuncFormatter(format_func))
+
+        if legend1:
+            axs[subplot_idx].legend(fontsize=fontsize)
+
+        subplot_idx += 1
 
     # Plot for the second subplot (y signals)
-    max_value_y = float('-inf')
-    for i, y in enumerate(signals_y):
-        y_fft = np.fft.fft(y)
-        y_dB = 20 * np.log10(np.abs(y_fft[:N//2]))
-        y_dB -= np.max(y_dB)
-        max_value_y = max(max_value_y, np.max(y_dB))
-        axs[1].plot(freqs, y_dB, label=legend2[i] if legend2 else f"Signal {i+1}")
+    if signals_y is not None:
+        if title2 is None:
+            title2 = 'FFT of Signal 2'
 
-    axs[1].set_title(title2)
-    axs[1].set_xlabel('Normalized Frequency [0, 0.5]')
-    axs[1].set_ylabel('Magnitude [dB]')
-    axs[1].grid(True)
+        max_value_y = float('-inf')
+        min_value_y = float('inf')
+        for i, y in enumerate(signals_y):
+            y_fft = np.fft.fft(y)
+            y_dB = 20 * np.log10(np.abs(y_fft[:N//2]) + epsilon)  # Adding epsilon to avoid log of zero
+            y_dB -= np.max(y_dB)
+            max_value_y = max(max_value_y, np.max(y_dB))
+            min_value_y = min(min_value_y, np.min(y_dB))
+            axs[subplot_idx].plot(freqs, y_dB, label=legend2[i] if legend2 else f"Signal {i+1}")
 
-    # Set the same x and y limits for both plots
-    max_y_lim = max(max(x_dB), max(y_dB))
-    min_y_lim = min(min(x_dB), min(y_dB))
-    axs[0].set_xlim(0, 0.5)
-    axs[0].set_ylim(min_y_lim, max_y_lim+5)
-    axs[1].set_xlim(0, 0.5)
-    axs[1].set_ylim(min_y_lim, max_y_lim+5)
+        axs[subplot_idx].set_title(title2)
+        axs[subplot_idx].set_xlabel('Normalized Frequency')
+        axs[subplot_idx].set_ylabel('Magnitude [dB]')
+        axs[subplot_idx].grid(True)
 
-    # Set the same x limits for both plots
-    axs[0].set_xlim(0, 0.5)
-    axs[1].set_xlim(0, 0.5)
+        # Apply custom y-limits for the second subplot, if provided
+        if ylim2 is not None:
+            axs[subplot_idx].set_ylim(ylim2)
+        else:
+            axs[subplot_idx].set_ylim(min_value_y - 2, max_value_y + 5)
 
-    # Add legends if provided
-    if legend1:
-        axs[0].legend(fontsize=fontsize)
-    if legend2:
-        axs[1].legend(fontsize=fontsize)
+        # Apply custom x-limits for the second subplot, if provided
+        if xlim2 is not None:
+            axs[subplot_idx].set_xlim(xlim2)
+        else:
+            axs[subplot_idx].set_xlim(0, 0.5)
+
+        axs[subplot_idx].yaxis.set_major_formatter(FuncFormatter(format_func))
+
+        if legend2:
+            axs[subplot_idx].legend(fontsize=fontsize)
 
     plt.tight_layout()
     plt.show()
-
 
 
 def plot_IIR_and_zeros_poles(data_pz, labels=None, fig_title=None):
@@ -481,4 +534,58 @@ def parallel_lfilter_fxp(b, a, x, n_int, n_frac):
         # Print progress (same line)
         print(f"{i + 1} of {num_sections} sections filtered", end='\r')
         
+    return y
+
+def deltaSigma(x, n_word=5, n_frac=0):
+    # Coefficients of H0.
+    b00 = Fxp(7.3765809, n_word=12, n_frac=8, overflow='saturate', rounding='around')
+    a01 = Fxp(0.3466036, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    # Coefficients of H1.
+    b10 = Fxp(0.424071040, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    b11 = Fxp(2.782608716, n_word=12, n_frac=9, overflow='saturate', rounding='around')
+    a11 = Fxp(0.66591402, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    a12 = Fxp(0.16260264, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    # Coefficients of H2.
+    b20 = Fxp(4.606822182, n_word=12, n_frac=8, overflow='saturate', rounding='around')
+    b21 = Fxp(0.023331537, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    a21 = Fxp(0.62380242, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    a22 = Fxp(0.4509869, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    
+    y_iir = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    e = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    y_i = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    x0 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    x0d = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    x1 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    w1 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    w1d = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    w1dd = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    x2 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    w2 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    w2d = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    w2dd = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
+    v = Fxp(0, n_word=n_word, n_frac=n_frac, overflow='saturate', rounding='around')
+    
+    y = np.zeros(len(x))
+    
+    for i in range(len(x)):
+        y_i( (x[i]+y_iir)() )
+        v( y_i() )
+        # if v() % 2 == 0:
+        #     v( (v+1)() )
+        y[i] = v()
+        e( (y_i-v)() )
+    
+        x0( (b00*e+a01*x0d)() )
+        w1( (e+a11*w1d-a12*w1dd)() )
+        x1( (b10*w1-b11*w1d)() )
+        w2( (e+a21*w2d-a22*w2dd)() )
+        x2( (b21*w2d-b20*w2)() )
+        y_iir( (x0+x1+x2)() )
+    
+        x0d( x0() )
+        w1dd( w1d() )
+        w1d( w1() )
+        w2dd( w2d() )
+        w2d( w2() )
     return y

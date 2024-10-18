@@ -20,11 +20,11 @@ end entity;
 architecture rti of deltaSigma is
 
 	-- Coefficients of H0.
-	constant b00 : sfixed(3 downto -8) 	:= to_sfixed(7.3765809,	3, -8);
+	constant b00 : sfixed(3 downto -8)  := to_sfixed(7.3765809,	3, -8);
 	constant a01 : sfixed(0 downto -11) := to_sfixed(0.3466036, 0, -11);
 	-- Coefficients of H1.
 	constant b10 : sfixed(0 downto -11) := to_sfixed(0.424071040,0, -11);
-	constant b11 : sfixed(2 downto -9) 	:= to_sfixed(2.782608716, 2, -9);
+	constant b11 : sfixed(2 downto -9)  := to_sfixed(2.782608716, 2, -9);
 	constant a11 : sfixed(0 downto -11) := to_sfixed(0.66591402, 0, -11);
 	constant a12 : sfixed(0 downto -11) := to_sfixed(0.16260264, 0, -11);
 	-- Coefficients of H2.
