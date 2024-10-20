@@ -3,9 +3,9 @@ SRC_FILE = main
 PY_FILE  = print_result.py
 
 BIN_DIR = bin
-SRC_DIR = src
-INC_DIR = inc
-OBJ_DIR = obj
+SRC_DIR = cpp/src
+INC_DIR = cpp/inc
+OBJ_DIR = cpp/obj
 PY_DIR  = python
 
 SRCS = $(wildcard $(SRC_DIR)/*.cpp)

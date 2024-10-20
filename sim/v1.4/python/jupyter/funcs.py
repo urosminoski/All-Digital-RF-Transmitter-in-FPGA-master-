@@ -6,21 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 from fxpmath import Fxp
-
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.ticker import MaxNLocator, FuncFormatter
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator, FuncFormatter
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator, FuncFormatter
-
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, FuncFormatter
 
 def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend1=None, legend2=None, 
