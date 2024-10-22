@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 from fxpmath import Fxp
 from matplotlib.ticker import MaxNLocator, FuncFormatter
+from matplotlib.widgets import SpanSelector
+from matplotlib.ticker import FuncFormatter
 
 LUT1 = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Level 8
@@ -16,14 +18,14 @@ LUT1 = [
     [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],  # Level 4
     [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],  # Level 3
     [0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1],  # Level 2
-    [0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0],  # Level 1
+    [0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],  # Level 1
     [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],  # Level 0
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],  # Level -1
-    [0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],  # Level -2
-    [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],  # Level -3
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],  # Level -4
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],  # Level -5
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],  # Level -6
+    [0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],  # Level -1
+    [0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],  # Level -2
+    [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],  # Level -3
+    [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],  # Level -4
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],  # Level -5
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Level -6
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Level -7
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Level -8
 ]
@@ -106,9 +108,8 @@ LUT5 = [
     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]   # Level -7.5    
 ]
 
-
 def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend1=None, legend2=None, 
-                xlim1=(0, 0.5), ylim1=None, xlim2=(0, 0.5), ylim2=None):
+                xlim1=None, ylim1=None, xlim2=None, ylim2=None):
     """
     Plots the FFT of multiple signals (signals_x and signals_y) in dB scale, normalizes them, and adds 2 dB to the max value.
     
@@ -236,7 +237,6 @@ def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend
 
     plt.tight_layout()
     plt.show()
-
 
 def plot_IIR_and_zeros_poles(data_pz, labels=None, fig_title=None):
     """
@@ -578,7 +578,7 @@ def iir_transposed_fxp(b, a, x, n_int, n_frac, precision='half'):
         
     return y
 
-def parallel_lfilter_fxp(b, a, x, n_int, n_frac):
+def parallel_lfilter_fxp(b, a, x, n_int, n_frac, type="mid-raise"):
     """
     Applies multiple IIR filters (parallel sections) to the input signal using fixed-point arithmetic.
     
@@ -656,12 +656,9 @@ def deltaSigma(x, n_word=5, n_frac=0, type="mid-rise"):
         y_i( (x[i]+y_iir)() )
         v( y_i() )
 
-        # if type=="mid-rise":
-        #     if abs(v()) % 2 == 0:
-        #         if v() > 0:
-        #             v( (v+1)() )
-        #         elif v() < 0:
-        #             v( (v-1)() )
+        if type=="mid-rise":
+            if abs(v()) % 2 == 0:
+                v( (v()+1) )
         y[i] = v()
         e( (y_i-v)() )
     
@@ -683,7 +680,8 @@ def convert_1b(x, LUT):
     y = []
     for i in range(len(x)):
         pos = x[i] + 8
-        y = np.concatenate((y, LUT[-1-pos]))
+        tmp = [-1 if val==0 else 1 for val in LUT[-1-pos]]
+        y = np.concatenate((y, tmp))
     return np.array(y)
     
 
