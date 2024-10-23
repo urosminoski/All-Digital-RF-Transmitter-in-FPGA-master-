@@ -656,9 +656,9 @@ def deltaSigma(x, n_word=5, n_frac=0, type="mid-rise"):
         y_i( (x[i]+y_iir)() )
         v( y_i() )
 
-        if type=="mid-rise":
-            if abs(v()) % 2 == 0:
-                v( (v()+1) )
+        # if type=="mid-rise":
+        #     if v() % 2 == 0:
+        #         v( v()+1 )
         y[i] = v()
         e( (y_i-v)() )
     
