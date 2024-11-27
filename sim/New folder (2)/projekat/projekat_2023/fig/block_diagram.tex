@@ -1,0 +1,46 @@
+% XCircuit output "block_diagram.tex" for LaTeX input from block_diagram.ps
+\def\putbox#1#2#3#4{\makebox[0in][l]{\makebox[#1][l]{}\raisebox{\baselineskip}[0in][0in]{\raisebox{#2}[0in][0in]{\scalebox{#3}{#4}}}}}
+\def\rightbox#1{\makebox[0in][r]{#1}}
+\def\centbox#1{\makebox[0in]{#1}}
+\def\topbox#1{\raisebox{-0.60\baselineskip}[0in][0in]{#1}}
+\def\midbox#1{\raisebox{-0.20\baselineskip}[0in][0in]{#1}}
+   \scalebox{1}{
+   \normalsize
+   \parbox{9.54688in}{
+   \includegraphics[scale=1]{block_diagram}\\
+   % translate x=777 y=454 scale 0.38
+   \putbox{1.44in}{1.67in}{1.20}{\centbox{\midbox{}}}%
+   \putbox{1.44in}{1.67in}{1.20}{\midbox{$16$}}%
+   \putbox{2.35in}{1.67in}{1.20}{\centbox{\midbox{$H(z)$}}}%
+   \putbox{0.77in}{1.67in}{1.20}{\rightbox{\midbox{$I$}}}%
+   \putbox{1.44in}{0.84in}{1.20}{\centbox{\midbox{}}}%
+   \putbox{1.44in}{0.84in}{1.20}{\midbox{$16$}}%
+   \putbox{2.35in}{0.84in}{1.20}{\centbox{\midbox{$H(z)$}}}%
+   \putbox{0.77in}{0.84in}{1.20}{\rightbox{\midbox{$Q$}}}%
+   \putbox{0.94in}{0.34in}{1.20}{\centbox{\midbox{$61.44~\mr{MHz}$}}}%
+   \putbox{3.60in}{1.25in}{1.20}{\centbox{\midbox{$\mr{CORDIC}$}}}%
+   \putbox{3.60in}{2.05in}{1.20}{\centbox{$\mr{Kompleksni}$}}%
+   \putbox{3.60in}{1.84in}{1.20}{\centbox{$\textrm{me\v{s}a\v{c}~+~NCO}$}}%
+   \putbox{3.19in}{1.50in}{1.20}{\midbox{$I$}}%
+   \putbox{3.19in}{1.00in}{1.20}{\midbox{$Q$}}%
+   \putbox{5.10in}{1.25in}{1.20}{\centbox{\midbox{}}}%
+   \putbox{5.10in}{1.30in}{0.96}{\centbox{$\mr{Kompenzacija}$}}%
+   \putbox{5.10in}{1.09in}{0.96}{\centbox{$\sin(x)/x$}}%
+   \putbox{1.98in}{0.34in}{1.20}{\centbox{\midbox{$983.04~\mr{MHz}$}}}%
+   \putbox{7.19in}{0.88in}{0.90}{\centbox{}}%
+   \putbox{7.10in}{0.63in}{0.90}{\centbox{}}%
+   \putbox{7.10in}{1.59in}{0.90}{\centbox{}}%
+   \putbox{6.69in}{1.25in}{2.40}{\centbox{\midbox{DAC}}}%
+   \putbox{4.35in}{0.34in}{1.20}{\centbox{\midbox{$983.04~\mr{MHz}$}}}%
+   \putbox{5.85in}{0.34in}{1.20}{\centbox{\midbox{$983.04~\mr{MHz}$}}}%
+   \putbox{8.60in}{1.25in}{1.20}{\centbox{\midbox{}}}%
+   \putbox{8.60in}{1.34in}{1.20}{\centbox{$\mr{Analogni}$}}%
+   \putbox{8.60in}{1.13in}{1.20}{\centbox{$\mr{filtar}$}}%
+   \putbox{3.60in}{0.21in}{1.20}{\centbox{\topbox{$W$}}}%
+   \putbox{6.64in}{0.92in}{1.20}{\centbox{\midbox{$10~\mr{bit}$}}}%
+   \putbox{4.35in}{0.55in}{1.20}{\centbox{$\Re\left\lbrace (I+\jj Q) e^{\jj n \Omega_0}  \right\rbrace$}}%
+   \putbox{2.98in}{0.34in}{1.20}{\centbox{\midbox{$983.04~\mr{MHz}$}}}%
+   \putbox{1.89in}{2.05in}{1.20}{\centbox{$\mr{Interpolator}$}}%
+   } % close 'parbox'
+   } % close 'scalebox'
+   \vspace{-\baselineskip} % this is not necessary, but looks better
