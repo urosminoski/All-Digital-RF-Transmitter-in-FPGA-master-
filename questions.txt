@@ -1,1 +1,8 @@
-Da li je okej koristiti scipy.signal.lfilter(nrz, 1, x) za simulaciju rekonstrukcije signala pomocu NRZ? S obzirom da lfilter vrsi konvoluciju, samim tim ce rezultat biti usrednjen susednim semplovima, necu dobiti step funkciju na izlazu. Ako uzmemno u obzir realan scenario, sa realnim elektricnim kolima, nikada necemo dobite step funkciju, uuvek ce biti negog usrednjavanja. Da li je okej pretpostaviti da lfilter verno predstavlja ta usrednjavanja?
+Da li je okej koristiti scipy.signal.lfilter(nrz, 1, x) za simulaciju rekonstrukcije signala pomocu NRZ?
+S obzirom da lfilter vrsi konvoluciju, samim tim ce rezultat biti usrednjen susednim semplovima, necu dobiti step funkciju na izlazu.
+Ako uzmemno u obzir realan scenario, sa realnim elektricnim kolima, nikada necemo dobite step funkciju, uuvek ce biti negog usrednjavanja.
+Da li je okej pretpostaviti da lfilter verno predstavlja ta usrednjavanja?
+
+
+U jupyter svesci dobijam neocekivane rezultate. Kada napravim kompleksan signal i kada pokusam da ga transliram ulevo, tako da bude "simterican" u odnosu na frekvenciju 0 Hz,
+dobijam jako ruznu karakteristiku. Signal mnozim exp(1j * 2 * pi * n * (-f_max/2)), kako bi isao od -f_max/2 do f_max/2.
