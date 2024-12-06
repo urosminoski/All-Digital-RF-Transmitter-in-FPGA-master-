@@ -109,7 +109,7 @@ LUT5 = [
 ]
 
 def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend1=None, legend2=None, 
-                xlim1=None, ylim1=None, xlim2=None, ylim2=None):
+                xlim1=None, ylim1=None, xlim2=None, ylim2=None, OSR=None):
     """
     Plots the FFT of multiple signals (signals_x and signals_y) in dB scale, normalizes them, and adds 2 dB to the max value.
     
@@ -172,6 +172,8 @@ def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend
             min_value_x = min(min_value_x, np.min(x_dB))
             axs[subplot_idx].plot(freqs, x_dB, label=legend1[i] if legend1 else f"Signal {i+1}")
 
+        if OSR!=None:
+            axs[subplot_idx].plot([0.5/OSR, 0.5/OSR], [ylim1[0], ylim1[1]], '--r')
         axs[subplot_idx].set_title(title1)
         axs[subplot_idx].set_ylabel('Magnitude [dB]')
         axs[subplot_idx].grid(True)
@@ -213,6 +215,8 @@ def plot_fft_dB(signals_x=None, signals_y=None, title1=None, title2=None, legend
             min_value_y = min(min_value_y, np.min(y_dB))
             axs[subplot_idx].plot(freqs, y_dB, label=legend2[i] if legend2 else f"Signal {i+1}")
 
+        if OSR!=None:
+            axs[subplot_idx].plot([0.5/OSR, 0.5/OSR], [ylim2[0], ylim2[1]], '--r')
         axs[subplot_idx].set_title(title2)
         axs[subplot_idx].set_xlabel('Normalized Frequency')
         axs[subplot_idx].set_ylabel('Magnitude [dB]')
@@ -620,35 +624,50 @@ def parallel_lfilter_fxp(b, a, x, n_int, n_frac, type="mid-raise"):
         
     return y
 
-def deltaSigma(x, n_word=5, n_frac=0, type="mid-rise"):
+def deltaSigma(x, n_word=5, n_frac=0, type='mid-tread'):
     # Coefficients of H0.
-    b00 = Fxp(7.3765809, n_word=12, n_frac=8, overflow='saturate', rounding='around')
-    a01 = Fxp(0.3466036, n_word=12, n_frac=11, overflow='saturate', rounding='around')
-    # Coefficients of H1.
-    b10 = Fxp(0.424071040, n_word=12, n_frac=11, overflow='saturate', rounding='around')
-    b11 = Fxp(2.782608716, n_word=12, n_frac=9, overflow='saturate', rounding='around')
-    a11 = Fxp(0.66591402, n_word=12, n_frac=11, overflow='saturate', rounding='around')
-    a12 = Fxp(0.16260264, n_word=12, n_frac=11, overflow='saturate', rounding='around')
-    # Coefficients of H2.
-    b20 = Fxp(4.606822182, n_word=12, n_frac=8, overflow='saturate', rounding='around')
-    b21 = Fxp(0.023331537, n_word=12, n_frac=11, overflow='saturate', rounding='around')
-    a21 = Fxp(0.62380242, n_word=12, n_frac=11, overflow='saturate', rounding='around')
-    a22 = Fxp(0.4509869, n_word=12, n_frac=11, overflow='saturate', rounding='around')
+    rounding = 'around'
+    overflow = 'saturate'
+
+    if type=='mid-tread':
+        rounding = 'around'
+    elif type=='mid-rise':
+        rounding = 'floor'
+    else:
+        print('Error')
     
-    y_iir = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    e = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    y_i = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    x0 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    x0d = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    x1 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    w1 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    w1d = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    w1dd = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    x2 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    w2 = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    w2d = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    w2dd = Fxp(0, n_word=24, n_frac=19, overflow='saturate', rounding='around')
-    v = Fxp(0, n_word=n_word, n_frac=n_frac, overflow='saturate', rounding='around')
+    b00 = Fxp(7.3765809, n_word=12, n_frac=8, overflow=overflow, rounding=rounding)
+    a01 = Fxp(0.3466036, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    # Coefficients of H1.
+    b10 = Fxp(0.424071040, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    b11 = Fxp(2.782608716, n_word=12, n_frac=9, overflow=overflow, rounding=rounding)
+    a11 = Fxp(0.66591402, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    a12 = Fxp(0.16260264, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    # Coefficients of H2.
+    b20 = Fxp(4.606822182, n_word=12, n_frac=8, overflow=overflow, rounding=rounding)
+    b21 = Fxp(0.023331537, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    a21 = Fxp(0.62380242, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    a22 = Fxp(0.4509869, n_word=12, n_frac=11, overflow=overflow, rounding=rounding)
+    
+    y_iir = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    e = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    y_i = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    x0 = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    x0d = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    x1 = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    w1 = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    w1d = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    w1dd = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    x2 = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    w2 = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    w2d = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    w2dd = Fxp(0, n_word=24, n_frac=19, overflow=overflow, rounding=rounding)
+    if type=='mid-tread':
+        v = Fxp(0, n_word=n_word, n_frac=n_frac, overflow=overflow, rounding='around')
+    elif type=='mid-rise':
+        v = Fxp(0, n_word=n_word, n_frac=n_frac, overflow=overflow, rounding='floor')
+    else:
+        print('Error')
     
     y = np.zeros(len(x))
     
@@ -679,7 +698,7 @@ def deltaSigma(x, n_word=5, n_frac=0, type="mid-rise"):
 def convert_1b(x, LUT):
     y = []
     for i in range(len(x)):
-        pos = x[i] + 8
+        pos = int(x[i] + 8)
         tmp = [-1 if val==0 else 1 for val in LUT[-1-pos]]
         y = np.concatenate((y, tmp))
     return np.array(y)

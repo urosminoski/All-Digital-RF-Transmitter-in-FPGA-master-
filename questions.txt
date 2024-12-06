@@ -6,3 +6,6 @@ Da li je okej pretpostaviti da lfilter verno predstavlja ta usrednjavanja?
 
 U jupyter svesci dobijam neocekivane rezultate. Kada napravim kompleksan signal i kada pokusam da ga transliram ulevo, tako da bude "simterican" u odnosu na frekvenciju 0 Hz,
 dobijam jako ruznu karakteristiku. Signal mnozim exp(1j * 2 * pi * n * (-f_max/2)), kako bi isao od -f_max/2 do f_max/2.
+
+Nije mi jasno kako mozemo da zakasnimo Q granu (tj. da uranimo Q granu) za T/4. Zar to nije ekvivaletno kao da je uopste na pocetku nismo ni zakasnili za T/4.
+Onda bi bila identicna kao i I grana.
