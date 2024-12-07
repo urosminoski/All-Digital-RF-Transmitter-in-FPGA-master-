@@ -18,10 +18,10 @@ CPPFLAGS = -g -Wall -Wextra -O0 -I$(INC_DIR) -I$(LIB_DIR) -Wno-deprecated-copy
 all: $(BIN_DIR)/$(BIN_FILE)
 
 $(BIN_DIR)/$(BIN_FILE): $(OBJS) | $(BIN_DIR)
-	$(CPP) $(CPPFLAGS) -o $@ $^
+	$(CPP) $(CPPFLAGS) -o $@ $^ -g
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp Makefile | $(OBJ_DIR)
-	$(CPP) $(CPPFLAGS) -c $< -o $@
+	$(CPP) $(CPPFLAGS) -c $< -o $@ -g
 
 $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
