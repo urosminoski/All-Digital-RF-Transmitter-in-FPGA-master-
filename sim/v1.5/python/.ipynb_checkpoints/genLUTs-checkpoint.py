@@ -99,8 +99,12 @@ LUT5 = [
 ]
 
 LUTs = [LUT1, LUT2, LUT3, LUT4, LUT5]
-fileNames = ['LUT1.json', 'LUT2.json', 'LUT3.json', 'LUT4.json', 'LUT5.json']
+fileNames = ['../data/LUT1.json', '../data/LUT2.json', '../data/LUT3.json', '../data/LUT4.json', '../data/LUT5.json']
 
 for i, name in enumerate(fileNames):
     with open(name, 'w') as f:
         json.dump(LUTs[i], f)
+
+
+
+

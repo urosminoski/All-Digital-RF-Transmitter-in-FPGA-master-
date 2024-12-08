@@ -104,6 +104,9 @@ LUTs = [LUT1, LUT2, LUT3, LUT4, LUT5]
 fileNames = ['../data/LUT1.json', '../data/LUT2.json', '../data/LUT3.json', '../data/LUT4.json', '../data/LUT5.json']
 
 for i, name in enumerate(fileNames):
-    LUT = [[-1 if x == 0 else x for x in row] for row in LUTs[i]]
     with open(name, 'w') as f:
-        json.dump(LUT, f)
+        json.dump(LUTs[i], f)
+
+
+
+

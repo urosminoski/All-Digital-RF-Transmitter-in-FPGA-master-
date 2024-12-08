@@ -9,13 +9,15 @@
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 
+#define BITS_NUM    ( 4 )
+
 /**
  * @brief Reads a LUT from a JSON file.
  *
  * @param fileName The path to the JSON file.
- * @return A 2D vector of integers representing the LUT.
+ * @param lut The 2D vector to store the LUT data.
  */
-std::vector<std::vector<int>> readLUT(const std::string& fileName);
+void readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
 
 /**
  * @brief Reads data from a file into a vector.
@@ -33,7 +35,7 @@ bool readFromFile(const std::string& fileName, std::vector<double>& data);
  * @param data The vector containing data to write.
  * @return True if the file is written successfully, otherwise false.
  */
-bool writeToFile(const std::string& fileName, const std::vector<double>& data);
+bool writeToFile(const std::string& fileName, const std::vector<int>& data);
 
 /**
  * @brief Processes a vector of double values using a delta-sigma modulation algorithm.
@@ -41,13 +43,17 @@ bool writeToFile(const std::string& fileName, const std::vector<double>& data);
  * @param x The input vector of doubles to be processed.
  * @param y The output vector to store the processed values.
  */
-void deltaSigma(std::vector<double>& x, std::vector<double>& y);
+void deltaSigma(std::vector<double>& x, std::vector<int>& y);
 
 /**
- * @brief Converts parallel data to serial data.
+ * @brief Converts parallel data to serial data using a LUT.
  *
- * Placeholder for the actual implementation.
+ * @param inputSignal The input vector of signal values.
+ * @param LUT The lookup table as a 2D vector.
+ * @param outputSignal The output vector to store the converted serial data.
  */
-void parallelToSerialConverter();
+void parallelToSerialConverter(const std::vector<int>& inputSignal,
+                               const std::vector<std::vector<int>>& LUT,
+                               std::vector<int>& outputSignal);
 
 #endif // FUNCS_HPP

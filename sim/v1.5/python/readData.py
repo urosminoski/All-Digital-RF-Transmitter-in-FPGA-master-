@@ -48,3 +48,28 @@ plt.grid()
 #plt.show();
 
 plt.savefig("./figs/sinData_deltaSigma.png");
+
+
+y_serial = np.loadtxt('./data/sinData_serialData.txt')
+
+w = signal.hann(len(y_serial), False)
+y_serial_win = y_serial*w
+
+N = len(y_serial)
+
+YsdB = 20*np.log10(np.abs(np.fft.fftshift(np.fft.fft(y_serial_win))))[N//2:]
+
+freqs = (np.arange(N) / N - 0.5)[N//2:]
+# Plotting
+plt.figure(figsize=(14, 6))
+
+# First subplot for XdB
+# plt.subplot(2, 1, 1)  # 2 rows, 1 column, subplot 1
+plt.plot(freqs, YsdB-np.max(YsdB), label='XdB', color='blue')
+# plt.plot([0.5/OSR, 0.5/OSR], [np.min(XdB-np.max(XdB)), np.max(XdB-np.max(XdB))], '--k', linewidth=1)
+plt.title(r'Spectrum of sin wave', fontsize=16)
+plt.xlabel(r'$f \, / \, f_s$', fontsize=14)
+plt.ylabel(r'$|X|_{dB}$', fontsize=14)
+plt.grid()
+
+plt.savefig("./figs/sinData_serialData.png");

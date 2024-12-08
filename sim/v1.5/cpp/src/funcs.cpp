@@ -3,8 +3,10 @@
 using json = nlohmann::json;
 
 // Function to read LUT from a JSON file
-std::vector<std::vector<int>> readLUT(const std::string& fileName)
+void readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
 {
+    LUT.clear();  // Make sure that vector is celared
+
     std::ifstream file(fileName);
 
     // Check if file can be opened
@@ -18,7 +20,7 @@ std::vector<std::vector<int>> readLUT(const std::string& fileName)
     file.close();
 
     // Parse JSON into a 2D vector
-    return j.get<std::vector<std::vector<int>>>();
+    LUT = j.get<std::vector<std::vector<int>>>();
 }
 
 // Function to read data from a file into a vector
@@ -52,7 +54,7 @@ bool readFromFile(const std::string& fileName, std::vector<double>& data)
 }
 
 // Function to write data from a vector to a file
-bool writeToFile(const std::string& fileName, const std::vector<double>& data)
+bool writeToFile(const std::string& fileName, const std::vector<int>& data)
 {
     if (data.empty())
     {
@@ -78,7 +80,7 @@ bool writeToFile(const std::string& fileName, const std::vector<double>& data)
 }
 
 // Delta-Sigma modulation algorithm
-void deltaSigma(std::vector<double>& x, std::vector<double>& y)
+void deltaSigma(std::vector<double>& x, std::vector<int>& y)
 {
     y.clear(); // Ensure output vector is empty
 
@@ -136,8 +138,43 @@ void deltaSigma(std::vector<double>& x, std::vector<double>& y)
 }
 
 // Parallel-to-Serial Converter (placeholder)
-void parallelToSerialConverter()
+void parallelToSerialConverter(const std::vector<int>& inputSignal,
+                               const std::vector<std::vector<int>>& LUT,
+                               std::vector<int>& outputSignal)
 {
-    // Implementation of parallel-to-serial conversion
-    // Add your logic here
+    outputSignal.clear();   // Ensure output vector is empty
+
+    // Check if all rows in LUT have the same size
+    size_t columnSize = LUT[0].size();
+    for (const auto& row : LUT)
+    {
+        if (row.size() != columnSize)
+        {
+            throw std::invalid_argument("All rows in the LUT must have the same size!");
+        }
+    }
+
+    int correction = 1 << (BITS_NUM - 1);
+
+    // Process each input signal value
+    for (const auto& value : inputSignal)
+    {
+        // Compute LUT row index
+        int pos = value + correction;
+
+        // Validate index bounds
+        if (pos < 0 || static_cast<size_t>(pos) >= LUT.size())
+        {
+            throw std::out_of_range("Input value out of LUT range!");
+        }
+
+        // Get corresponding row from the LUT
+        const auto& lutRow = LUT[LUT.size() - 1 - pos];
+
+        // Append the row values to the output signal
+        outputSignal.insert(outputSignal.end(), lutRow.begin(), lutRow.end());
+    }
+
+
 }
+
