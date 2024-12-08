@@ -4,14 +4,15 @@ SRC_FILE = main
 BIN_DIR = bin
 SRC_DIR = src
 INC_DIR = inc
-LIB_DIR = /home/urosminoski/Desktop/FAKS/libs/ac_types/include/
+LIB_DIR1 = /home/urosminoski/Desktop/FAKS/libs/ac_types/include/
+LIB_DIR2 = /home/urosminoski/Desktop/FAKS/libs/json/include/
 OBJ_DIR = obj
 
 SRCS = $(wildcard $(SRC_DIR)/*.cpp)
 OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 CPP = g++
-CPPFLAGS = -g -Wall -Wextra -O0 -I$(INC_DIR) -I$(LIB_DIR) -Wno-deprecated-copy
+CPPFLAGS = -g -Wall -Wextra -O0 -I$(INC_DIR) -I$(LIB_DIR1) -I$(LIB_DIR2) -Wno-deprecated-copy
 
 .PHONY: all clean run
 
@@ -30,4 +31,4 @@ run: $(BIN_DIR)/$(BIN_FILE)
 	./$(BIN_DIR)/$(BIN_FILE)
 
 clean:
-	-rm -r $(OBJ_DIR) $(BIN_DIR)
+	-rm -rf $(OBJ_DIR)/*

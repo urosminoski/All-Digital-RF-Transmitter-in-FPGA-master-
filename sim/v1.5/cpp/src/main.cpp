@@ -1,8 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "file_io.hpp"
-#include "deltaSigma.hpp"
+#include "funcs.hpp"
 
 int main(int argc, char* argv[])
 {
