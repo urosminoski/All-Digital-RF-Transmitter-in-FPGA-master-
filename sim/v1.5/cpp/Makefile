@@ -31,4 +31,4 @@ run: $(BIN_DIR)/$(BIN_FILE)
 	./$(BIN_DIR)/$(BIN_FILE)
 
 clean:
-	-rm -rf $(OBJ_DIR)/*
+	-rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*

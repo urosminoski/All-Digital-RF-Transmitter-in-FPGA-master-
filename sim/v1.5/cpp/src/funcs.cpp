@@ -24,7 +24,9 @@ void readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
 }
 
 // Function to read data from a file into a vector
-bool readFromFile(const std::string& fileName, std::vector<double>& data)
+bool readFromFile(const std::string& fileName, 
+                  std::vector<double>& data, 
+                  std::map<std::string, double>& metadata)
 {
     std::ifstream inputFile(fileName);
 
@@ -34,12 +36,67 @@ bool readFromFile(const std::string& fileName, std::vector<double>& data)
         return false;
     }
 
-    double value;
-    data.clear();
+    data.clear();       // Clear the vector to ensure no residual data
+    metadata.clear();   // Clear metadata map
+    std::string line;
 
+    // Read metadata
+    while (std::getline(inputFile, line))
+    {
+        if (line.empty())
+            continue;
+
+        if (line[0] == '#') // Check if metadata line
+        {
+            std::string key, value_str;
+
+            // Remove '#' and split on '='
+            size_t delimiter_pos = line.find('=');
+            if (delimiter_pos != std::string::npos)
+            {
+                key = line.substr(1, delimiter_pos - 1); // Extract key (skip '#')
+                value_str = line.substr(delimiter_pos + 1); // Extract value
+
+                // Trim spaces around key and value (optional, if needed)
+                key.erase(0, key.find_first_not_of(" \t"));
+                key.erase(key.find_last_not_of(" \t") + 1);
+                value_str.erase(0, value_str.find_first_not_of(" \t"));
+                value_str.erase(value_str.find_last_not_of(" \t") + 1);
+
+                try
+                {
+                    metadata[key] = std::stod(value_str); // Convert value to double
+                }
+                catch (const std::invalid_argument&)
+                {
+                    std::cerr << "Invalid value in metadata: " << value_str << std::endl;
+                }
+            }
+            else
+            {
+                std::cerr << "Malformed metadata line: " << line << std::endl;
+            }
+        }
+        else
+        {
+            // Rewind to process the first non-metadata line as numeric data
+            inputFile.seekg(-static_cast<int>(line.size() + 1), std::ios_base::cur);
+            break;
+        }
+    }
+
+    // Read numeric data
+    double value;
     while (inputFile >> value)
     {
         data.push_back(value);
+    }
+
+    // Check for errors other than EOF
+    if (!inputFile.eof())
+    {
+        std::cerr << "Error: Failed to parse data from file: " << fileName << std::endl;
+        return false;
     }
 
     inputFile.close();
@@ -53,8 +110,11 @@ bool readFromFile(const std::string& fileName, std::vector<double>& data)
     return true;
 }
 
+
 // Function to write data from a vector to a file
-bool writeToFile(const std::string& fileName, const std::vector<int>& data)
+bool writeToFile(const std::string& fileName, 
+                 const std::vector<int>& data,
+                 const std::map<std::string, double>& metadata)
 {
     if (data.empty())
     {
@@ -70,6 +130,14 @@ bool writeToFile(const std::string& fileName, const std::vector<int>& data)
         return false;
     }
 
+    // Write metadata
+    for (const auto& [key, value] : metadata)
+    {
+        outputFile << "# " << key << "=" << value << '\n';
+    }
+    outputFile << "# Data below\n";
+
+    // Write data
     for (const auto& value : data)
     {
         outputFile << value << '\n';

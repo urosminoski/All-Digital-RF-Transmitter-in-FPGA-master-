@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 #include <string>
+#include <map>
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 
@@ -26,7 +27,9 @@ void readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
  * @param data The vector to store the read data.
  * @return True if the file is read successfully, otherwise false.
  */
-bool readFromFile(const std::string& fileName, std::vector<double>& data);
+bool readFromFile(const std::string& fileName, 
+                  std::vector<double>& data,
+                  std::map<std::string, double>& metadata);
 
 /**
  * @brief Writes data from a vector to a file.
@@ -35,7 +38,9 @@ bool readFromFile(const std::string& fileName, std::vector<double>& data);
  * @param data The vector containing data to write.
  * @return True if the file is written successfully, otherwise false.
  */
-bool writeToFile(const std::string& fileName, const std::vector<int>& data);
+bool writeToFile(const std::string& fileName, 
+                 const std::vector<int>& data,
+                 const std::map<std::string, double>& metadata);
 
 /**
  * @brief Processes a vector of double values using a delta-sigma modulation algorithm.

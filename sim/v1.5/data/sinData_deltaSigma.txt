@@ -1,3 +1,6 @@
+# OSR=8
+# fs=10000
+# Data below
 0
 1
 2

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 #include "funcs.hpp"
 
 int main(int argc, char* argv[])
@@ -19,9 +20,10 @@ int main(int argc, char* argv[])
 
     std::vector<double> x;
     std::vector<int> y;
+    std::map<std::string, double> metadata;
 
     // Read data form file
-    if (!readFromFile(inputFileName_sinData, x))
+    if (!readFromFile(inputFileName_sinData, x, metadata))
     {
         return 1;   // Exit if reading fails
     }
@@ -30,7 +32,7 @@ int main(int argc, char* argv[])
     deltaSigma(x, y);
 
     // Write to the file
-    if (!writeToFile(outputFileName_deltaSigma, y))
+    if (!writeToFile(outputFileName_deltaSigma, y, metadata))
     {
         return 1; // Exit if writing fails
     }
@@ -39,12 +41,42 @@ int main(int argc, char* argv[])
     std::vector<std::vector<int>> LUT;
     readLUT(inputFileName_LUTdata, LUT);
 
+    // Extract the file name (after the last slash)
+    size_t lastSlashPos = inputFileName_LUTdata.find_last_of("/\\");
+    std::string fileName = inputFileName_LUTdata.substr(lastSlashPos + 1);
+    // Extract the LUT name (before the last dot)
+    size_t dotPos = fileName.find_last_of('.');
+    std::string lutName = fileName.substr(0, dotPos);
+    // Extract the number from the LUT name
+    std::string number;
+    for (char c : lutName) {
+        if (std::isdigit(c)) {
+            number += c;
+        }
+    }
+    // Convert the extracted number to a double and store it in metadata
+    if (!number.empty()) {
+        metadata["lut_name"] = std::stod(number); // Correct conversion
+    } else {
+        std::cerr << "Warning: No numeric part found in LUT name." << std::endl;
+    }
+
+    // Add LUT size to metadata
+    if (!LUT.empty())
+    {
+        metadata["lut_size"] = static_cast<double>(LUT[0].size());
+    }
+    else
+    {
+        std::cerr << "Warning: LUT is empty. Cannot add lut_size to metadata." << std::endl;
+    }
+
     // Perfomr paralel to serial convertion
     std::vector<int> y_serial;
     parallelToSerialConverter(y, LUT, y_serial);
 
     // Write to the file
-    if (!writeToFile(outputFileName_serialData, y_serial))
+    if (!writeToFile(outputFileName_serialData, y_serial, metadata))
     {
         return 1; // Exit if writing fails
     }

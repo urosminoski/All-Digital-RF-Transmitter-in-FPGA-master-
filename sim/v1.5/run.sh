@@ -10,7 +10,7 @@ FIGS_DIR="./figs"  # Directory containing PNG figures
 
 # Default input and output files
 INPUT_FILE_1="./data/sinData.txt"
-INPUT_FILE_2="./data/LUT3.json"
+INPUT_FILE_2="./data/LUT1.json"
 OUTPUT_FILE_1="./data/sinData_deltaSigma.txt"
 OUTPUT_FILE_2="./data/sinData_serialData.txt"
 
@@ -27,6 +27,14 @@ usage() {
 
 # Compile the C++ program
 compile_cpp() {
+    echo "Cleaning previous build files..."
+    make -C $CPP_DIR clean
+    if [[ $? -ne 0 ]]; then
+        echo "Cleaning failed."
+        exit 1
+    fi
+    echo "Clean successful."
+
     echo "Compiling the C++ program..."
     make -C $CPP_DIR
     if [[ $? -ne 0 ]]; then
