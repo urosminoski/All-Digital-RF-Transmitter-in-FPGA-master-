@@ -30,7 +30,9 @@ def generate_signal(N, M, OSR, f, fs):
     - A numpy array containing the generated signal
     """
     F = f / fs
-    return 2**(M-1) * np.sin(2 * np.pi * F * np.arange(N) / OSR)
+    # x = 2**(M-1) * np.sin(2 * np.pi * F * np.arange(N) / OSR)
+    x = 2**(M-1) * np.exp(1j * 2 * np.pi * F * np.arange(N) / OSR)
+    return x
 
 
 def write_signal_to_file(filename, signal, OSR, fs):

@@ -37,7 +37,7 @@ def read_file_with_header(file_path):
                         metadata[key] = value
             else:
                 try:
-                    data.append(float(line.strip()))  # Assuming float values in the data
+                    data.append(complex(line.strip()))  # Assuming float values in the data
                 except ValueError:
                     pass  # Ignore non-numeric lines
 
@@ -84,16 +84,16 @@ print(f"LUT size: {lut_size}")
 print(f"LUT name: {lut_name}")
 
 # Process and plot data
-w = signal.hann(len(x), False)
+w = signal.barthann(len(x), False)
 x_win = x * w
 y_win = y * w
 
 N = len(x)
 
-XdB = 20 * np.log10(np.abs(np.fft.fftshift(np.fft.fft(x_win))))[N // 2:]
-YdB = 20 * np.log10(np.abs(np.fft.fftshift(np.fft.fft(y_win))))[N // 2:]
+XdB = 20 * np.log10(np.abs(np.fft.fftshift(np.fft.fft(x_win))))
+YdB = 20 * np.log10(np.abs(np.fft.fftshift(np.fft.fft(y_win))))
 
-freqs = (np.arange(N) / N - 0.5)[N // 2:]
+freqs = (np.arange(N) / N - 0.5)
 
 # Plotting
 plt.figure(figsize=(14, 12))
@@ -101,7 +101,8 @@ plt.figure(figsize=(14, 12))
 # First subplot for XdB
 plt.subplot(2, 1, 1)  # 2 rows, 1 column, subplot 1
 plt.plot(freqs, XdB - np.max(XdB), label='XdB', color='blue')
-plt.plot([0.5 / OSR, 0.5 / OSR], [np.min(XdB - np.max(XdB)), np.max(XdB - np.max(XdB))], '--k', linewidth=1)
+plt.plot([0.5 / OSR, 0.5 / OSR], [np.min(XdB - np.max(XdB)), np.max(XdB - np.max(XdB))], '--k', linewidth=1.5)
+plt.plot([-0.5 / OSR, -0.5 / OSR], [np.min(XdB - np.max(XdB)), np.max(XdB - np.max(XdB))], '--k', linewidth=1.5)
 plt.title(r'Spectrum of sin wave', fontsize=16)
 plt.xlabel(r'$f \, / \, f_s$', fontsize=14)
 plt.ylabel(r'$|X|_{dB}$', fontsize=14)
@@ -110,7 +111,8 @@ plt.grid()
 # Second subplot for YdB
 plt.subplot(2, 1, 2)  # 2 rows, 1 column, subplot 2
 plt.plot(freqs, YdB - np.max(YdB), label='YdB', color='red')
-plt.plot([0.5 / OSR, 0.5 / OSR], [np.min(YdB - np.max(YdB)), np.max(YdB - np.max(YdB))], '--k', linewidth=1)
+plt.plot([0.5 / OSR, 0.5 / OSR], [np.min(YdB - np.max(YdB)), np.max(YdB - np.max(YdB))], '--k', linewidth=1.5)
+plt.plot([-0.5 / OSR, -0.5 / OSR], [np.min(YdB - np.max(YdB)), np.max(YdB - np.max(YdB))], '--k', linewidth=1.5)
 plt.title(r'Spectrum of modulated sin wave', fontsize=16)
 plt.xlabel(r'$f \, / \, f_s$', fontsize=14)
 plt.ylabel(r'$|Y|_{dB}$', fontsize=14)
@@ -121,16 +123,17 @@ plt.savefig(deltaSigma_data_fig)
 print(f"Figure saved as {deltaSigma_data_fig}")
 
 # Process y_serial
-w = signal.hann(len(y_serial), False)
+w = signal.barthann(len(y_serial), False)
 y_serial_win = y_serial * w
 
-N = len(y_serial_win) // lut_size
+N = len(y_serial_win) #// lut_size
 epsilon = 1e-12
 
-freqs = (np.arange(N) / N)[:N//2]
+M = N // lut_size
+freqs = (np.arange(M) / M - 0.5)
 
-y_fft = np.fft.fft(y_serial_win)
-YsdB = 20 * np.log10(np.abs(y_fft[:N//2]) + epsilon)  # Adding epsilon to avoid log of zero
+y_fft = np.fft.fftshift(np.fft.fft(y_serial_win))
+YsdB = 20 * np.log10(np.abs(y_fft)[int(N/2*(1-1/lut_size)):int(N/2*(1+1/lut_size))]+ epsilon)  # Adding epsilon to avoid log of zero
 YsdB -= np.max(YsdB)
 
 # Plotting
@@ -138,6 +141,8 @@ plt.figure(figsize=(14, 6))
 
 # Plot YsdB
 plt.plot(freqs, YsdB - np.max(YsdB), label='YsdB', color='blue')
+plt.plot([0.5 / OSR, 0.5 / OSR], [np.min(YsdB - np.max(YsdB)), np.max(YsdB - np.max(YsdB))], '--k', linewidth=1.5)
+plt.plot([-0.5 / OSR, -0.5 / OSR], [np.min(YsdB - np.max(YsdB)), np.max(YsdB - np.max(YsdB))], '--k', linewidth=1.5)
 plt.title(r'Spectrum of serialized data', fontsize=16)
 plt.xlabel(r'$f \, / \, f_s$', fontsize=14)
 plt.ylabel(r'$|Y|_{dB}$', fontsize=14)

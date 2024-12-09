@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <complex>
+#include <regex>
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 
@@ -27,8 +29,8 @@ void readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
  * @param data The vector to store the read data.
  * @return True if the file is read successfully, otherwise false.
  */
-bool readFromFile(const std::string& fileName, 
-                  std::vector<double>& data,
+bool readFromFile(const std::string& fileName,
+                  std::vector<std::complex<double>>& data,
                   std::map<std::string, double>& metadata);
 
 /**
@@ -39,8 +41,11 @@ bool readFromFile(const std::string& fileName,
  * @return True if the file is written successfully, otherwise false.
  */
 bool writeToFile(const std::string& fileName, 
-                 const std::vector<int>& data,
+                 const std::vector<std::complex<int>>& data,
                  const std::map<std::string, double>& metadata);
+
+void deltaSigmaComplex(const std::vector<std::complex<double>>& input, 
+                       std::vector<std::complex<int>>& output);
 
 /**
  * @brief Processes a vector of double values using a delta-sigma modulation algorithm.
@@ -49,6 +54,10 @@ bool writeToFile(const std::string& fileName,
  * @param y The output vector to store the processed values.
  */
 void deltaSigma(std::vector<double>& x, std::vector<int>& y);
+
+void parallelToSerialConverterComplex(const std::vector<std::complex<int>>& inputSignal,
+                                      const std::vector<std::vector<int>>& LUT,
+                                      std::vector<std::complex<int>>& outputSignal);
 
 /**
  * @brief Converts parallel data to serial data using a LUT.

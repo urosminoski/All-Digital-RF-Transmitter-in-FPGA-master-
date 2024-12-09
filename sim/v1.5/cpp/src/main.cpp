@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
     std::string inputFileName_LUTdata = argv[3];
     std::string outputFileName_serialData = argv[4];
 
-    std::vector<double> x;
-    std::vector<int> y;
+    std::vector<std::complex<double>> x;
+    std::vector<std::complex<int>> y;
     std::map<std::string, double> metadata;
 
     // Read data form file
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     }
 
     // Perform delta-sigma modulation
-    deltaSigma(x, y);
+    deltaSigmaComplex(x, y);
 
     // Write to the file
     if (!writeToFile(outputFileName_deltaSigma, y, metadata))
@@ -72,8 +72,8 @@ int main(int argc, char* argv[])
     }
 
     // Perfomr paralel to serial convertion
-    std::vector<int> y_serial;
-    parallelToSerialConverter(y, LUT, y_serial);
+    std::vector<std::complex<int>> y_serial;
+    parallelToSerialConverterComplex(y, LUT, y_serial);
 
     // Write to the file
     if (!writeToFile(outputFileName_serialData, y_serial, metadata))
