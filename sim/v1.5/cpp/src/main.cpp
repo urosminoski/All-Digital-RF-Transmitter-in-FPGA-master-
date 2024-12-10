@@ -2,14 +2,20 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <complex>
 #include "funcs.hpp"
 
-int main(int argc, char* argv[])
-{
-    // Check if file name is passed as argument
-    if (argc != 5)
-    {
-        std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
+std::string extractNumberFromFileName(const std::string& fileName);
+std::string modifyFileName(const std::string& fileName, const std::string& suffix);
+void logWarning(const std::string& message);
+bool processFiles(const std::string& inputFileName_sinData,
+                  const std::string& outputFileName_deltaSigma,
+                  const std::string& inputFileName_LUTdata,
+                  std::string& outputFileName_serialData);
+
+int main(int argc, char* argv[]) {
+    if (argc != 5) {
+        std::cerr << "Usage: " << argv[0] << " <input_file> <output_deltaSigma_file> <input_LUT_file> <output_serial_file>" << std::endl;
         return 1;
     }
 
@@ -18,68 +24,99 @@ int main(int argc, char* argv[])
     std::string inputFileName_LUTdata = argv[3];
     std::string outputFileName_serialData = argv[4];
 
-    std::vector<std::complex<double>> x;
-    std::vector<std::complex<int>> y;
-    std::map<std::string, double> metadata;
-
-    // Read data form file
-    if (!readFromFile(inputFileName_sinData, x, metadata))
-    {
-        return 1;   // Exit if reading fails
+    if (!processFiles(inputFileName_sinData, outputFileName_deltaSigma, inputFileName_LUTdata, outputFileName_serialData)) {
+        return 1; // Exit with failure
     }
 
-    // Perform delta-sigma modulation
-    deltaSigmaComplex(x, y);
+    std::cout << "Processing completed successfully!" << std::endl;
+    return 0;
+}
 
-    // Write to the file
-    if (!writeToFile(outputFileName_deltaSigma, y, metadata))
-    {
-        return 1; // Exit if writing fails
-    }
-
-    // Read LUT
-    std::vector<std::vector<int>> LUT;
-    readLUT(inputFileName_LUTdata, LUT);
-
-    // Extract the file name (after the last slash)
-    size_t lastSlashPos = inputFileName_LUTdata.find_last_of("/\\");
-    std::string fileName = inputFileName_LUTdata.substr(lastSlashPos + 1);
-    // Extract the LUT name (before the last dot)
-    size_t dotPos = fileName.find_last_of('.');
-    std::string lutName = fileName.substr(0, dotPos);
-    // Extract the number from the LUT name
+// Helper function to extract a number from a file name
+std::string extractNumberFromFileName(const std::string& fileName) {
     std::string number;
-    for (char c : lutName) {
+    for (char c : fileName) {
         if (std::isdigit(c)) {
             number += c;
         }
     }
-    // Convert the extracted number to a double and store it in metadata
+    return number;
+}
+
+// Helper function to modify a file name
+std::string modifyFileName(const std::string& fileName, const std::string& suffix) {
+    size_t dotPos = fileName.find_last_of('.');
+    if (dotPos != std::string::npos) {
+        return fileName.substr(0, dotPos) + suffix + fileName.substr(dotPos);
+    }
+    return fileName + suffix;
+}
+
+// Helper function to log warnings
+void logWarning(const std::string& message) {
+    std::cerr << "Warning: " << message << std::endl;
+}
+
+// Main processing function
+bool processFiles(const std::string& inputFileName_sinData,
+                  const std::string& outputFileName_deltaSigma,
+                  const std::string& inputFileName_LUTdata,
+                  std::string& outputFileName_serialData) {
+    std::vector<std::complex<double>> x;
+    std::vector<std::complex<int>> y;
+    std::map<std::string, double> metadata;
+
+    // Step 1: Read data from input file
+    if (!readFromFile(inputFileName_sinData, x, metadata)) {
+        logWarning("Failed to read sinData file.");
+        return false;
+    }
+
+    // Step 2: Perform delta-sigma modulation
+    deltaSigmaComplex(x, y);
+
+    // Step 3: Write delta-sigma output to file
+    if (!writeToFile(outputFileName_deltaSigma, y, metadata)) {
+        logWarning("Failed to write deltaSigma file.");
+        return false;
+    }
+
+    // Step 4: Read LUT data
+    std::vector<std::vector<int>> LUT;
+    if (!readLUT(inputFileName_LUTdata, LUT)) {
+        logWarning("Failed to read LUT file.");
+        return false;
+    }
+
+    // Step 5: Extract number from LUT file name and add metadata
+    size_t lastSlashPos = inputFileName_LUTdata.find_last_of("/\\");
+    std::string fileName = inputFileName_LUTdata.substr(lastSlashPos + 1);
+    std::string lutName = fileName.substr(0, fileName.find_last_of('.'));
+    std::string number = extractNumberFromFileName(lutName);
+
     if (!number.empty()) {
-        metadata["lut_name"] = std::stod(number); // Correct conversion
+        metadata["lut_name"] = std::stod(number);
+        // outputFileName_serialData = modifyFileName(outputFileName_serialData, "_LUT" + number);
     } else {
-        std::cerr << "Warning: No numeric part found in LUT name." << std::endl;
+        logWarning("No numeric part found in LUT name. File name will not be modified.");
     }
 
-    // Add LUT size to metadata
-    if (!LUT.empty())
-    {
+    // Step 6: Add LUT size to metadata
+    if (!LUT.empty()) {
         metadata["lut_size"] = static_cast<double>(LUT[0].size());
-    }
-    else
-    {
-        std::cerr << "Warning: LUT is empty. Cannot add lut_size to metadata." << std::endl;
+    } else {
+        logWarning("LUT is empty. Cannot add lut_size to metadata.");
     }
 
-    // Perfomr paralel to serial convertion
+    // Step 7: Perform parallel-to-serial conversion
     std::vector<std::complex<int>> y_serial;
     parallelToSerialConverterComplex(y, LUT, y_serial);
 
-    // Write to the file
-    if (!writeToFile(outputFileName_serialData, y_serial, metadata))
-    {
-        return 1; // Exit if writing fails
+    // Step 8: Write serial data to file
+    if (!writeToFile(outputFileName_serialData, y_serial, metadata)) {
+        logWarning("Failed to write serial data file.");
+        return false;
     }
 
-    return 0;
+    return true;
 }

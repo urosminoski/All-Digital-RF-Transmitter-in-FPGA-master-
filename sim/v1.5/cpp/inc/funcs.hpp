@@ -20,7 +20,7 @@
  * @param fileName The path to the JSON file.
  * @param lut The 2D vector to store the LUT data.
  */
-void readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
 
 /**
  * @brief Reads data from a file into a vector.

@@ -3,7 +3,7 @@
 using json = nlohmann::json;
 
 // Function to read LUT from a JSON file
-void readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
 {
     LUT.clear();  // Make sure that vector is celared
 
@@ -13,6 +13,7 @@ void readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
     if (!file.is_open())
     {
         throw std::runtime_error("Could not open file: " + fileName);
+        return false;
     }
 
     json j;
@@ -21,6 +22,7 @@ void readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
 
     // Parse JSON into a 2D vector
     LUT = j.get<std::vector<std::vector<int>>>();
+    return true;
 }
 
 
