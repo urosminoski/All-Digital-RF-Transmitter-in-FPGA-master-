@@ -5,25 +5,34 @@
 
 // Function to compare two files line by line
 bool compareFiles(const std::string& file1, const std::string& file2) {
-    std::ifstream in1(file1);
-    std::ifstream in2(file2);
+    std::ifstream in1(file1); // Open the first file for reading
+    std::ifstream in2(file2); // Open the second file for reading
 
+    // Check if both files were successfully opened
     if (!in1.is_open() || !in2.is_open()) {
         std::cerr << "Error: Could not open files for comparison: "
                   << file1 << " or " << file2 << std::endl;
-        return false;
+        return false; // Return false if either file could not be opened
     }
 
     std::string line1, line2;
+
+    // Compare files line by line
     while (std::getline(in1, line1) && std::getline(in2, line2)) {
         if (line1 != line2) {
-            return false; // Files differ
+            return false; // Files differ if any pair of lines is not equal
         }
     }
+    // Read one more line from the second file to ensure it also reaches EOF.
+    // Without this step, if both files are the same size, the first file would
+    // reach EOF first, exiting the loop before the second file gets a chance
+    // to advance to its EOF.
+    std::getline(in2, line2);
 
-    // Check if both files reached EOF
+    // Check if both files have reached EOF
     return in1.eof() && in2.eof();
 }
+
 
 // Main test function
 int main() {
@@ -71,11 +80,11 @@ int main() {
     // Step 4: Compare dataReal.txt with dataReal_tmp.txt
     bool realTestResult = compareFiles(dataReal, dataRealTmp);
 
-    std::cout << complexTestResult << " " << realTestResult << ::std::endl;
+    // std::cout << complexTestResult << " " << realTestResult << ::std::endl;
 
     // Step 5: Delete temporary files
-    // std::remove(dataComplexTmp.c_str());
-    // std::remove(dataRealTmp.c_str());
+    std::remove(dataComplexTmp.c_str());
+    std::remove(dataRealTmp.c_str());
 
     // Step 6: Report results
     if (complexTestResult && realTestResult) {

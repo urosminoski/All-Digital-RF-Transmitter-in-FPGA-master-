@@ -1,90 +1,108 @@
-#ifndef FUNCS_HPP
-#define FUNCS_HPP
+#ifndef PARALLEL_SERIAL_UTILS_HPP
+#define PARALLEL_SERIAL_UTILS_HPP
 
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
 #include <vector>
-#include <string>
-#include <map>
-#include <sstream>
 #include <variant>
+#include <map>
+#include <string>
+#include <fstream>
 #include <complex>
-#include <regex>
+#include <sstream>
+#include <stdexcept>
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 
-#define BITS_NUM    ( 4 )
+using json = nlohmann::json;
 
-typedef ac_fixed<32, 8, true, AC_RND, AC_SAT> fxFIR;
-
+// FIR Coefficients (Global Definition)
 extern std::vector<double> firCoeff;
 
-/**
- * @brief Reads a LUT from a JSON file.
- *
- * @param fileName The path to the JSON file.
- * @param lut The 2D vector to store the LUT data.
- */
-bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
+// Function Declarations
 
 /**
- * @brief Reads data from a file into a vector.
- *
- * @param fileName The path to the file to read.
- * @param data The vector to store the read data.
- * @return True if the file is read successfully, otherwise false.
+ * @brief Reads data and metadata from a file.
+ * 
+ * @param fileName The name of the input file to read.
+ * @param data A variant that stores either:
+ *             - `std::vector<double>`: Real data.
+ *             - `std::vector<std::complex<double>>`: Complex data.
+ * @param metadata A map to store metadata key-value pairs extracted from the file.
+ * 
+ * @return True if the file is successfully read and parsed; false otherwise.
  */
-bool readFromFileComplex(const std::string& fileName,
-                         std::vector<std::complex<double>>& data,
-                         std::map<std::string, double>& metadata);
-
-/**
- * @brief Writes data from a vector to a file.
- *
- * @param fileName The path to the file to write.
- * @param data The vector containing data to write.
- * @return True if the file is written successfully, otherwise false.
- */
-bool writeToFileComplex(const std::string& fileName, 
-                        const std::vector<std::complex<double>>& data,
-                        const std::map<std::string, double>& metadata);
-
 bool readFromFile(const std::string& fileName,
                   std::variant<std::vector<double>, std::vector<std::complex<double>>>& data,
                   std::map<std::string, double>& metadata);
 
+/**
+ * @brief Writes data and metadata to a file.
+ * 
+ * @param fileName The name of the output file to write.
+ * @param data A variant containing either:
+ *             - `std::vector<double>`: Real data.
+ *             - `std::vector<std::complex<double>>`: Complex data.
+ * @param metadata A map containing metadata key-value pairs to be written.
+ * 
+ * @return True if the file is successfully written; false otherwise.
+ */
 bool writeToFile(const std::string& fileName,
                  const std::variant<std::vector<double>, std::vector<std::complex<double>>>& data,
                  const std::map<std::string, double>& metadata);
 
-void firComplex(std::vector<std::complex<double>>& input, std::vector<double>& firCoeff, std::vector<std::complex<double>>& output);
-void fir(std::vector<double>& x, std::vector<double>& firCoeff, std::vector<double>& y);
-
-void deltaSigmaComplex(const std::vector<std::complex<double>>& input, 
-                       std::vector<std::complex<int>>& output);
+/**
+ * @brief Reads a lookup table (LUT) from a JSON file.
+ * 
+ * @param fileName The name of the JSON file to read.
+ * @param LUT A reference to a 2D vector of integers to store the LUT.
+ * 
+ * @return True if the LUT is successfully read; false otherwise.
+ */
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT);
 
 /**
- * @brief Processes a vector of double values using a delta-sigma modulation algorithm.
- *
- * @param x The input vector of doubles to be processed.
- * @param y The output vector to store the processed values.
+ * @brief Applies an FIR filter to real or complex data.
+ * 
+ * @param input A variant containing either:
+ *              - `std::vector<double>`: Real data to be filtered.
+ *              - `std::vector<std::complex<double>>`: Complex data to be filtered.
+ * @param firCoeff A vector of FIR filter coefficients.
+ * @param output A variant that stores the filtered output. It will contain:
+ *               - `std::vector<double>`: Filtered real data.
+ *               - `std::vector<std::complex<double>>`: Filtered complex data.
  */
-void deltaSigma(std::vector<double>& x, std::vector<int>& y);
+void firWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
+                const std::vector<double>& firCoeff,
+                std::variant<std::vector<double>, std::vector<std::complex<double>>>& output);
 
-void parallelToSerialConverterComplex(const std::vector<std::complex<int>>& inputSignal,
+
+/**
+ * @brief Wrapper function for Delta-Sigma modulation.
+ * 
+ * @param input A variant containing either:
+ *              - `std::vector<double>`: Real data to be processed.
+ *              - `std::vector<std::complex<double>>`: Complex data to be processed.
+ * @param output A variant that stores the processed result. It will contain:
+ *               - `std::vector<double>`: Processed real data.
+ *               - `std::vector<std::complex<double>>`: Processed complex data.
+ */
+void deltaSigmaWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
+                       std::variant<std::vector<double>, std::vector<std::complex<double>>>& output);
+
+/**
+ * @brief Wrapper function for parallel-to-serial conversion of real or complex data.
+ * 
+ * @param input A variant containing either:
+ *              - `std::vector<double>`: Real data to be processed.
+ *              - `std::vector<std::complex<double>>`: Complex data to be processed.
+ * @param LUT A lookup table for parallel-to-serial conversion.
+ * @param output A variant that stores the converted output. It will contain:
+ *               - `std::vector<double>`: Converted real data.
+ *               - `std::vector<std::complex<double>>`: Converted complex data.
+ */
+void parallelToSerialConverterWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
                                       const std::vector<std::vector<int>>& LUT,
-                                      std::vector<std::complex<int>>& outputSignal);
+                                      std::variant<std::vector<double>, std::vector<std::complex<double>>>& output);
 
-/**
- * @brief Converts parallel data to serial data using a LUT.
- *
- * @param inputSignal The input vector of signal values.
- * @param LUT The lookup table as a 2D vector.
- * @param outputSignal The output vector to store the converted serial data.
- */
-void parallelToSerialConverter(const std::vector<int>& inputSignal,
-                               const std::vector<std::vector<int>>& LUT,
-                               std::vector<int>& outputSignal);
 
-#endif // FUNCS_HPP
+#endif // PARALLEL_SERIAL_UTILS_HPP

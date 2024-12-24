@@ -40,13 +40,18 @@ std::vector<double> firCoeff = {
 0.005720593689315046
 };
 
-// Helper function to read metadata and rewind the file pointer to the first data line
-// Parameters:
-// - inputFile: an open input file stream
-// - metadata: a map to store key-value pairs from the metadata
-// This function processes all lines starting with '#' as metadata. It stops
-// reading when a non-metadata line is encountered and rewinds the file pointer
-// so that the main function can process the data lines.
+/**
+ * @brief Reads metadata from an input file and rewinds the file pointer to the first data line.
+ * 
+ * @param inputFile An open input file stream.
+ * @param metadata A map to store key-value pairs from the metadata.
+ * 
+ * @details
+ * Processes all lines starting with '#' as metadata. Stops reading when a non-metadata
+ * line is encountered and rewinds the file pointer so that the main function can process the data lines.
+ * 
+ * @return void
+ */
 static void readMetadata(std::ifstream& inputFile, std::map<std::string, double>& metadata) 
 {
     metadata.clear(); // Ensure the metadata map is empty before processing
@@ -58,7 +63,6 @@ static void readMetadata(std::ifstream& inputFile, std::map<std::string, double>
         if (line[0] != '#') 
         {
             // If the line is not metadata, rewind the file pointer
-            // Move back by the size of the current line + 1 (for the newline character)
             inputFile.seekg(-static_cast<int>(line.size()) - 1, std::ios::cur);
             break; // Exit the loop as we've reached the data section
         }
@@ -67,37 +71,36 @@ static void readMetadata(std::ifstream& inputFile, std::map<std::string, double>
         size_t delimiter_pos = line.find('=');
         if (delimiter_pos != std::string::npos) 
         {
-            // Extract the key (skipping the '#') and the value
-            std::string key = line.substr(1, delimiter_pos - 1); // Skip '#'
-            std::string value_str = line.substr(delimiter_pos + 1);
+            std::string key = line.substr(1, delimiter_pos - 1); // Extract key
+            std::string value_str = line.substr(delimiter_pos + 1); // Extract value
             try {
-                // Convert the value to double and store it in the metadata map
-                metadata[key] = std::stod(value_str);
+                metadata[key] = std::stod(value_str); // Convert value to double
             } catch (const std::invalid_argument&) {
-                // Handle cases where the value cannot be converted to a number
                 std::cerr << "Invalid value in metadata: " << value_str << std::endl;
             }
-        } else {
-            // Handle cases where the metadata line is malformed
+        } 
+        else 
+        {
             std::cerr << "Malformed metadata line: " << line << std::endl;
         }
     }
 }
 
-
-// Helper function to detect the format of a data line (real or complex)
-// Parameters:
-// - line: A string containing a single line of data to be analyzed.
-// - isComplex: A reference to a boolean variable that will be set to true if the
-//              line is determined to represent complex data (two values) or false
-//              if the line represents real data (one value).
-// Returns:
-// - true if the line format is valid (either real or complex).
-// - false if the line format is invalid (not one or two values).
-// This function checks the number of values in the line. If the line contains
-// exactly one value, it is treated as real data. If it contains exactly two
-// values, it is treated as complex data. Any other number of values is considered
-// invalid.
+/**
+ * @brief Detects the format of a data line (real or complex).
+ * 
+ * @param line A string containing a single line of data to be analyzed.
+ * @param isComplex A reference to a boolean variable that will be set to true 
+ *                  if the line represents complex data (two values) or false 
+ *                  if it represents real data (one value).
+ * 
+ * @details
+ * Checks the number of numerical values in the line. If the line contains exactly one value, 
+ * it is treated as real data. If it contains exactly two values, it is treated as complex data. 
+ * Any other number of values is considered invalid.
+ * 
+ * @return True if the line format is valid (either real or complex); false otherwise.
+ */
 static bool detectFormat(const std::string& line, bool& isComplex) 
 {
     std::istringstream iss(line);   // Create a string stream to parse the line
@@ -111,34 +114,32 @@ static bool detectFormat(const std::string& line, bool& isComplex)
 
     // Check the number of extracted values to determine the format
     if (values.size() == 2) {
-        // Two values indicate complex data (real and imaginary part)
-        isComplex = true;
+        isComplex = true; // Complex data
     } else if (values.size() == 1) {
-        // One value indicates real data
-        isComplex = false;
+        isComplex = false; // Real data
     } else {
-        // Any other number of values is invalid
         std::cerr << "Error: Invalid data format in line: " << line << std::endl;
-        return false; // Return false to indicate a format error
+        return false;
     }
 
-    return true; // Line format is valid
+    return true;
 }
 
-
-// Helper function to parse a line of data and store it in the appropriate container
-// Parameters:
-// - line: A string containing a single line of data to parse.
-// - isComplex: A boolean indicating whether the line should be treated as complex data (true)
-//              or real data (false).
-// - realData: A vector to store parsed real data (if isComplex is false).
-// - complexData: A vector to store parsed complex data (if isComplex is true).
-// Returns:
-// - true if the line is successfully parsed and stored in the correct container.
-// - false if the line's format does not match the expected format (real or complex).
-// This function extracts numerical values from the line, determines if the data is valid
-// based on the isComplex flag, and stores it in the appropriate vector. If the line format
-// is inconsistent, it logs an error and returns false.
+/**
+ * @brief Parses a line of data and stores it in the appropriate container.
+ * 
+ * @param line A string containing a single line of data to parse.
+ * @param isComplex A boolean indicating whether the line should be treated as complex data (true)
+ *                  or real data (false).
+ * @param realData A vector to store parsed real data (if `isComplex` is false).
+ * @param complexData A vector to store parsed complex data (if `isComplex` is true).
+ * 
+ * @details
+ * Extracts numerical values from the line, determines if the data is valid based on the `isComplex` flag,
+ * and stores it in the appropriate vector. Logs an error if the line format is inconsistent.
+ * 
+ * @return True if the line is successfully parsed; false otherwise.
+ */
 static bool parseDataLine(const std::string& line, bool isComplex,
                    std::vector<double>& realData,
                    std::vector<std::complex<double>>& complexData) 
@@ -155,348 +156,251 @@ static bool parseDataLine(const std::string& line, bool isComplex,
     // Handle complex data
     if (isComplex) {
         if (values.size() == 2) {
-            // Two values are valid for complex data (real and imaginary parts)
             complexData.emplace_back(values[0], values[1]); // Add as a complex number
-            return true; // Parsing succeeded
+            return true;
         }
     } 
     // Handle real data
     else {
         if (values.size() == 1) {
-            // One value is valid for real data
             realData.push_back(values[0]); // Add to real data
-            return true; // Parsing succeeded
+            return true;
         }
     }
 
-    // If the format does not match the expectation, log an error
     std::cerr << "Error: Inconsistent data format in line: " << line << std::endl;
-    return false; // Parsing failed
+    return false;
 }
 
-
-// Function to read data and metadata from a file
-// Parameters:
-// - fileName: The name of the input file to read.
-// - data: A variant that stores either real data (std::vector<double>) or
-//         complex data (std::vector<std::complex<double>>), depending on the file's content.
-// - metadata: A map to store metadata key-value pairs extracted from the file.
-// Returns:
-// - true if the file is successfully read and parsed.
-// - false if there are errors, such as invalid file format or issues with opening the file.
-// This function reads a file containing metadata (lines starting with '#') and
-// data (real or complex). It determines the format of the data based on the first
-// non-metadata line and ensures consistency for the rest of the file.
+/**
+ * @brief Reads data and metadata from a file.
+ * 
+ * @param fileName The name of the input file to read.
+ * @param data A variant that stores either:
+ *             - `std::vector<double>`: Real data.
+ *             - `std::vector<std::complex<double>>`: Complex data.
+ * @param metadata A map to store metadata key-value pairs extracted from the file.
+ * 
+ * @details
+ * Reads a file containing metadata (lines starting with '#') and data (real or complex). 
+ * Determines the format of the data based on the first non-metadata line and ensures consistency 
+ * for the rest of the file.
+ * 
+ * @return True if the file is successfully read and parsed; false otherwise.
+ */
 bool readFromFile(const std::string& fileName,
                   std::variant<std::vector<double>, std::vector<std::complex<double>>>& data,
                   std::map<std::string, double>& metadata) 
 {
-    // Step 1: Open the input file
-    std::ifstream inputFile(fileName); // Create an input file stream
+    std::ifstream inputFile(fileName); // Open the input file
     if (!inputFile.is_open()) {
         std::cerr << "Error: Cannot open file " << fileName << std::endl;
-        return false; // Return false if the file cannot be opened
+        return false;
     }
 
-    metadata.clear(); // Clear any previous metadata
-    bool isComplex = false; // Flag to indicate whether the data is complex
-    bool firstDataLine = true; // Flag to identify the first data line
-    std::vector<double> realData; // Container for real data
-    std::vector<std::complex<double>> complexData; // Container for complex data
-
+    metadata.clear();
+    bool isComplex = false;
+    bool firstDataLine = true;
+    std::vector<double> realData;
+    std::vector<std::complex<double>> complexData;
     std::string line;
 
-    // Step 2: Read metadata
-    // Metadata lines start with '#' and are stored in the metadata map
+    // Read metadata
     readMetadata(inputFile, metadata);
 
-    // Step 3: Read and parse data
+    // Read and parse data
     while (std::getline(inputFile, line)) {
         if (firstDataLine) {
-            // Detect the data format (real or complex) based on the first data line
             if (!detectFormat(line, isComplex)) {
-                return false; // Return false if the format cannot be determined
+                return false;
             }
-            firstDataLine = false; // Only detect format for the first data line
+            firstDataLine = false;
         }
-
-        // Parse the current line based on the detected format
         if (!parseDataLine(line, isComplex, realData, complexData)) {
-            return false; // Return false if the line format is inconsistent
+            return false;
         }
     }
 
-    // Step 4: Assign the parsed data to the variant
-    // Use std::move to transfer ownership of the data container to the variant
+    // Assign parsed data to the variant
     if (isComplex) {
         data = std::move(complexData);
     } else {
         data = std::move(realData);
     }
 
-    // Step 5: Close the input file
     inputFile.close();
-    return true; // Return true if the file is successfully read and parsed
+    return true;
 }
 
-// Function to write data and metadata to a file
-// Parameters:
-// - fileName: The name of the output file to write.
-// - data: A variant containing either real data (std::vector<double>) or
-//         complex data (std::vector<std::complex<double>>).
-// - metadata: A map containing metadata key-value pairs to be written.
-// Returns:
-// - true if the file is successfully written.
-// - false if there are errors, such as issues with opening the file.
+/**
+ * @brief Writes data and metadata to a file.
+ * 
+ * @param fileName The name of the output file to write.
+ * @param data A variant containing either:
+ *             - `std::vector<double>`: Real data.
+ *             - `std::vector<std::complex<double>>`: Complex data.
+ * @param metadata A map containing metadata key-value pairs to be written.
+ * 
+ * @return True if the file is successfully written; false otherwise.
+ */
 bool writeToFile(const std::string& fileName,
                  const std::variant<std::vector<double>, std::vector<std::complex<double>>>& data,
                  const std::map<std::string, double>& metadata) 
 {
-    // Step 1: Open the output file
-    std::ofstream outputFile(fileName);
+    std::ofstream outputFile(fileName); // Open the output file
     if (!outputFile.is_open()) {
         std::cerr << "Error: Cannot open file " << fileName << " for writing" << std::endl;
         return false;
     }
 
-    // Step 2: Write metadata
+    // Write metadata
     for (const auto& [key, value] : metadata) {
         outputFile << "#" << key << "=" << value << "\n";
     }
-    
-    // Step 3: Write data
-    // Using std::visit with lambda function
+
+    // Write data
     std::visit(
-        [&outputFile](const auto& dataVec){
-            for(const auto& value : dataVec){
-                if constexpr (std::is_same_v<decltype(value), double>){
-                    // Handle Real data
+        [&outputFile](const auto& dataVec) {
+            for (const auto& value : dataVec) {
+                if constexpr (std::is_same_v<decltype(value), double>) {
                     outputFile << value << '\n';
                 } else if constexpr (std::is_same_v<decltype(value), std::complex<double>>) {
-                    // Handle Complex data
                     outputFile << value.real() << " " << value.imag() << '\n';
                 }
             }
-        }, data);
+        },
+        data);
 
-    // // Step 3: Write data
-    // if (std::holds_alternative<std::vector<double>>(data)) {
-    //     // Handle real data
-    //     const auto& realData = std::get<std::vector<double>>(data);
-    //     for (const auto& value : realData) {
-    //         outputFile << value << "\n";
-    //     }
-    // } else if (std::holds_alternative<std::vector<std::complex<double>>>(data)) {
-    //     // Handle complex data
-    //     const auto& complexData = std::get<std::vector<std::complex<double>>>(data);
-    //     for (const auto& value : complexData) {
-    //         outputFile << value.real() << " " << value.imag() << "\n";
-    //     }
-    // } else {
-    //     std::cerr << "Error: Unknown data type in variant" << std::endl;
-    //     return false;
-    // }
-
-    // Step 4: Close the output file
     outputFile.close();
-    return true; // Return true if the file is successfully written
+    return true;
 }
 
 
-// Function to read LUT from a JSON file
+/**
+ * @brief Reads a Lookup Table (LUT) from a JSON file and parses it into a 2D vector.
+ * 
+ * @param fileName The name of the JSON file containing the LUT data.
+ * @param LUT A reference to a 2D vector of integers that will store the parsed LUT data.
+ *            The vector is cleared before parsing to ensure it contains only the new data.
+ * 
+ * @details
+ * This function opens a JSON file, parses its content, and stores the data in the provided
+ * 2D vector `LUT`. It ensures the vector is cleared before adding new data. The function
+ * uses the nlohmann::json library for JSON parsing and handles errors related to file
+ * access or parsing.
+ * 
+ * @return Returns `true` if the LUT is successfully read and parsed.
+ * @throws std::runtime_error If the file cannot be opened.
+ */
 bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
 {
-    LUT.clear();  // Make sure that vector is celared
+    // Clear the LUT vector to ensure it starts empty
+    LUT.clear();
 
+    // Open the file
     std::ifstream file(fileName);
 
-    // Check if file can be opened
+    // Check if the file can be opened successfully
     if (!file.is_open())
     {
+        // Throw an exception if the file cannot be opened
         throw std::runtime_error("Could not open file: " + fileName);
-        return false;
+        return false; // Unnecessary but included for clarity
     }
 
+    // Create a JSON object to hold the file content
     json j;
+
+    // Parse the file content into the JSON object
     file >> j;
+
+    // Close the file after reading
     file.close();
 
-    // Parse JSON into a 2D vector
+    // Convert the JSON object to a 2D vector of integers
     LUT = j.get<std::vector<std::vector<int>>>();
+
+    // Return true to indicate successful parsing
     return true;
 }
 
-
-// Function to read data from a file into a vector
-bool readFromFileComplex(const std::string& fileName,
-                  std::vector<std::complex<double>>& data,
-                  std::map<std::string, double>& metadata)
+/**
+ * @brief Applies an FIR filter to real or complex data.
+ * 
+ * @param input A variant containing either:
+ *              - `std::vector<double>`: Real data to be filtered.
+ *              - `std::vector<std::complex<double>>`: Complex data to be filtered.
+ * @param firCoeff A vector of FIR filter coefficients.
+ * @param output A variant that stores the filtered output. It will contain:
+ *               - `std::vector<double>`: Filtered real data.
+ *               - `std::vector<std::complex<double>>`: Filtered complex data.
+ * 
+ * @details
+ * For real data, this function directly applies the FIR filter using the `fir` function.
+ * For complex data, it separates the real and imaginary parts, applies the FIR filter 
+ * to each part individually, and combines the filtered parts back into a complex result.
+ */
+void firWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
+                const std::vector<double>& firCoeff,
+                std::variant<std::vector<double>, std::vector<std::complex<double>>>& output)
 {
-    std::ifstream inputFile(fileName);
-    if (!inputFile.is_open())
-    {
-        std::cerr << "Error: Cannot open file " << fileName << std::endl;
-        return false;
-    }
+    // Use std::visit to handle the variant input
+    std::visit(
+        [&output, &firCoeff](const auto& inputVec) {
+            using T = std::decay_t<decltype(inputVec)>;
 
-    data.clear();       // Clear the vector to ensure no residual data
-    metadata.clear();   // Clear metadata map
-    std::string line;
+            if constexpr (std::is_same_v<T, std::vector<double>>) {
+                // Real data
+                std::vector<double> realOutput;
 
-    // Updated regex to match complex numbers with scientific notation
-    std::regex complexRegex(R"(\(([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)([-+]\d*\.?\d+(?:[eE][-+]?\d+)?)j\))");
+                // Apply FIR filter to real data
+                fir(inputVec, firCoeff, realOutput);
 
-    // Read metadata
-    while (std::getline(inputFile, line))
-    {
-        if (line[0] == '#') // Check if metadata line
-        {
-            std::string key, value_str;
-            size_t delimiter_pos = line.find('=');
-            if (delimiter_pos != std::string::npos)
-            {
-                key = line.substr(1, delimiter_pos - 1); // Extract key (skip '#')
-                value_str = line.substr(delimiter_pos + 1); // Extract value
-                try
-                {
-                    metadata[key] = std::stod(value_str); // Convert value to double
-                }
-                catch (const std::invalid_argument&)
-                {
-                    std::cerr << "Invalid value in metadata: " << value_str << std::endl;
-                }
-            }
-            else
-            {
-                std::cerr << "Malformed metadata line: " << line << std::endl;
-            }
-        }
-        else
-        {
-            // Match complex numbers or real numbers
-            std::smatch match;
-            if (std::regex_match(line, match, complexRegex))
-            {
-                double realPart = std::stod(match[1].str());
-                double imagPart = std::stod(match[2].str());
-                data.emplace_back(realPart, imagPart);
-            }
-            else
-            {
-                try
-                {
-                    // Handle real numbers
-                    data.emplace_back(std::stod(line), 0.0);
-                }
-                catch (const std::invalid_argument&)
-                {
-                    std::cerr << "Error: Invalid data format in file: " << line << std::endl;
-                    return false;
-                }
-            }
-        }
-    }
+                // Assign the filtered real data to the output variant
+                output = std::move(realOutput);
 
-    inputFile.close();
-    return true;
+            } else if constexpr (std::is_same_v<T, std::vector<std::complex<double>>>) {
+                // Complex data
+
+                // Separate the real and imaginary parts of the complex input
+                std::vector<double> realPart, imagPart;
+                for (const auto& c : inputVec) {
+                    realPart.push_back(c.real());
+                    imagPart.push_back(c.imag());
+                }
+
+                // Containers for the filtered real and imaginary parts
+                std::vector<double> realOutput, imagOutput;
+
+                // Apply FIR filter to the real and imaginary parts separately
+                fir(realPart, firCoeff, realOutput);
+                fir(imagPart, firCoeff, imagOutput);
+
+                // Combine the filtered real and imaginary parts into a complex output
+                std::vector<std::complex<double>> complexOutput;
+                for (size_t i = 0; i < realOutput.size(); ++i) {
+                    complexOutput.emplace_back(realOutput[i], imagOutput[i]);
+                }
+
+                // Assign the filtered complex data to the output variant
+                output = std::move(complexOutput);
+            }
+        }, input);
 }
 
-// Function to write data from a vector to a file
-// Function to write data from a vector to a file
-bool writeToFileComplex(const std::string& fileName,
-                 const std::vector<std::complex<double>>& data,
-                 const std::map<std::string, double>& metadata)
-{
-    if (data.empty())
-    {
-        std::cerr << "Error: Cannot write to file " << fileName << " because the vector is empty." << std::endl;
-        return false;
-    }
-
-    std::ofstream outputFile(fileName);
-    if (!outputFile.is_open())
-    {
-        std::cerr << "Error: Cannot open file " << fileName << std::endl;
-        return false;
-    }
-
-    // Write metadata
-    for (const auto& [key, value] : metadata)
-    {
-        outputFile << "# " << key << "=" << value << '\n';
-    }
-    outputFile << "# Signal data below\n";
-
-    // Write data
-    for (const auto& value : data)
-    {
-        // Check if the imaginary part is 0.0
-        if (value.imag() == 0.0)
-        {
-            outputFile << value.real() << '\n'; // Write only the real part
-        }
-        else
-        {
-            outputFile << "(" << value.real() << (value.imag() >= 0 ? "+" : "")
-                       << value.imag() << "j)" << '\n'; // Write complex number
-        }
-    }
-
-    outputFile.close();
-    return true;
-}
-
-// Wrapper function for complex numbers
-void deltaSigmaComplex(const std::vector<std::complex<double>>& input, 
-                       std::vector<std::complex<int>>& output)
-{
-    // Separate real and imaginary parts
-    std::vector<double> realPart;
-    std::vector<double> imagPart;
-    std::vector<int> realOutput;
-    std::vector<int> imagOutput;
-
-    for (const auto& c : input) {
-        realPart.push_back(c.real());
-        imagPart.push_back(c.imag());
-    }
-
-    // Process the real and imaginary parts separately
-    deltaSigma(realPart, realOutput);
-    deltaSigma(imagPart, imagOutput);
-
-    // Combine the real and imaginary parts into complex output
-    output.clear();
-    for (size_t i = 0; i < realOutput.size(); ++i) {
-        output.emplace_back(realOutput[i], imagOutput[i]);
-    }
-}
-
-void firComplex(std::vector<std::complex<double>>& input, std::vector<double>& firCoeff, std::vector<std::complex<double>>& output)
-{
-    // Separate real and imaginary parts
-    std::vector<double> realPart;
-    std::vector<double> imagPart;
-    std::vector<double> realOutput;
-    std::vector<double> imagOutput;
-
-    for (const auto& c : input) {
-        realPart.push_back(c.real());
-        imagPart.push_back(c.imag());
-    }
-
-    // Process the real and imaginary parts separately
-    fir(realPart, firCoeff, realOutput);
-    fir(imagPart, firCoeff, imagOutput);
-
-    // Combine the real and imaginary parts into complex output
-    output.clear();
-    for (size_t i = 0; i < realOutput.size(); ++i) {
-        output.emplace_back(realOutput[i], imagOutput[i]);
-    }
-}
-
-void fir(std::vector<double>& x, std::vector<double>& firCoeff, std::vector<double>& y)
+/**
+ * @brief Applies an FIR filter to real-valued data.
+ * 
+ * @param x A vector of real-valued input data.
+ * @param firCoeff A vector of FIR filter coefficients.
+ * @param y A vector to store the filtered output data.
+ * 
+ * @details
+ * This function implements a discrete FIR filter using a circular buffer to manage
+ * the delay line. The filter coefficients are internally converted to a fixed-point
+ * representation for numerical precision.
+ */
+static void fir(std::vector<double>& x, std::vector<double>& firCoeff, std::vector<double>& y)
 {
     y.clear();  // Ensure output vector is empty
     
@@ -538,133 +442,277 @@ void fir(std::vector<double>& x, std::vector<double>& firCoeff, std::vector<doub
     }
 }
 
-
-
-// Delta-Sigma modulation algorithm
-void deltaSigma(std::vector<double>& x, std::vector<int>& y)
+/**
+ * Wrapper function for Delta-Sigma modulation.
+ * This function processes real or complex data using the Delta-Sigma algorithm.
+ * For complex data, the real and imaginary parts are processed separately.
+ * 
+ * @param input: A variant containing either:
+ *               - std::vector<double>: Real data to be processed.
+ *               - std::vector<std::complex<double>>: Complex data to be processed.
+ * @param output: A variant that stores the processed result. It will contain:
+ *                - std::vector<double>: Processed real data.
+ *                - std::vector<std::complex<double>>: Processed complex data.
+ */
+void deltaSigmaWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
+                       std::variant<std::vector<double>, std::vector<std::complex<double>>>& output)
 {
-    y.clear(); // Ensure output vector is empty
+    // Use std::visit to handle the variant input
+    std::visit(
+        [&output](const auto& inputVec) {
+            // Deduce the type of inputVec (either std::vector<double> or std::vector<std::complex<double>>)
+            using T = std::decay_t<decltype(inputVec)>;
 
-    // H0 Coefficients
+            // Handle real data
+            if constexpr (std::is_same_v<T, std::vector<double>>) {
+                // Create a container for the delta-sigma output
+                std::vector<int> realOutput;
+
+                // Process the real data using deltaSigma
+                deltaSigma(const_cast<std::vector<double>&>(inputVec), realOutput);
+
+                // Store the real result in the output variant
+                output = std::move(static_cast<std::vector<double>>(realOutput)));
+            } 
+            // Handle complex data
+            else if constexpr (std::is_same_v<T, std::vector<std::complex<double>>>) {
+                // Separate the real and imaginary parts of the complex input
+                std::vector<double> realPart, imagPart;
+                for (const auto& c : inputVec) {
+                    realPart.push_back(c.real());
+                    imagPart.push_back(c.imag());
+                }
+
+                // Containers for the delta-sigma outputs of real and imaginary parts
+                std::vector<int> realOutput, imagOutput;
+
+                // Process the real and imaginary parts separately using deltaSigma
+                deltaSigma(realPart, realOutput);
+                deltaSigma(imagPart, imagOutput);
+
+                // Combine the processed real and imaginary parts into a complex output
+                std::vector<std::complex<double>> complexOutput;
+                for (size_t i = 0; i < realOutput.size(); ++i) {
+                    complexOutput.emplace_back(
+                        static_cast<double>(realOutput[i]), // Real part
+                        static_cast<double>(imagOutput[i])  // Imaginary part
+                    );
+                }
+
+                // Store the complex result in the output variant
+                output = std::move(complexOutput);
+            }
+        },
+        input // Pass the input variant to std::visit
+    );
+}
+
+/**
+ * @brief Delta-Sigma modulation algorithm.
+ * 
+ * @param x A vector of real-valued input samples.
+ * @param y A vector to store the quantized output values as integers.
+ * 
+ * @details
+ * This function implements a Delta-Sigma modulation algorithm to quantize input samples.
+ * It uses multiple stages (H0, H1, H2) with specified coefficients for processing and 
+ * feedback. The quantized output values are stored as integers in the `y` vector.
+ * 
+ * @note
+ * The function uses fixed-point arithmetic (`ac_fixed`) for precise computations, and
+ * assumes that the coefficients are tuned for the specific modulation requirements.
+ */
+static void deltaSigma(std::vector<double>& x, std::vector<int>& y)
+{
+    // Ensure output vector is empty before starting
+    y.clear();
+
+    // H0 Coefficients: First stage coefficients for filtering and feedback
     ac_fixed<12, 4, true, AC_RND, AC_SAT> b00 = 7.3765809;
     ac_fixed<12, 1, true, AC_RND, AC_SAT> a01 = 0.3466036;
 
-    // H1 Coefficients
+    // H1 Coefficients: Second stage coefficients for filtering and feedback
     ac_fixed<12, 1, true, AC_RND, AC_SAT> b10 = 0.424071040;
     ac_fixed<12, 1, true, AC_RND, AC_SAT> a11 = 0.66591402;
     ac_fixed<12, 3, true, AC_RND, AC_SAT> b11 = 2.782608716;
     ac_fixed<12, 1, true, AC_RND, AC_SAT> a12 = 0.16260264;
 
-    // H2 Coefficients
+    // H2 Coefficients: Third stage coefficients for filtering and feedback
     ac_fixed<12, 4, true, AC_RND, AC_SAT> b20 = 4.606822182;
     ac_fixed<12, 1, true, AC_RND, AC_SAT> a21 = 0.62380242;
     ac_fixed<12, 1, true, AC_RND, AC_SAT> b21 = 0.023331537;
     ac_fixed<12, 1, true, AC_RND, AC_SAT> a22 = 0.4509869;
 
+    // Define a fixed-point type for intermediate calculations
     typedef ac_fixed<24, 5, true, AC_RND, AC_SAT> fx_ss;
 
+    // Initialize variables for intermediate and feedback computations
     fx_ss y_iir = 0, e = 0, y_i = 0;
-    fx_ss x0 = 0, x0d = 0;
-    fx_ss x1 = 0, w1 = 0, w1d = 0, w1dd = 0;
-    fx_ss x2 = 0, w2 = 0, w2d = 0, w2dd = 0;
-    ac_fixed<4, 4, true, AC_RND, AC_SAT> v = 0;
-    ac_fixed<12, 4, true, AC_RND, AC_SAT> xin = 0;
+    fx_ss x0 = 0, x0d = 0; // Stage 0 variables
+    fx_ss x1 = 0, w1 = 0, w1d = 0, w1dd = 0; // Stage 1 variables
+    fx_ss x2 = 0, w2 = 0, w2d = 0, w2dd = 0; // Stage 2 variables
+    ac_fixed<4, 4, true, AC_RND, AC_SAT> v = 0; // Quantized output
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> xin = 0; // Input sample (converted to fixed-point)
 
+    // Process each input sample
     for (size_t i = 0; i < x.size(); i++)
     {
+        // Convert the current input sample to fixed-point
         xin = x[i];
+
+        // Add feedback to input to calculate intermediate value
         y_i = xin + y_iir;
 
-        v = y_i;
-        y.push_back(v.to_int());
+        // Quantize the intermediate value
+        v = y_i; // Quantization to nearest integer
+        y.push_back(v.to_int()); // Store quantized value in output vector
 
+        // Compute the quantization error
         e = y_i - v;
 
+        // Stage 0 processing (H0)
         x0 = b00 * e + a01 * x0d;
 
+        // Stage 1 processing (H1)
         w1 = e + a11 * w1d - a12 * w1dd;
         x1 = b10 * w1 - b11 * w1d;
 
+        // Stage 2 processing (H2)
         w2 = e + a21 * w2d - a22 * w2dd;
         x2 = b21 * w2d - b20 * w2;
 
+        // Combine results from all stages for feedback
         y_iir = x0 + x1 + x2;
 
-        x0d = x0;
-        w1dd = w1d;
-        w1d = w1;
-        w2dd = w2d;
-        w2d = w2;
+        // Update feedback variables for the next iteration
+        x0d = x0;       // Stage 0 feedback
+        w1dd = w1d;     // Stage 1 delayed feedback
+        w1d = w1;       // Stage 1 feedback
+        w2dd = w2d;     // Stage 2 delayed feedback
+        w2d = w2;       // Stage 2 feedback
     }
 }
 
-void parallelToSerialConverterComplex(const std::vector<std::complex<int>>& inputSignal,
+/**
+ * @brief Wrapper function for parallel-to-serial conversion of real or complex data.
+ * 
+ * @param input A variant containing either:
+ *              - `std::vector<double>`: Real data to be processed.
+ *              - `std::vector<std::complex<double>>`: Complex data to be processed.
+ * @param LUT A lookup table for parallel-to-serial conversion.
+ * @param output A variant that stores the converted output. It will contain:
+ *               - `std::vector<double>`: Converted real data.
+ *               - `std::vector<std::complex<double>>`: Converted complex data.
+ * 
+ * @details
+ * This function handles both real and complex data by separating the real and imaginary parts
+ * for complex data and applying the parallel-to-serial conversion individually. The results
+ * are combined into the appropriate output format.
+ */
+void parallelToSerialConverterWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
                                       const std::vector<std::vector<int>>& LUT,
-                                      std::vector<std::complex<int>>& outputSignal)
+                                      std::variant<std::vector<double>, std::vector<std::complex<double>>>& output)
 {
-    // Separate real and imaginary parts
-    std::vector<int> realPart, imagPart;
-    for (const auto& complexValue : inputSignal)
-    {
-        realPart.push_back(complexValue.real());
-        imagPart.push_back(complexValue.imag());
-    }
+    // Use std::visit to handle the variant input
+    std::visit(
+        [&output, &LUT](const auto& inputVec) {
+            // Deduce the type of inputVec (either std::vector<double> or std::vector<std::complex<double>>)
+            using T = std::decay_t<decltype(inputVec)>;
 
-    // Process the real part
-    std::vector<int> realOutput;
-    parallelToSerialConverter(realPart, LUT, realOutput);
+            // Handle real data
+            if constexpr (std::is_same_v<T, std::vector<double>>) {
+                // Create a container for the delta-sigma output
+                std::vector<int> realOutput;
 
-    // Process the imaginary part
-    std::vector<int> imagOutput;
-    parallelToSerialConverter(imagPart, LUT, imagOutput);
+                // Process the real data using deltaSigma
+                parallelToSerialConverter(const_cast<std::vector<double>&>(inputVec), LUT, realOutput);
 
-    // Combine the results into complex output
-    size_t minSize = std::min(realOutput.size(), imagOutput.size()); // Ensure no out-of-bounds issues
-    outputSignal.clear();
-    for (size_t i = 0; i < minSize; ++i)
-    {
-        outputSignal.emplace_back(realOutput[i], imagOutput[i]);
-    }
+                // Store the real result in the output variant
+                output = std::move(static_cast<std::vector<double>>(realOutput)));
+            } 
+            // Handle complex data
+            else if constexpr (std::is_same_v<T, std::vector<std::complex<double>>>) {
+                // Separate the real and imaginary parts of the complex input
+                std::vector<double> realPart, imagPart;
+                for (const auto& c : inputVec) {
+                    realPart.push_back(c.real());
+                    imagPart.push_back(c.imag());
+                }
+
+                // Containers for the delta-sigma outputs of real and imaginary parts
+                std::vector<int> realOutput, imagOutput;
+
+                // Process the real and imaginary parts separately using deltaSigma
+                parallelToSerialConverter(realPart, LUT, realOutput);
+                parallelToSerialConverter(imagPart, LUT, imagOutput);
+
+                // Combine the processed real and imaginary parts into a complex output
+                std::vector<std::complex<double>> complexOutput;
+                for (size_t i = 0; i < realOutput.size(); ++i) {
+                    complexOutput.emplace_back(
+                        static_cast<double>(realOutput[i]), // Real part
+                        static_cast<double>(imagOutput[i])  // Imaginary part
+                    );
+                }
+
+                // Store the complex result in the output variant
+                output = std::move(complexOutput);
+            }
+        },
+        input // Pass the input variant to std::visit
+    );
 }
 
-// Parallel-to-Serial Converter (placeholder)
-void parallelToSerialConverter(const std::vector<int>& inputSignal,
+/**
+ * @brief Converts a parallel signal into a serial signal using a lookup table (LUT).
+ * 
+ * @param inputSignal A vector of integer input values representing the parallel signal.
+ * @param LUT A lookup table represented as a 2D vector of integers, where each row defines
+ *            the mapping for a specific input value.
+ * @param outputSignal A vector to store the resulting serialized signal.
+ * 
+ * @details
+ * This function processes the input signal by mapping each value to a row in the LUT.
+ * The mapped row's values are appended to the output signal, effectively serializing
+ * the input data. The LUT is validated to ensure all rows have the same size.
+ * 
+ * @throws std::invalid_argument If the rows in the LUT are not of equal size.
+ * @throws std::out_of_range If an input signal value is outside the valid range of the LUT.
+ */
+static void parallelToSerialConverter(const std::vector<int>& inputSignal,
                                const std::vector<std::vector<int>>& LUT,
                                std::vector<int>& outputSignal)
 {
-    outputSignal.clear();   // Ensure output vector is empty
+    // Ensure the output vector is empty before appending new data
+    outputSignal.clear();
 
-    // Check if all rows in LUT have the same size
+    // Validate the LUT: Check that all rows have the same number of columns
     size_t columnSize = LUT[0].size();
-    for (const auto& row : LUT)
-    {
-        if (row.size() != columnSize)
-        {
+    for (const auto& row : LUT) {
+        if (row.size() != columnSize) {
             throw std::invalid_argument("All rows in the LUT must have the same size!");
         }
     }
 
+    // Correction factor for input signal values (shifts the input to match LUT indexing)
     int correction = 1 << (BITS_NUM - 1);
 
-    // Process each input signal value
-    for (const auto& value : inputSignal)
-    {
-        // Compute LUT row index
+    // Process each value in the input signal
+    for (const auto& value : inputSignal) {
+        // Compute the row index in the LUT by applying the correction
         int pos = value + correction;
 
-        // Validate index bounds
-        if (pos < 0 || static_cast<size_t>(pos) >= LUT.size())
-        {
+        // Ensure the computed index is within the bounds of the LUT
+        if (pos < 0 || static_cast<size_t>(pos) >= LUT.size()) {
             throw std::out_of_range("Input value out of LUT range!");
         }
 
-        // Get corresponding row from the LUT
+        // Retrieve the corresponding row from the LUT
         const auto& lutRow = LUT[LUT.size() - 1 - pos];
 
-        // Append the row values to the output signal
+        // Append the LUT row's values to the output signal
         outputSignal.insert(outputSignal.end(), lutRow.begin(), lutRow.end());
     }
-
-
 }
+
 

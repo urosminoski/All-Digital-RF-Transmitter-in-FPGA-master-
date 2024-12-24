@@ -51,6 +51,7 @@
         "ctime": "cpp",
         "map": "cpp",
         "regex": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "variant": "cpp"
     }
 }
