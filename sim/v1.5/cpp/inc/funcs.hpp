@@ -7,12 +7,18 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <sstream>
+#include <variant>
 #include <complex>
 #include <regex>
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 
 #define BITS_NUM    ( 4 )
+
+typedef ac_fixed<32, 8, true, AC_RND, AC_SAT> fxFIR;
+
+extern std::vector<double> firCoeff;
 
 /**
  * @brief Reads a LUT from a JSON file.
@@ -29,9 +35,9 @@ bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& lut);
  * @param data The vector to store the read data.
  * @return True if the file is read successfully, otherwise false.
  */
-bool readFromFile(const std::string& fileName,
-                  std::vector<std::complex<double>>& data,
-                  std::map<std::string, double>& metadata);
+bool readFromFileComplex(const std::string& fileName,
+                         std::vector<std::complex<double>>& data,
+                         std::map<std::string, double>& metadata);
 
 /**
  * @brief Writes data from a vector to a file.
@@ -40,9 +46,20 @@ bool readFromFile(const std::string& fileName,
  * @param data The vector containing data to write.
  * @return True if the file is written successfully, otherwise false.
  */
-bool writeToFile(const std::string& fileName, 
-                 const std::vector<std::complex<int>>& data,
+bool writeToFileComplex(const std::string& fileName, 
+                        const std::vector<std::complex<double>>& data,
+                        const std::map<std::string, double>& metadata);
+
+bool readFromFile(const std::string& fileName,
+                  std::variant<std::vector<double>, std::vector<std::complex<double>>>& data,
+                  std::map<std::string, double>& metadata);
+
+bool writeToFile(const std::string& fileName,
+                 const std::variant<std::vector<double>, std::vector<std::complex<double>>>& data,
                  const std::map<std::string, double>& metadata);
+
+void firComplex(std::vector<std::complex<double>>& input, std::vector<double>& firCoeff, std::vector<std::complex<double>>& output);
+void fir(std::vector<double>& x, std::vector<double>& firCoeff, std::vector<double>& y);
 
 void deltaSigmaComplex(const std::vector<std::complex<double>>& input, 
                        std::vector<std::complex<int>>& output);
