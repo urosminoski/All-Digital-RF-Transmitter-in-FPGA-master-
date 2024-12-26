@@ -16,11 +16,11 @@ x_real = x_complex.real
 real_file = "./data/dataReal.txt"
 with open(real_file, "w") as file:
     for value in x_real:
-        file.write(f"{value}\n")  # Write each value on a new line
+        file.write(f"{float(value)}\n")  # Write each value on a new line
 
 # Write complex data to a file
 complex_file = "./data/dataComplex.txt"
 with open(complex_file, "w") as file:
     for value in x_complex:
-        file.write(f"{value.real} {value.imag}\n")  # Write real and imaginary parts separated by a space
+        file.write(f"{float(value.real)} {float(value.imag)}\n")  # Write real and imaginary parts separated by a space
 

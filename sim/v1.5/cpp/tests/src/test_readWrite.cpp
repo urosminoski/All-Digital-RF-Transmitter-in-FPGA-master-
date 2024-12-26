@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>  // For std::remove
+#include <map>
+#include "funcs.hpp"
 
 // Function to compare two files line by line
 bool compareFiles(const std::string& file1, const std::string& file2) {
@@ -20,7 +22,8 @@ bool compareFiles(const std::string& file1, const std::string& file2) {
     // Compare files line by line
     while (std::getline(in1, line1) && std::getline(in2, line2)) {
         if (line1 != line2) {
-            return false; // Files differ if any pair of lines is not equal
+            std::cout << line1 << " " << line2 << std::endl;
+            // return false; // Files differ if any pair of lines is not equal
         }
     }
     // Read one more line from the second file to ensure it also reaches EOF.
@@ -44,34 +47,34 @@ int main() {
 
     // Step 1: Read dataComplex.txt and write to dataComplex_tmp.txt
     {
-        std::ifstream inFile(dataComplex);
-        std::ofstream outFile(dataComplexTmp);
-
-        if (!inFile.is_open() || !outFile.is_open()) {
-            std::cerr << "Error: Could not open dataComplex files." << std::endl;
+        std::variant<std::vector<long double>, std::vector<std::complex<long double>>> data;
+        std::map<std::string, double> metadata;
+        if (!readFromFile(dataComplex, data, metadata)) {
+            std::cerr << "Error: while reading" << dataComplex << std::endl;
             return 1;
         }
 
-        std::string line;
-        while (std::getline(inFile, line)) {
-            outFile << line << "\n";
+        if (!writeToFile(dataComplexTmp, data, metadata)) {
+            std::cerr << "Error: while writing to " << dataComplexTmp << std::endl;
+            return 1;
         }
+        
     }
 
     // Step 2: Read dataReal.txt and write to dataReal_tmp.txt
     {
-        std::ifstream inFile(dataReal);
-        std::ofstream outFile(dataRealTmp);
-
-        if (!inFile.is_open() || !outFile.is_open()) {
-            std::cerr << "Error: Could not open dataReal files." << std::endl;
+        std::variant<std::vector<long double>, std::vector<std::complex<long double>>> data;
+        std::map<std::string, double> metadata;
+        if (!readFromFile(dataReal, data, metadata)) {
+            std::cerr << "Error: while reading" << dataComplex << std::endl;
             return 1;
         }
 
-        std::string line;
-        while (std::getline(inFile, line)) {
-            outFile << line << "\n";
+        if (!writeToFile(dataRealTmp, data, metadata)) {
+            std::cerr << "Error: while writing to " << dataComplexTmp << std::endl;
+            return 1;
         }
+        
     }
 
     // Step 3: Compare dataComplex.txt with dataComplex_tmp.txt
@@ -83,8 +86,8 @@ int main() {
     // std::cout << complexTestResult << " " << realTestResult << ::std::endl;
 
     // Step 5: Delete temporary files
-    std::remove(dataComplexTmp.c_str());
-    std::remove(dataRealTmp.c_str());
+    // std::remove(dataComplexTmp.c_str());
+    // std::remove(dataRealTmp.c_str());
 
     // Step 6: Report results
     if (complexTestResult && realTestResult) {

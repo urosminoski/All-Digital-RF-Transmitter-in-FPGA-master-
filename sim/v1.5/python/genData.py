@@ -41,7 +41,7 @@ def write_signal_to_file(filename, signal, OSR, fs):
 
     Parameters:
     - filename: Path to the output file
-    - signal: The signal to write
+    - signal: The signal to write (real or complex values)
     - OSR: Oversampling ratio
     - fs: Sampling frequency (Hz)
     """
@@ -51,11 +51,17 @@ def write_signal_to_file(filename, signal, OSR, fs):
         file.write(f"# fs={fs}\n")
         file.write(f"# Signal data below\n")
 
-        # Write signal values
-        for value in signal:
-            file.write(f"{value}\n")
-    print(f"Signal with metadata written to {filename}")
+        # Check if the signal contains complex values
+        if isinstance(signal[0], complex):
+            # Write complex signal values
+            for value in signal:
+                file.write(f"{float(value.real)} {float(value.imag)}\n")
+        else:
+            # Write real signal values
+            for value in signal:
+                file.write(f"{float(value)}\n")
 
+    print(f"Signal with metadata written to {filename}")
 
 def save_luts_to_json(luts, filenames):
     """
@@ -82,7 +88,8 @@ def main():
 
     # Generate and write signal
     signal = generate_signal(N, M, OSR, f, fs)
-    write_signal_to_file("../data/sinData.txt", signal, OSR, fs)
+    write_signal_to_file("../data/sinDataComplex.txt", signal, OSR, fs)
+    write_signal_to_file("../data/sinData.txt", signal.real, OSR, fs)
 
     LUT1 = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Level 8

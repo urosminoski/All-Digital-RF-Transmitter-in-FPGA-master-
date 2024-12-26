@@ -10,6 +10,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <iomanip> // For std::setprecision
+#include <cstdlib> // For std::strtold
+#include <cerrno>  // For errno
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 

@@ -52,6 +52,7 @@
         "map": "cpp",
         "regex": "cpp",
         "sstream": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "iomanip": "cpp"
     }
 }
