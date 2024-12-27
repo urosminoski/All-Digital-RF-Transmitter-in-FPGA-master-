@@ -40,12 +40,11 @@ std::vector<double> firCoeff = {
 0.005720593689315046
 };
 
-static bool parseDataLine(const std::string& line, bool isComplex, std::vector<double>& realData, std::vector<std::complex<double>>& complexData);
-static void readMetadata(std::ifstream& inputFile, std::map<std::string, double>& metadata);
-// static bool detectFormat(const std::string& line, bool& isComplex);
+static bool parseDataLine(const std::string&, bool, std::vector<double>&, std::vector<std::complex<double>>&);
+static void readMetadata(std::ifstream&, std::map<std::string, double>&);
 // static void fir(std::vector<double>&, std::vector<double>&, std::vector<double>&);
 static void deltaSigma(const std::vector<double>&, std::vector<double>&);
-// static void parallelToSerialConverter(const std::vector<int>&, const std::vector<std::vector<int>>&, std::vector<int>&);
+static void parallelToSerialConverter(const std::vector<double>&, const std::vector<std::vector<int>>&, std::vector<int>&);
 
 
 /**
@@ -599,124 +598,125 @@ static void deltaSigma(const std::vector<double>& x, std::vector<double>& y)
     }
 }
 
-// /**
-//  * @brief Wrapper function for parallel-to-serial conversion of real or complex data.
-//  * 
-//  * @param input A variant containing either:
-//  *              - `std::vector<double>`: Real data to be processed.
-//  *              - `std::vector<std::complex<double>>`: Complex data to be processed.
-//  * @param LUT A lookup table for parallel-to-serial conversion.
-//  * @param output A variant that stores the converted output. It will contain:
-//  *               - `std::vector<double>`: Converted real data.
-//  *               - `std::vector<std::complex<double>>`: Converted complex data.
-//  * 
-//  * @details
-//  * This function handles both real and complex data by separating the real and imaginary parts
-//  * for complex data and applying the parallel-to-serial conversion individually. The results
-//  * are combined into the appropriate output format.
-//  */
-// void parallelToSerialConverterWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
-//                                       const std::vector<std::vector<int>>& LUT,
-//                                       std::variant<std::vector<double>, std::vector<std::complex<double>>>& output)
-// {
-//     // Use std::visit to handle the variant input
-//     std::visit(
-//         [&output, &LUT](const auto& inputVec) {
-//             // Deduce the type of inputVec (either std::vector<double> or std::vector<std::complex<double>>)
-//             using T = std::decay_t<decltype(inputVec)>;
+/**
+ * @brief Wrapper function for parallel-to-serial conversion of real or complex data.
+ * 
+ * @param input A variant containing either:
+ *              - `std::vector<double>`: Real data to be processed.
+ *              - `std::vector<std::complex<double>>`: Complex data to be processed.
+ * @param LUT A lookup table for parallel-to-serial conversion.
+ * @param output A variant that stores the converted output. It will contain:
+ *               - `std::vector<double>`: Converted real data.
+ *               - `std::vector<std::complex<double>>`: Converted complex data.
+ * 
+ * @details
+ * This function handles both real and complex data by separating the real and imaginary parts
+ * for complex data and applying the parallel-to-serial conversion individually. The results
+ * are combined into the appropriate output format.
+ */
+void parallelToSerialConverterWrapper(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& input,
+                                      const std::vector<std::vector<int>>& LUT,
+                                      std::variant<std::vector<double>, std::vector<std::complex<double>>>& output)
+{
+    // Use std::visit to handle the variant input
+    std::visit(
+        [&output, &LUT](const auto& inputVec) {
+            // Deduce the type of inputVec (either std::vector<double> or std::vector<std::complex<double>>)
+            using T = std::decay_t<decltype(inputVec)>;
 
-//             // Handle real data
-//             if constexpr (std::is_same_v<T, std::vector<double>>) {
-//                 // Create a container for the delta-sigma output
-//                 std::vector<int> realOutput;
+            // Handle real data
+            if constexpr (std::is_same_v<T, std::vector<double>>) {
+                // Create a container for the delta-sigma output
+                std::vector<int> realOutput;
 
-//                 // Process the real data using deltaSigma
-//                 parallelToSerialConverter(const_cast<std::vector<double>&>(inputVec), LUT, realOutput);
+                // Process the real data using deltaSigma
+                parallelToSerialConverter(const_cast<std::vector<double>&>(inputVec), LUT, realOutput);
 
-//                 // Store the real result in the output variant
-//                 output = std::move(static_cast<std::vector<double>>(realOutput)));
-//             } 
-//             // Handle complex data
-//             else if constexpr (std::is_same_v<T, std::vector<std::complex<double>>>) {
-//                 // Separate the real and imaginary parts of the complex input
-//                 std::vector<double> realPart, imagPart;
-//                 for (const auto& c : inputVec) {
-//                     realPart.push_back(c.real());
-//                     imagPart.push_back(c.imag());
-//                 }
+                // Store the real result in the output variant
+                std::vector<double> result(realOutput.begin(), realOutput.end());
+                output = std::move(result);
+            } 
+            // Handle complex data
+            else if constexpr (std::is_same_v<T, std::vector<std::complex<double>>>) {
+                // Separate the real and imaginary parts of the complex input
+                std::vector<double> realPart, imagPart;
+                for (const auto& c : inputVec) {
+                    realPart.push_back(c.real());
+                    imagPart.push_back(c.imag());
+                }
 
-//                 // Containers for the delta-sigma outputs of real and imaginary parts
-//                 std::vector<int> realOutput, imagOutput;
+                // Containers for the delta-sigma outputs of real and imaginary parts
+                std::vector<int> realOutput, imagOutput;
 
-//                 // Process the real and imaginary parts separately using deltaSigma
-//                 parallelToSerialConverter(realPart, LUT, realOutput);
-//                 parallelToSerialConverter(imagPart, LUT, imagOutput);
+                // Process the real and imaginary parts separately using deltaSigma
+                parallelToSerialConverter(realPart, LUT, realOutput);
+                parallelToSerialConverter(imagPart, LUT, imagOutput);
 
-//                 // Combine the processed real and imaginary parts into a complex output
-//                 std::vector<std::complex<double>> complexOutput;
-//                 for (size_t i = 0; i < realOutput.size(); ++i) {
-//                     complexOutput.emplace_back(
-//                         static_cast<double>(realOutput[i]), // Real part
-//                         static_cast<double>(imagOutput[i])  // Imaginary part
-//                     );
-//                 }
+                // Combine the processed real and imaginary parts into a complex output
+                std::vector<std::complex<double>> complexOutput;
+                for (size_t i = 0; i < realOutput.size(); ++i) {
+                    complexOutput.emplace_back(
+                        static_cast<double>(realOutput[i]), // Real part
+                        static_cast<double>(imagOutput[i])  // Imaginary part
+                    );
+                }
 
-//                 // Store the complex result in the output variant
-//                 output = std::move(complexOutput);
-//             }
-//         },
-//         input // Pass the input variant to std::visit
-//     );
-// }
+                // Store the complex result in the output variant
+                output = std::move(complexOutput);
+            }
+        },
+        input // Pass the input variant to std::visit
+    );
+}
 
-// /**
-//  * @brief Converts a parallel signal into a serial signal using a lookup table (LUT).
-//  * 
-//  * @param inputSignal A vector of integer input values representing the parallel signal.
-//  * @param LUT A lookup table represented as a 2D vector of integers, where each row defines
-//  *            the mapping for a specific input value.
-//  * @param outputSignal A vector to store the resulting serialized signal.
-//  * 
-//  * @details
-//  * This function processes the input signal by mapping each value to a row in the LUT.
-//  * The mapped row's values are appended to the output signal, effectively serializing
-//  * the input data. The LUT is validated to ensure all rows have the same size.
-//  * 
-//  * @throws std::invalid_argument If the rows in the LUT are not of equal size.
-//  * @throws std::out_of_range If an input signal value is outside the valid range of the LUT.
-//  */
-// static void parallelToSerialConverter(const std::vector<int>& inputSignal,
-//                                const std::vector<std::vector<int>>& LUT,
-//                                std::vector<int>& outputSignal)
-// {
-//     // Ensure the output vector is empty before appending new data
-//     outputSignal.clear();
+/**
+ * @brief Converts a parallel signal into a serial signal using a lookup table (LUT).
+ * 
+ * @param inputSignal A vector of integer input values representing the parallel signal.
+ * @param LUT A lookup table represented as a 2D vector of integers, where each row defines
+ *            the mapping for a specific input value.
+ * @param outputSignal A vector to store the resulting serialized signal.
+ * 
+ * @details
+ * This function processes the input signal by mapping each value to a row in the LUT.
+ * The mapped row's values are appended to the output signal, effectively serializing
+ * the input data. The LUT is validated to ensure all rows have the same size.
+ * 
+ * @throws std::invalid_argument If the rows in the LUT are not of equal size.
+ * @throws std::out_of_range If an input signal value is outside the valid range of the LUT.
+ */
+static void parallelToSerialConverter(const std::vector<double>& inputSignal,
+                                      const std::vector<std::vector<int>>& LUT,
+                                      std::vector<int>& outputSignal)
+{
+    // Ensure the output vector is empty before appending new data
+    outputSignal.clear();
 
-//     // Validate the LUT: Check that all rows have the same number of columns
-//     size_t columnSize = LUT[0].size();
-//     for (const auto& row : LUT) {
-//         if (row.size() != columnSize) {
-//             throw std::invalid_argument("All rows in the LUT must have the same size!");
-//         }
-//     }
+    // Validate the LUT: Check that all rows have the same number of columns
+    size_t columnSize = LUT[0].size();
+    for (const auto& row : LUT) {
+        if (row.size() != columnSize) {
+            throw std::invalid_argument("All rows in the LUT must have the same size!");
+        }
+    }
 
-//     // Correction factor for input signal values (shifts the input to match LUT indexing)
-//     int correction = 1 << (BITS_NUM - 1);
+    // Correction factor for input signal values (shifts the input to match LUT indexing)
+    int correction = 1 << (C_BITS_NUM - 1);
 
-//     // Process each value in the input signal
-//     for (const auto& value : inputSignal) {
-//         // Compute the row index in the LUT by applying the correction
-//         int pos = value + correction;
+    // Process each value in the input signal
+    for (const auto& value : inputSignal) {
+        // Compute the row index in the LUT by applying the correction
+        int pos = value + correction;
 
-//         // Ensure the computed index is within the bounds of the LUT
-//         if (pos < 0 || static_cast<size_t>(pos) >= LUT.size()) {
-//             throw std::out_of_range("Input value out of LUT range!");
-//         }
+        // Ensure the computed index is within the bounds of the LUT
+        if (pos < 0 || static_cast<size_t>(pos) >= LUT.size()) {
+            throw std::out_of_range("Input value out of LUT range!");
+        }
 
-//         // Retrieve the corresponding row from the LUT
-//         const auto& lutRow = LUT[LUT.size() - 1 - pos];
+        // Retrieve the corresponding row from the LUT
+        const auto& lutRow = LUT[LUT.size() - 1 - pos];
 
-//         // Append the LUT row's values to the output signal
-//         outputSignal.insert(outputSignal.end(), lutRow.begin(), lutRow.end());
-//     }
-// }
+        // Append the LUT row's values to the output signal
+        outputSignal.insert(outputSignal.end(), lutRow.begin(), lutRow.end());
+    }
+}

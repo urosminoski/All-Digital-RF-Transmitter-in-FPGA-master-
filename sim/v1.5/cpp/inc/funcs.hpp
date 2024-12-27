@@ -18,6 +18,9 @@
 
 using json = nlohmann::json;
 
+// Defining number of bits in parallel-to-serial converter
+#define C_BITS_NUM  ( 4 )
+
 // FIR Coefficients (Global Definition)
 extern std::vector<double> firCoeff;
 
