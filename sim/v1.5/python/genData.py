@@ -49,10 +49,13 @@ def write_signal_to_file(filename, signal, OSR, fs):
         # Write metadata
         file.write(f"# OSR={OSR}\n")
         file.write(f"# fs={fs}\n")
-        file.write(f"# Signal data below\n")
 
-        # Check if the signal contains complex values
-        if isinstance(signal[0], complex):
+         # Check if the signal contains complex values
+        is_complex = np.iscomplexobj(signal)
+        file.write(f"# complex={1 if is_complex else 0}\n")
+        
+        # Write signal data
+        if is_complex:
             # Write complex signal values
             for value in signal:
                 file.write(f"{float(value.real)} {float(value.imag)}\n")
@@ -88,8 +91,8 @@ def main():
 
     # Generate and write signal
     signal = generate_signal(N, M, OSR, f, fs)
-    write_signal_to_file("../data/sinDataComplex.txt", signal, OSR, fs)
-    write_signal_to_file("../data/sinData.txt", signal.real, OSR, fs)
+    write_signal_to_file("./data/input/sinDataComplex.txt", signal, OSR, fs)
+    write_signal_to_file("./data/input/sinData.txt", signal.real, OSR, fs)
 
     LUT1 = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Level 8
@@ -194,7 +197,7 @@ def main():
 
     # Save LUTs to files
     LUTs = [LUT1, LUT2, LUT3, LUT4, LUT5]
-    fileNames = ['../data/LUT1.json', '../data/LUT2.json', '../data/LUT3.json', '../data/LUT4.json', '../data/LUT5.json']
+    fileNames = ['./data/luts/LUT1.json', './data/luts/LUT2.json', './data/luts/LUT3.json', './data/luts/LUT4.json', './data/luts/LUT5.json']
     save_luts_to_json(LUTs, fileNames)
 
 

@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
 }
 
 std::string modifyFileName(const std::string& fileName, const std::string& suffix, const std::string& lutFileName = "") {
-    const std::string inputDir = "../data/inputData/";
-    const std::string outputDir = "../data/outputData/";
+    const std::string inputDir = "./data/input/";
+    const std::string outputDir = "./data/output/";
 
     // Extract the LUT identifier from lutFileName if provided
     std::string lutIdentifier;
