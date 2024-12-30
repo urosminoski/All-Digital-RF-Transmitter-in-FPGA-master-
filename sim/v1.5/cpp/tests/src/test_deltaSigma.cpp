@@ -3,6 +3,7 @@
 #include <memory>
 #include <cmath>
 #include <variant>
+#include <type_traits>
 #include <ac_fixed.h>
 #include <ac_complex.h>
 #include <complex>
@@ -174,7 +175,7 @@ public:
         if (!fixedVec) {
             throw std::runtime_error("Vector is storing complex data; cannot add real data");
         }
-        fixedVec->emnplace_back(value);
+        fixedVec->emplace_back(value);
     }
 
     void push_back(std::complex<double> value) {
@@ -183,6 +184,66 @@ public:
             throw std::runtime_error("Vector is storing real data; cannot add complex data");
         }
         fixedVec->emplace_back(value);
+    }
+
+    void print() const {
+        std::visit([](const auto& vec) {
+            using T = typename std::decay_t<decltype(vec)>;
+            if constexpr (std::is_same_v<T, std::vector<ac_fixed<W, I, S, Q, O>>>) {
+                for (const auto& val : vec) {
+                    std::cout << val.to_double() << ", ";
+                }
+                std::cout << std::endl;
+            } else if constexpr (std::is_same_v<T, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>) {
+                for (const auto& val : vec) {
+                    std::cout << "(" << val.r().to_double() << ", " << val.i().to_double() << "), ";
+                }
+                std::cout << std::endl;
+            }
+        }, data);
+    }
+
+    auto getVal(size_t index) const {
+        return std::visit([index](const auto& vec) -> std::variant<ac_fixed<W, I, S, Q, O>, ac_complex<ac_fixed<W, I, S, Q, O>>> {
+            if (index >= vec.size()) {
+                throw std::out_of_range("Index out of bounds!");
+            }
+            return vec[index];
+        }, data);
+    }
+
+    ac_fixed<W, I, S, Q, O> getReal(size_t index) {
+        if (std::holds_alternative<std::vector<ac_fixed<W, I, S, Q, O>>>(data)) {
+            const auto& vec = std::get<std::vector<ac_fixed<W, I, S, Q, O>>>(data);
+            if (index >= vec.size()) {
+                throw std::out_of_range("Index out of bounds!");
+            } else {
+                return vec[index];
+            }
+        } else {
+            throw std::runtime_error("Data does not contain complex values.");
+        }
+    }
+
+    ac_complex<ac_fixed<W, I, S, Q, O>> getComplex(size_t index) {
+        if (std::holds_alternative<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(data)) {
+            const auto& vec = std::get<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(data);
+            if (index >= vec.size()) {
+                throw std::out_of_range("Index out of bounds!");
+            } else {
+                return vec[index];
+            }
+        } else {
+            throw std::runtime_error("Data does not contain real values.");
+        }
+    }
+
+    bool isComplex() const {
+        return std::holds_alternative<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(data);
+    }
+
+    bool isReal() const {
+        return std::holds_alternative<std::vector<ac_fixed<W, I, S, Q, O>>>(data);
     }
 };
 
@@ -211,6 +272,21 @@ int main() {
 
     FixedPointVector<W, I, S, Q, O> fixedRealVec(realVec);
     FixedPointVector<W, I, S, Q, O> fixedComplexVec(complexVec);
+
+    fixedRealVec.print();
+    fixedComplexVec.print();
+
+    if (fixedRealVec.isReal()) {
+        std::cout << fixedRealVec.getReal(0).to_double() << std::endl;   
+    } else {
+        std::cout << "(" << fixedRealVec.getComplex(0).r().to_double() << ", " << fixedRealVec.getComplex(0).i().to_double() << ")" << std::endl;
+    }
+
+    if (fixedComplexVec.isReal()) {
+        std::cout << fixedComplexVec.getReal(0).to_double() << std::endl;   
+    } else {
+        std::cout << "(" << fixedComplexVec.getComplex(0).r().to_double() << ", " << fixedComplexVec.getComplex(0).i().to_double() << ")" << std::endl;
+    }
 
     return 0;
 }
