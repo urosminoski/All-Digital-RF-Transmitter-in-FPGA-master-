@@ -23,7 +23,7 @@ TEST_OBJS = $(patsubst $(TEST_SRC_DIR)/%.cpp, $(TEST_OBJ_DIR)/%.o, $(TEST_SRCS))
 CPP = g++
 CPPFLAGS = -g -Wall -Wextra -O0 -I$(INC_DIR) -I$(LIB_DIR1) -I$(LIB_DIR2) -Wno-deprecated-copy
 
-.PHONY: all clean run tests run-tests
+.PHONY: all clean run tests run-tests run-test
 
 # Default target
 all: $(BIN_DIR)/$(BIN_FILE)
@@ -60,6 +60,13 @@ run-tests: tests
 		$$test_bin || exit 1; \
 	done
 	@echo "All tests passed!"
+
+# Compile and run a single test file
+TEST_FILE ?= serialization.cpp
+run-test: $(TEST_OBJ_DIR)/$(TEST_FILE:.cpp=.o) $(OBJS_NO_MAIN) | $(TEST_BIN_DIR)
+	$(CPP) $(CPPFLAGS) -o $(TEST_BIN_DIR)/$(TEST_FILE:.cpp=) $^ -g
+	@echo "Running $(TEST_BIN_DIR)/$(TEST_FILE:.cpp=)..."
+	@$(TEST_BIN_DIR)/$(TEST_FILE:.cpp=)
 
 # Clean all build artifacts
 clean:
