@@ -156,6 +156,27 @@ public:
     }
 };
 
+template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
+void deltaSigma(const std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>& inputSignal,
+                std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>& outputSignal,
+                std::vector<FixedPointVector<W, I, S, Q, O>> firCoeff) {
+    // Ensure output vector is empty
+    std::visit([](const auto& vec) { vec.clear(); }, outputSignal);
+
+    // Lambda to process both real and complex cases
+    auto process = [&](auto& input, auto& output) {
+        using SignalType = typename std::decay_t<decltype(input)>::value_type;
+
+        // Initialize variables for intermediate and feedback computations
+        SignalType y_iir = 0, e = 0, y_i = 0;
+        SignalType x0 = 0, x0d = 0; // Stage 0 variables
+        SignalType x1 = 0, w1 = 0, w1d = 0, w1dd = 0; // Stage 1 variables
+        SignalType x2 = 0, w2 = 0, w2d = 0, w2dd = 0; // Stage 2 variables
+        SignalType xin = 0; // Input sample
+    }
+
+}
+
 
 #define IIR_FILTERS { \
   {7.3765809, 0, 0, 1, 0.3466036, 0}, \
@@ -166,7 +187,7 @@ public:
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         // Expecting two parameters, file names
-        std::cerr << "Usage: " << argv[0] << " <input_file> <output_deltaSigma_file> <input_LUT_file> <output_serial_file>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file> <input_LUT_file> " << std::endl;
         return 1;
     }
 
