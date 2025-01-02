@@ -11,9 +11,63 @@
 #include <complex>
 
 template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
-class FixedPointVector {
+class FixedPoint {
 private:
     std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>> data;
+
+    // Helper functions for file reading
+    static void readMetadata(std::ifstream& inputFile, std::map<std::string, double>& metadata) {
+        metadata.clear();
+        std::string line;
+
+        while (std::getline(inputFile, line)) {
+            if (line.empty() || line[0] != '#') {
+                inputFile.seekg(-static_cast<int>(line.size()) - 1, std::ios::cur);
+                break;
+            }
+
+            size_t delimiter_pos = line.find('=');
+            if (delimiter_pos != std::string::npos) {
+                std::string key = line.substr(1, delimiter_pos - 1);
+                std::string value_str = line.substr(delimiter_pos + 1);
+                try {
+                    metadata[key] = std::stod(value_str);
+                } catch (const std::invalid_argument&) {
+                    throw std::runtime_error("Invalid value in metadata: " + value_str);
+                }
+            } else {
+                throw std::runtime_error("Malformed metadata line: " + line);
+            }
+        }
+    }
+
+    static void parseDataLine(const std::string& line, bool isComplex,
+                              std::vector<double>& realData,
+                              std::vector<std::complex<double>>& complexData) {
+        const char* str = line.c_str();
+        char* end;
+        std::vector<double> values;
+
+        while (*str != '\0') {
+            double value = std::strtod(str, &end);
+
+            if (str == end) {
+                throw std::runtime_error("Failed to parse value in line: " + line);
+            }
+
+            values.push_back(value);
+            str = end;
+            while (*str == ' ') ++str;
+        }
+
+        if (isComplex && values.size() == 2) {
+            complexData.emplace_back(values[0], values[1]);
+        } else if (!isComplex && values.size() == 1) {
+            realData.push_back(values[0]);
+        } else {
+            throw std::runtime_error("Inconsistent data format in line: " + line);
+        }
+    }
 
 public:
 
@@ -24,35 +78,43 @@ public:
     constexpr ac_q_mode getQMode() const { return Q; }
     constexpr ac_o_mode getOMode() const { return O; }
 
-    FixedPointVector(bool isComplex = false) {
-        if (isComplex) {
-            data = std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>();
-        } else {
-            data = std::vector<ac_fixed<W, I, S, Q, O>>();
-        }
+     // Expose the underlying variant
+    const auto& getVariant() const {
+        return data;
     }
 
-    // FixedPointVector(const std::vector<double>& InputVec) {
-    //     std::vector<ac_fixed<W, I, S, Q, O>> fixedVec;
-    //     fixedVec.reserve(InputVec.size());
-    //     for (const auto& realVal : InputVec) {
-    //         fixedVec.emplace_back(realVal);
-    //     }
-    //     data = std::move(fixedVec);
-    // }
+    auto& getVariant() {
+        return data;
+    }
 
-    // FixedPointVector(const std::vector<std::complex<double>>& InputVec) {
-    //     std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>> fixedVec;
-    //     fixedVec.reserve(InputVec.size());
-    //     for (const auto& complexVal : InputVec) {
-    //         ac_fixed<W, I, S, Q, O> realPart(complexVal.real());
-    //         ac_fixed<W, I, S, Q, O> imagPart(complexVal.imag());
-    //         fixedVec.emplace_back(ac_complex<ac_fixed<W, I, S, Q, O>>(realPart, imagPart));
-    //     }
-    //     data = std::move(fixedVec);
-    // }
+    // 
+    FixedPoint(bool isComplex = false)
+        : data(isComplex 
+            ? std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(
+                std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>())
+            :std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(
+                std::vector<ac_fixed<W, I, S, Q, O>>())) {}
 
-    FixedPointVector(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& InputVec) {
+    FixedPoint(const std::vector<double>& inputVec) {
+        std::vector<ac_fixed<W, I, S, Q, O>> fixedVec;
+        for (const auto& val : inputVec) {
+            fixedVec.emplace_back(val);
+        }
+        data = std::move(fixedVec);
+    }
+
+    FixedPoint(const std::vector<std::complex<double>>& inputVec) {
+        std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>> fixedVec;
+        for (const auto& val : inputVec) {
+            fixedVec.emplace_back(
+                ac_fixed<W, I, S, Q, O>(val.real()),
+                ac_fixed<W, I, S, Q, O>(val.imag())
+            );
+        }
+        data = std::move(fixedVec);
+    }
+
+    FixedPoint(const std::variant<std::vector<double>, std::vector<std::complex<double>>>& InputVec) {
         std::visit([&](const auto& vec) {
             using T = std::decay_t<decltype(vec)>;
             if constexpr (std::is_same_v<T, std::vector<double>>) {
@@ -79,103 +141,226 @@ public:
         }, InputVec);
     }
 
-    void push_back(double value) {
-        auto& fixedVec = std::get_if<std::vector<ac_fixed<W, I, S, Q, O>>>(&data);
+    void push_back(const double val) {
+        auto* fixedVec = std::get_if<std::vector<ac_fixed<W, I, S, Q, O>>>(&data);
         if (!fixedVec) {
-            throw std::runtime_error("Vector is storing complex data; cannot add real data");
+            throw std::runtime_error("Vector is storing complex data; cannot add real data!");
         }
-        fixedVec->emplace_back(value);
+        fixedVec->emplace_back(ac_fixed<W, I, S, Q, O>(val));
     }
 
-    void push_back(std::complex<double> value) {
-        auto& fixedVec = std::get_if<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(&data);
-        if (!fixedVec) {
-            throw std::runtime_error("Vector is storing real data; cannot add complex data");
+    void push_back(const std::complex<double> val) {
+        auto* fixedComplexVec = std::get_if<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(&data);
+        if (!fixedComplexVec) {
+            throw std::runtime_error("Vector is storing real data; cannot add complex data!");
         }
-        fixedVec->emplace_back(value);
+        fixedComplexVec->emplace_back(ac_complex<ac_fixed<W, I, S, Q, O>>(
+            ac_fixed<W, I, S, Q, O>(val.real()),
+            ac_fixed<W, I, S, Q, O>(val.imag())
+        ));
     }
 
     void print() const {
         std::visit([](const auto& vec) {
             using T = typename std::decay_t<decltype(vec)>;
             if constexpr (std::is_same_v<T, std::vector<ac_fixed<W, I, S, Q, O>>>) {
+                std::cout << "Real Data:\n";
                 for (const auto& val : vec) {
-                    std::cout << val.to_double() << ", ";
+                    std::cout << val.to_double() << "\n";
                 }
-                std::cout << std::endl;
+                std::cout << "\n";
             } else if constexpr (std::is_same_v<T, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>) {
+                std::cout << "Complex Data:\n";
                 for (const auto& val : vec) {
-                    std::cout << "(" << val.r().to_double() << ", " << val.i().to_double() << "), ";
+                    std::cout << "(" << val.r().to_double() << ", " <<  val.i().to_double() << ")\n";
                 }
-                std::cout << std::endl;
+                std::cout << "\n";
             }
         }, data);
     }
 
-    auto getVal(size_t index) const {
-        return std::visit([index](const auto& vec) -> std::variant<ac_fixed<W, I, S, Q, O>, ac_complex<ac_fixed<W, I, S, Q, O>>> {
-            if (index >= vec.size()) {
-                throw std::out_of_range("Index out of bounds!");
+    ac_fixed<W, I, S, Q, O> getReal(const size_t index) {
+        auto* fixedVec = std::get_if<std::vector<ac_fixed<W, I, S, Q, O>>>(&data);
+        if (!fixedVec) {
+            throw std::runtime_error("Vector does not contain real values!");
+        }
+        if (index >= fixedVec->size()) {
+            throw std::out_of_range("Index out of bounds!");
+        }
+        return (*fixedVec)[index];
+    }
+
+    ac_fixed<W, I, S, Q, O> getReal(const size_t index) const {
+        auto* fixedVec = std::get_if<std::vector<ac_fixed<W, I, S, Q, O>>>(&data);
+        if (!fixedVec) {
+            throw std::runtime_error("Vector does not contain real values!");
+        }
+        if (index >= fixedVec->size()) {
+            throw std::out_of_range("Index out of bounds!");
+        }
+        return (*fixedVec)[index];
+    }
+
+    ac_complex<ac_fixed<W, I, S, Q, O>> getComplex(const size_t index) {
+        auto* fixedVec = std::get_if<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(&data);
+        if (!fixedVec) {
+            throw std::runtime_error("Vector does not contain complex values!");
+        }
+        if (index >= fixedVec->size()) {
+            throw std::out_of_range("Index out of bounds!");
+        }
+        return (*fixedVec)[index];
+    }
+
+    ac_complex<ac_fixed<W, I, S, Q, O>> getComplex(const size_t index) const {
+        auto* fixedVec = std::get_if<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(&data);
+        if (!fixedVec) {
+            throw std::runtime_error("Vector does not contain complex values!");
+        }
+        if (index >= fixedVec->size()) {
+            throw std::out_of_range("Index out of bounds!");
+        }
+        return (*fixedVec)[index];
+    }
+
+    void readFromFile(const std::string& fileName, std::map<std::string, double>& metadata) {
+        std::ifstream inputFile(fileName);
+        if (!inputFile.is_open()) {
+            throw std::runtime_error("Cannot open file " + fileName);
+        }
+
+        inputFile.precision(std::numeric_limits<double>::digits10 + 1);
+        metadata.clear();
+
+        bool isComplex = false;
+        bool firstDataLine = true;
+        std::vector<double> realData;
+        std::vector<std::complex<double>> complexData;
+        std::string line;
+
+        readMetadata(inputFile, metadata);
+
+        while (std::getline(inputFile, line)) {
+            if (firstDataLine) {
+                std::istringstream iss(line);
+                int count = 0;
+                double tmp;
+                while (iss >> tmp) count++;
+
+                if (count == 2) {
+                    isComplex = true;
+                } else if (count == 1) {
+                    isComplex = false;
+                } else {
+                    throw std::runtime_error("Invalid data format in line: " + line);
+                }
+                firstDataLine = false;
             }
-            return vec[index];
+
+            parseDataLine(line, isComplex, realData, complexData);
+        }
+
+        if (isComplex) {
+            std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>> fixedComplexData;
+            for (const auto& c : complexData) {
+                fixedComplexData.emplace_back(
+                    ac_fixed<W, I, S, Q, O>(c.real()),
+                    ac_fixed<W, I, S, Q, O>(c.imag()));
+            }
+            data = std::move(fixedComplexData);
+        } else {
+            std::vector<ac_fixed<W, I, S, Q, O>> fixedRealData;
+            for (const auto& r : realData) {
+                fixedRealData.emplace_back(ac_fixed<W, I, S, Q, O>(r));
+            }
+            data = std::move(fixedRealData);
+        }
+
+        inputFile.close();
+    }
+
+    void writeToFile(const std::string& fileName,
+                     const std::map<std::string, double>& metadata) {
+        // Open file for writing
+        std::ofstream outputFile(fileName);
+        if (!outputFile.is_open()) {
+            throw std::runtime_error("Error: cannot open file " + fileName + "for writing!");
+
+        }
+
+        // Write metadata
+        for (const auto& [key, val] : metadata) {
+            outputFile << "#" << key << "=" << val << "\n";
+        }
+
+        // Write data
+        std::visit([&outputFile](const auto& dataVec) {
+            for (const auto& val : dataVec) {
+                using T = typename std::decay_t<decltype(val)>;
+                if constexpr (std::is_same_v<T, ac_fixed<W, I, S, Q, O>>) {
+                    outputFile << val.to_double();
+                } else if constexpr (std::is_same_v<T, ac_complex<ac_fixed<W, I, S, Q, O>>>) {
+                    outputFile << val.r().to_double() << " " << val.i().to_double() << "\n";
+                } else {
+                    throw std::runtime_error("Error: Unexpected data type during write operation.\n");
+                }
+            }
         }, data);
     }
 
-    ac_fixed<W, I, S, Q, O> getReal(size_t index) {
-        if (std::holds_alternative<std::vector<ac_fixed<W, I, S, Q, O>>>(data)) {
-            const auto& vec = std::get<std::vector<ac_fixed<W, I, S, Q, O>>>(data);
-            if (index >= vec.size()) {
-                throw std::out_of_range("Index out of bounds!");
-            } else {
-                return vec[index];
+    template<int newW, int newI>
+    void deltaSigma(const std::vector<FixedPoint<W, I, S, Q, O>>& iirCoefficients) {
+        // Lambda to process both real and complex data
+        auto process = [&](auto& vector, const auto& iirCoefficients) -> void {
+            using OriginalSignalType = typename std::decay_t<decltype(vector)>::value_type;
+            using SignalType = std::conditional_t<
+                std::is_same_v<OriginalSignalType, ac_fixed<W, I, S, Q, O>>,
+                ac_fixed<newW, newI, S, Q,O>,
+                ac_complex<ac_fixed<newW, newI, S, Q, O>>
+            >;
+            using SignalTypeOut = std::conditional_t<
+                std::is_same_v<OriginalSignalType, ac_fixed<W, I, S, Q, O>>,
+                ac_fixed<newI, newI, S, Q, O>,
+                ac_complex<ac_fixed<newI, newI, S, Q, O>>
+            >;
+
+            // Initialize variables for intermediate and feedback computations
+            SignalType iirOutput = 0, error = 0, intermediateOutput = 0;
+            SignalTypeOut outputSample = 0;
+            // Initialize IIR states (y, w, wd, wdd)
+            std::vector<std::vector<SignalType>> delayLine(
+                iirCoefficients.size(),
+                std::vector<SignalType>(3, SignalType())
+            );
+
+            for (auto& sample : vector) {
+                intermediateOutput = sample + iirOutput;
+                outputSample = intermediateOutput;
+                // Append the processed sample to the output vector
+                sample = outputSample;
+                error = intermediateOutput - outputSample;
+
+                iirOutput = 0;
+                for (size_t i = 0; i < iirCoefficients.size(); i++) {
+                    delayLine[i][0] = error - iirCoefficients[i].getReal(4)*delayLine[i][1] - 
+                                              iirCoefficients[i].getReal(5)*delayLine[i][2];
+                    iirOutput += iirCoefficients[i].getReal(0)*delayLine[i][0] + 
+                                 iirCoefficients[i].getReal(1)*delayLine[i][1] + 
+                                 iirCoefficients[i].getReal(2)*delayLine[i][2];
+                    delayLine[i][2] = delayLine[i][1];
+                    delayLine[i][1] = delayLine[i][0];
+                }
             }
-        } else {
-            throw std::runtime_error("Data does not contain complex values.");
-        }
-    }
+        };
 
-    ac_complex<ac_fixed<W, I, S, Q, O>> getComplex(size_t index) {
-        if (std::holds_alternative<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(data)) {
-            const auto& vec = std::get<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(data);
-            if (index >= vec.size()) {
-                throw std::out_of_range("Index out of bounds!");
-            } else {
-                return vec[index];
-            }
-        } else {
-            throw std::runtime_error("Data does not contain real values.");
-        }
-    }
-
-    bool isComplex() const {
-        return std::holds_alternative<std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>(data);
-    }
-
-    bool isReal() const {
-        return std::holds_alternative<std::vector<ac_fixed<W, I, S, Q, O>>>(data);
+        // Use std::visit ti handle variant
+        auto& variantData = this->data;
+        std::visit([&](auto& vector) -> void {
+            process(vector, iirCoefficients);
+        }, variantData);
     }
 };
 
-template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
-void deltaSigma(const std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>& inputSignal,
-                std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>>& outputSignal,
-                std::vector<FixedPointVector<W, I, S, Q, O>> firCoeff) {
-    // Ensure output vector is empty
-    std::visit([](const auto& vec) { vec.clear(); }, outputSignal);
-
-    // Lambda to process both real and complex cases
-    auto process = [&](auto& input, auto& output) {
-        using SignalType = typename std::decay_t<decltype(input)>::value_type;
-
-        // Initialize variables for intermediate and feedback computations
-        SignalType y_iir = 0, e = 0, y_i = 0;
-        SignalType x0 = 0, x0d = 0; // Stage 0 variables
-        SignalType x1 = 0, w1 = 0, w1d = 0, w1dd = 0; // Stage 1 variables
-        SignalType x2 = 0, w2 = 0, w2d = 0, w2dd = 0; // Stage 2 variables
-        SignalType xin = 0; // Input sample
-    }
-
-}
 
 
 #define IIR_FILTERS { \
@@ -185,46 +370,51 @@ void deltaSigma(const std::variant<std::vector<ac_fixed<W, I, S, Q, O>>, std::ve
 }
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        // Expecting two parameters, file names
-        std::cerr << "Usage: " << argv[0] << " <input_file> <input_LUT_file> " << std::endl;
-        return 1;
-    }
-
-    std::string inputDataFileName = argv[1];
-    std::string inputLutFileName = argv[2];
-
-    // Read input file
-    std::variant<std::vector<double>, std::vector<std::complex<double>>> inputData;
-    std::map<std::string, double> metadata;
-    if (!readFromFile(inputDataFileName, inputData, metadata)) {
-        std::cerr << "Error: Reading form file " << inputDataFileName << " was unsuccessful!" << std::endl;
-        return 1;
-    }
-
     constexpr int W = 12; 
     constexpr int I = 4;
     constexpr bool S = true;
     constexpr ac_q_mode Q = AC_RND;
     constexpr ac_o_mode O = AC_SAT;
 
-    // Discretize IIR coeffitients
+    std::vector<FixedPoint<W, I, S, Q, O>> iirCoeffFixed;
     std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
-    std::vector<FixedPointVector<W, I, S, Q, O>> iirCoeffFixed;
     for (const auto& vec : iirCoeff) {
-        FixedPointVector<W, I, S, Q, O> fixedVec(vec);
-        iirCoeffFixed.emplace_back(fixedVec);
+        iirCoeffFixed.emplace_back(FixedPoint<W, I, S, Q, O>(vec));
     }
 
-    FixedPointVector<W, I, S, Q, O> inputDataFixed(inputData);
+    std::map<std::string, double> metadata;
+    FixedPoint<W, I, S, Q, O> signal;
+    signal.readFromFile("./data/input/sinData.txt", metadata);
+    signal.deltaSigma<2*W, I>(iirCoeffFixed);
+    signal.writeToFile("./data/output/sinData_deltaSigma.txt", metadata);
 
-    // deltaSigma(inputDataFixed, iirCoeffFixed);
+    // std::vector<double> realVec = {1.23452523, -0.23451, 3.2134561234, -2.2123455663};
+    // std::vector<std::complex<double>> complexVec = {
+    //     {1.23452523, 0.3456},       
+    //     {-0.23451, -0.1234},        
+    //     {3.2134561234, 1.5678},     
+    //     {-2.2123455663, 0.0}       
+    // };
 
-    // inputDataFixed.print();
+    // FixedPoint<W, I, S, Q, O> fixedRealVec(realVec);
+    // fixedRealVec.print();
+    // fixedRealVec.push_back(3.2123341234);
+    // fixedRealVec.print();
 
-    // for (const auto& vec : iirCoeffFixed) {
-    //     vec.print();
-    // }
+    // std::cout << "Real value at pos 2 = " << fixedRealVec.getReal(2).to_double() << "\n" << std::endl;
+
+    // FixedPoint<W, I, S, Q, O> fixedComplexVec(complexVec);
+    // fixedComplexVec.print();
+    // fixedComplexVec.push_back(std::complex<double>(0.23123342, -1.2323431));
+    // fixedComplexVec.print();
+
+    // std::cout << "Complex value at pos 2 = (" << fixedComplexVec.getComplex(2).r().to_double() << ", " << fixedComplexVec.getComplex(2).i().to_double() << ")\n" << std::endl;
+
+    // fixedComplexVec.deltaSigma<2*W, I>(iirCoeffFixed);
+    // fixedComplexVec.print();
+
+    // std::map<std::string, double> metadata;
+    // fixedComplexVec.writeToFile("tmp.txt", metadata);
 
     return 0;
 }
