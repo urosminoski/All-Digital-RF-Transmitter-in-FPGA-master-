@@ -229,7 +229,7 @@ public:
             throw std::runtime_error("Cannot open file " + fileName);
         }
 
-        inputFile.precision(std::numeric_limits<double>::digits10 + 1);
+        // inputFile.precision(std::numeric_limits<double>::digits10 + 1);
         metadata.clear();
 
         bool isComplex = false;
@@ -298,7 +298,7 @@ public:
             for (const auto& val : dataVec) {
                 using T = typename std::decay_t<decltype(val)>;
                 if constexpr (std::is_same_v<T, ac_fixed<W, I, S, Q, O>>) {
-                    outputFile << val.to_double();
+                    outputFile << val.to_double() << "\n";
                 } else if constexpr (std::is_same_v<T, ac_complex<ac_fixed<W, I, S, Q, O>>>) {
                     outputFile << val.r().to_double() << " " << val.i().to_double() << "\n";
                 } else {
@@ -384,37 +384,9 @@ int main(int argc, char* argv[]) {
 
     std::map<std::string, double> metadata;
     FixedPoint<W, I, S, Q, O> signal;
-    signal.readFromFile("./data/input/sinData.txt", metadata);
+    signal.readFromFile("./data/input/sinDataComplex.txt", metadata);
     signal.deltaSigma<2*W, I>(iirCoeffFixed);
-    signal.writeToFile("./data/output/sinData_deltaSigma.txt", metadata);
-
-    // std::vector<double> realVec = {1.23452523, -0.23451, 3.2134561234, -2.2123455663};
-    // std::vector<std::complex<double>> complexVec = {
-    //     {1.23452523, 0.3456},       
-    //     {-0.23451, -0.1234},        
-    //     {3.2134561234, 1.5678},     
-    //     {-2.2123455663, 0.0}       
-    // };
-
-    // FixedPoint<W, I, S, Q, O> fixedRealVec(realVec);
-    // fixedRealVec.print();
-    // fixedRealVec.push_back(3.2123341234);
-    // fixedRealVec.print();
-
-    // std::cout << "Real value at pos 2 = " << fixedRealVec.getReal(2).to_double() << "\n" << std::endl;
-
-    // FixedPoint<W, I, S, Q, O> fixedComplexVec(complexVec);
-    // fixedComplexVec.print();
-    // fixedComplexVec.push_back(std::complex<double>(0.23123342, -1.2323431));
-    // fixedComplexVec.print();
-
-    // std::cout << "Complex value at pos 2 = (" << fixedComplexVec.getComplex(2).r().to_double() << ", " << fixedComplexVec.getComplex(2).i().to_double() << ")\n" << std::endl;
-
-    // fixedComplexVec.deltaSigma<2*W, I>(iirCoeffFixed);
-    // fixedComplexVec.print();
-
-    // std::map<std::string, double> metadata;
-    // fixedComplexVec.writeToFile("tmp.txt", metadata);
+    signal.writeToFile("./data/output/sinDataComplex_deltaSigma.txt", metadata);
 
     return 0;
 }
