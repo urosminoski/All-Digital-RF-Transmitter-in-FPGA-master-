@@ -13,12 +13,14 @@ CPPFLAGS = -g -Wall -Wextra -O0 -w -I$(INC_DIR1) -I$(INC_DIR2) -I$(LIB_DIR1) -I$
 TEST1_SRC = $(SRC_DIR)/test_readWrite.cpp
 TEST2_SRC = $(SRC_DIR)/test_serialization.cpp
 TEST3_SRC = $(SRC_DIR)/test_deltaSigma.cpp
+TEST4_SRC = $(SRC_DIR)/test_fixedPointComposition.cpp
 COMMON_SRCS = $(filter-out $(COMMON_SRC_DIR)/main.cpp, $(wildcard $(COMMON_SRC_DIR)/*.cpp))
 
 # Binaries
 TEST1_BIN = $(BIN_DIR)/test_readWrite
 TEST2_BIN = $(BIN_DIR)/test_serialization
 TEST3_BIN = $(BIN_DIR)/test_deltaSigma
+TEST4_BIN = $(BIN_DIR)/test_fixedPointComposition
 
 .PHONY: all clean test1 test2 run_test1 run_test2
 
@@ -43,6 +45,12 @@ $(TEST3_BIN): $(TEST3_SRC) $(COMMON_SRCS) | $(BIN_DIR)
 
 test3: $(TEST3_BIN)
 
+# Rule to build test4
+$(TEST4_BIN): $(TEST4_SRC) $(COMMON_SRCS) | $(BIN_DIR)
+	$(CPP) $(CPPFLAGS) -o $@ $^
+
+test4: $(TEST4_BIN)
+
 # Run test1
 run_test1: $(TEST1_BIN)
 	@echo "Running test1..."
@@ -57,6 +65,11 @@ run_test2: $(TEST2_BIN)
 run_test3: $(TEST3_BIN)
 	@echo "Running test3..."
 	@$(TEST3_BIN)
+
+# Run test4
+run_test4: $(TEST4_BIN)
+	@echo "Running test4..."
+	@$(TEST4_BIN)
 
 # Create bin directory if it doesn't exist
 $(BIN_DIR):

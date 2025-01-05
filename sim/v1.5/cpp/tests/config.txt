@@ -1,0 +1,8 @@
+# Configuration for FixedPoint
+W=4
+I=4
+S=true
+Q=AC_RND
+O=AC_SAT
+input_file=./data/input/sinData.txt
+output_file=./data/output/sinData_out.txt
