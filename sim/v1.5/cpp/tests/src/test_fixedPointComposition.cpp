@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 #include <complex>
 #include <vector>
 #include <map>
@@ -13,8 +14,9 @@
 #include <string>
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-class VectorHandler;
-
+class FxpVectorHandler;
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+class FxpMatrixHandler;
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 class FixedPoint;
 
@@ -22,18 +24,18 @@ class FixedPoint;
 template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
 class FixedPoint {
 private:
-    std::unique_ptr<VectorHandler<W, I, S, Q, O>> vectorHandler;
-    // std::unique_ptr<MatrixHandler<W, I, S, Q, O>> matrixHandler;
+    std::unique_ptr<FxpVectorHandler<W, I, S, Q, O>> vectorHandler;
+    std::unique_ptr<FxpMatrixHandler<W, I, S, Q, O>> matrixHandler;
 
 public:
     // Constructor initializes handlers based on needs
     FixedPoint(bool useVector = true, bool useMatrix = false) {
         if (useVector) {
-            vectorHandler = std::make_unique<VectorHandler<W, I, S, Q, O>>();
+            vectorHandler = std::make_unique<FxpVectorHandler<W, I, S, Q, O>>();
         }
-        // if (useMatrix) {
-        //     matrixHandler = std::make_unique<MatrixHandler<W, I, S, Q, O>>();
-        // }
+        if (useMatrix) {
+            matrixHandler = std::make_unique<FxpMatrixHandler<W, I, S, Q, O>>();
+        }
     }
 
     // Initialize vector data
@@ -50,21 +52,13 @@ public:
         }
         vectorHandler->init(inVector);
     }
-    // // Initialize matrix data
-    // void initMatrix(const std::vector<double>& inMatrix) {
-    //     if (!matrixHandler) {
-    //         throw std::runtime_error("Matrix handler not initialized!");
-    //     }
-    //     matrixHandler->init(inMatrix);
-    // }
-
-    // // Perform delta-sigma modulation
-    // void deltaSigma() {
-    //     if (!vectorHandler || !matrixHandler) {
-    //         throw std::runtime_error("Bot vector and matrix handlers must be initialized!");
-    //     }
-    //     vectorHandler->deltaSigma(*matrixHandler);
-    // }
+    // Initialize matrix data
+    void initMatrix(const std::vector<std::vector<double>>& inMatrix) {
+        if (!matrixHandler) {
+            throw std::runtime_error("Matrix handler not initialized!");
+        }
+        matrixHandler->init(inMatrix);
+    }
 
     //
     void readVector(const std::string& fileName) {
@@ -80,6 +74,39 @@ public:
         vectorHandler->writeToFile(fileName);
     }
 
+    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t index) {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        vectorHandler->getFxpReal(index);
+    }
+    ac_complex<ac_fixed<W, I, S, Q, O>> getFxpComplex(const size_t index) {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        vectorHandler->getFxpComplex(index);
+    }
+    double getReal(const size_t index) {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        vectorHandler->getReal(index);
+    }
+    std::complex<double> getComplex(const size_t index) {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        vectorHandler->getComplex(index);
+    }
+
+    // // Perform delta-sigma modulation
+    // void deltaSigma() {
+    //     if (!vectorHandler || !matrixHandler) {
+    //         throw std::runtime_error("Bot vector and matrix handlers must be initialized!");
+    //     }
+    //     vectorHandler->deltaSigma(*matrixHandler);
+    // }
+
     // Printing methods for debugging
     void printVector() const {
         if (!vectorHandler) {
@@ -93,16 +120,59 @@ public:
         }
         vectorHandler->printMetadata();
     }
-    // void printMatrix() const {
-    //     if (!matrixHandler) {
-    //         throw std::runtime_error("Matrix handler not initialized!");
-    //     }
-    //     matrixHandler->print();
-    // }
+    void printMatrix() const {
+        if (!matrixHandler) {
+            throw std::runtime_error("Matrix handler not initialized!");
+        }
+        matrixHandler->print();
+    }
 };
 
 template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
-class VectorHandler {
+class FxpMatrixHandler {
+private:
+    using FxpRealVector = std::vector<ac_fixed<W, I, S, Q, O>>;
+    using FxpRealMatrix = std::vector<std::vector<ac_fixed<W, I, S, Q, O>>>;
+    
+    FxpRealMatrix matrixData;
+
+public:
+    FxpMatrixHandler()
+        : matrixData(FxpRealMatrix{}) {}
+
+    FxpMatrixHandler(const std::vector<std::vector<double>>& inMatrix) {
+        for (const auto& row : inMatrix) {
+            FxpRealVector fxpVector;
+            for (const auto& val : row) {
+                fxpVector.emplace_back(val);
+            }
+            matrixData.emplace_back(std::move(fxpVector));
+        }
+    }
+
+    void init(const std::vector<std::vector<double>>& inMatrix) {
+        for (const auto& row : inMatrix) {
+            FxpRealVector fxpVector;
+            for (const auto& val : row) {
+                fxpVector.emplace_back(val);
+            }
+            matrixData.emplace_back(std::move(fxpVector));
+        }
+    }
+
+    void print() const {
+        std::cout << "\nMatrix Data:\n";
+        for (const auto& row : matrixData) {
+            for (const auto& val : row) {
+                std::cout << val.to_double() << ", ";
+            }
+            std::cout << "\n";
+        }
+    }
+};
+
+template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
+class FxpVectorHandler {
 private:
     using FxpRealVector = std::vector<ac_fixed<W, I, S, Q, O>>;
     using FxpComplexVector = std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>;
@@ -167,6 +237,32 @@ private:
     }
 
 public:
+    // Default constructor
+    FxpVectorHandler()
+        : vectorData(FxpRealVector{})  // Initialize with an empty real vector by default
+    {
+        // Optionally initialize metadata or other state here
+        metadata.clear();
+    }
+
+    // Initialize with real data
+    FxpVectorHandler(const std::vector<double>& inVector) {
+        FxpRealVector fxpVector;
+        for (const auto& val : inVector) {
+            fxpVector.emplace_back(val);
+        }
+        vectorData = std::move(fxpVector);
+    }
+    // Initialize with complex data
+    FxpVectorHandler(const std::vector<std::complex<double>>& inVector) {
+        FxpComplexVector fxpVector;
+        for (const auto& val : inVector) {
+            fxpVector.emplace_back(ac_fixed<W, I, S, Q, O>(val.real()),
+                                   ac_fixed<W, I, S, Q, O>(val.imag()));
+        }
+        vectorData = std::move(fxpVector);
+    }
+
     // Initialize with real data
     void init(const std::vector<double>& inVector) {
         FxpRealVector fxpVector;
@@ -183,6 +279,49 @@ public:
                                    ac_fixed<W, I, S, Q, O>(val.imag()));
         }
         vectorData = std::move(fxpVector);
+    }
+
+    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t index) {
+        std::visit([](const auto& vec) {
+            using T = std::decay_t<decltype(vec)>;
+            if constexpr (std::is_same_v<T, FxpRealVector>) {
+                std::cout << "vectorData contains FxpRealVector.\n";
+            } else if constexpr (std::is_same_v<T, FxpComplexVector>) {
+                std::cout << "vectorData contains FxpComplexVector.\n";
+            } else {
+                std::cout << "vectorData contains an unexpected type.\n";
+            }
+        }, vectorData);
+
+        auto* vec = std::get_if<FxpRealVector>(&vectorData);
+        if (!vec) {
+            throw std::runtime_error("Vector does not contain real values!");
+        }
+        if (index >= vec->size()) {
+            throw std::runtime_error("Index is out of bound!");
+        }
+        std::cout << "Hello" << (*vec)[index] << std::endl;
+        return (*vec)[index];
+    }
+
+    ac_complex<ac_fixed<W, I, S, Q, O>> getFxpComplex(const size_t index) {
+        auto* vec = std::get_if<FxpComplexVector>(&vectorData);
+        if (!vec) {
+            throw std::runtime_error("Vector does not contain real values!");
+        }
+        if (index >= vec->size()) {
+            throw std::runtime_error("Index is out of bound!");
+        }
+        return (*vec)[index];
+    }
+
+    double getReal(const size_t index) {
+        return getFxpReal(index).to_double();
+    }
+
+    std::complex<double> getComplex(const size_t index) {
+        ac_complex<ac_fixed<W, I, S, Q, O>> complexFxp = getFxpComplex(index);
+        return std::complex<double>(complexFxp.r().to_double(), complexFxp.i().to_double());
     }
 
     // Print stored data for debugging
@@ -290,6 +429,8 @@ public:
                     outputFile << val.to_double() << "\n";
                 } else if constexpr (std::is_same_v<T, ac_complex<ac_fixed<W, I, S, Q, O>>>) {
                     outputFile << val.r().to_double() << " " << val.i().to_double() << "\n";
+                } else if constexpr (std::is_same_v<T, int>) {
+                    outputFile << val << "\n";
                 } else {
                     throw std::runtime_error("Error: Unexpected data type during write operation.\n");
                 }
@@ -364,7 +505,7 @@ public:
 }
 
 int main() {
-    constexpr int W = 4; 
+    constexpr int W = 12; 
     constexpr int I = 4;
     constexpr bool S = true;
     constexpr ac_q_mode Q = AC_RND;
@@ -381,12 +522,28 @@ int main() {
     // fxpData.printVector();
     // fxpData.printVectorMetadata();
 
-    std::string file_path_in = "./data/input/sinData.txt";
-    std::string file_path_out = "./data/output/sinData_out.txt";
+    // std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
 
-    FixedPoint<W, I, S, Q, O> fxpData;
-    fxpData.readVector(file_path_in);
-    fxpData.writeVector(file_path_out);
+    // std::string file_path_in = "./data/input/sinData.txt";
+    // std::string file_path_out = "./data/output/sinData_out.txt";
+
+    // FixedPoint<W, I, S, Q, O> fxpData(true, true);
+    // fxpData.readVector(file_path_in);
+    // fxpData.writeVector(file_path_out);
+    // fxpData.initMatrix(iirCoeff);
+    // fxpData.printMatrix();
+
+    std::vector<double> realData = {1.0, 2.0, 3.0};
+
+    FixedPoint<W, I, S, Q, O> fxpData(true, false);
+    fxpData.initVector(realData);
+    double RealVal = fxpData.getReal(0);
+
+
+    // ac_fixed<W, I, S, Q, O> fxpRealVal = fxpData.getFxpReal(0);
+    // // ac_complex<ac_fixed<W, I, S, Q, O>> fxpComplexVal = fxpData.getFxpComplex(0);
+    // double RealVal = fxpData.getReal(0);
+    // std::complex<double> ComplexVal = fxpData.getComplex(0);
 
     return 0;
 }
