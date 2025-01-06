@@ -6,12 +6,17 @@
 #include <variant>
 #include <memory>
 #include <type_traits>
+#include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 #include <ac_complex.h>
 
 #include <fstream>
 #include <sstream>
 #include <string>
+
+#define C_BITS_NUM  ( 4 )
+
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 class FxpVectorHandler;
@@ -74,38 +79,78 @@ public:
         vectorHandler->writeToFile(fileName);
     }
 
-    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t index) {
-        if (!vectorHandler) {
-            throw std::runtime_error("Vector handler not initialized!");
+    size_t getRowCount() const {
+        if (!matrixHandler) {
+            throw std::runtime_error("Matrix handler not initialized!");
         }
-        vectorHandler->getFxpReal(index);
+        return matrixHandler->getRowCount();
     }
-    ac_complex<ac_fixed<W, I, S, Q, O>> getFxpComplex(const size_t index) {
-        if (!vectorHandler) {
-            throw std::runtime_error("Vector handler not initialized!");
+    size_t getColCount(const size_t row = 0) const {
+        if (!matrixHandler) {
+            throw std::runtime_error("Matrix handler not initialized!");
         }
-        vectorHandler->getFxpComplex(index);
+        return matrixHandler->getColCount(row);
     }
-    double getReal(const size_t index) {
-        if (!vectorHandler) {
-            throw std::runtime_error("Vector handler not initialized!");
+    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t row, const size_t col) const {
+        if (!matrixHandler) {
+            throw std::runtime_error("Matrix handler not initialized!");
         }
-        vectorHandler->getReal(index);
+        return matrixHandler->getFxpReal(row, col);
     }
-    std::complex<double> getComplex(const size_t index) {
-        if (!vectorHandler) {
-            throw std::runtime_error("Vector handler not initialized!");
+    double getReal(const size_t row, const size_t col) const {
+        if (!matrixHandler) {
+            throw std::runtime_error("Matrix handler not initialized!");
         }
-        vectorHandler->getComplex(index);
+        return matrixHandler->getReal(row, col);
     }
 
-    // // Perform delta-sigma modulation
-    // void deltaSigma() {
-    //     if (!vectorHandler || !matrixHandler) {
-    //         throw std::runtime_error("Bot vector and matrix handlers must be initialized!");
-    //     }
-    //     vectorHandler->deltaSigma(*matrixHandler);
-    // }
+
+    size_t getSize() const {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getSize();
+    }
+
+    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t index) const {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getFxpReal(index);
+    }
+    ac_complex<ac_fixed<W, I, S, Q, O>> getFxpComplex(const size_t index) const {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getFxpComplex(index);
+    }
+    double getReal(const size_t index) const {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getReal(index);
+    }
+    std::complex<double> getComplex(const size_t index) const {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getComplex(index);
+    }
+
+    // Perform delta-sigma modulation
+    template<int intermediate_I, int out_I>
+    void deltaSigma() {
+        if (!vectorHandler || !matrixHandler) {
+            throw std::runtime_error("Both vector and matrix handlers must be initialized!");
+        }
+        vectorHandler->template deltaSigma<intermediate_I, out_I>(*matrixHandler);
+    }
+    void serialConverter(std::vector<std::vector<int>>& LUT) {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handlers must be initialized!");
+        }
+        vectorHandler->serialConverter(LUT);
+    }
 
     // Printing methods for debugging
     void printVector() const {
@@ -151,6 +196,7 @@ public:
     }
 
     void init(const std::vector<std::vector<double>>& inMatrix) {
+        matrixData.clear();     // Ensure empty matrix
         for (const auto& row : inMatrix) {
             FxpRealVector fxpVector;
             for (const auto& val : row) {
@@ -158,6 +204,31 @@ public:
             }
             matrixData.emplace_back(std::move(fxpVector));
         }
+    }
+
+    size_t getRowCount() const {
+        return matrixData.size();
+    }
+    size_t getColCount(const size_t row = 0) const {
+        if (row >= matrixData.size()) {
+            throw std::runtime_error("Row out of bounds!");
+        }
+        return matrixData[row].size();
+    }
+
+    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t row, const size_t col) const {
+        // auto* matrix = &matrixData; //std::get_if<FxpRealMatrix>(&matrixData);
+        // if (!matrix) {
+        //     throw std::runtime_error("Vector does not contain real values!");
+        // }
+        if (row >= matrixData.size() || col >= matrixData[0].size()) {
+            throw std::runtime_error("Row or column out of bound!");
+        }
+        return matrixData[row][col];
+    }
+
+    double getReal(const size_t row, const size_t col) const {
+        return getFxpReal(row, col).to_double();
     }
 
     void print() const {
@@ -179,7 +250,8 @@ private:
     
     std::variant<FxpRealVector,
                  FxpComplexVector,
-                 std::vector<int>> vectorData;
+                 std::vector<int>,
+                 std::vector<std::complex<int>>> vectorData;
     std::map<std::string, double> metadata;
 
     // Helper functions for file reading
@@ -265,6 +337,7 @@ public:
 
     // Initialize with real data
     void init(const std::vector<double>& inVector) {
+        vectorData.clear();     // Ensure empty vector
         FxpRealVector fxpVector;
         for (const auto& val : inVector) {
             fxpVector.emplace_back(val);
@@ -273,6 +346,7 @@ public:
     }
     // Initialize with complex data
     void init(const std::vector<std::complex<double>>& inVector) {
+        vectorData.clear();     // Ensure empty vector
         FxpComplexVector fxpVector;
         for (const auto& val : inVector) {
             fxpVector.emplace_back(ac_fixed<W, I, S, Q, O>(val.real()),
@@ -281,18 +355,11 @@ public:
         vectorData = std::move(fxpVector);
     }
 
-    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t index) {
-        std::visit([](const auto& vec) {
-            using T = std::decay_t<decltype(vec)>;
-            if constexpr (std::is_same_v<T, FxpRealVector>) {
-                std::cout << "vectorData contains FxpRealVector.\n";
-            } else if constexpr (std::is_same_v<T, FxpComplexVector>) {
-                std::cout << "vectorData contains FxpComplexVector.\n";
-            } else {
-                std::cout << "vectorData contains an unexpected type.\n";
-            }
-        }, vectorData);
+    size_t getSize() const {
+        return vectorData.size();
+    }
 
+    ac_fixed<W, I, S, Q, O> getFxpReal(const size_t index) {
         auto* vec = std::get_if<FxpRealVector>(&vectorData);
         if (!vec) {
             throw std::runtime_error("Vector does not contain real values!");
@@ -300,7 +367,6 @@ public:
         if (index >= vec->size()) {
             throw std::runtime_error("Index is out of bound!");
         }
-        std::cout << "Hello" << (*vec)[index] << std::endl;
         return (*vec)[index];
     }
 
@@ -431,6 +497,8 @@ public:
                     outputFile << val.r().to_double() << " " << val.i().to_double() << "\n";
                 } else if constexpr (std::is_same_v<T, int>) {
                     outputFile << val << "\n";
+                } else if constexpr (std::is_same_v<T, std::complex<int>>) {
+                    outputFile << val.real() << " " << val.imag() << "\n";
                 } else {
                     throw std::runtime_error("Error: Unexpected data type during write operation.\n");
                 }
@@ -438,64 +506,157 @@ public:
         }, vectorData);
     }
 
-    // template<typename SignalType>
-    // void IIR_parallel(SignalType& input, SignalType& output, 
-    //                   const FixedPoint<W, I, S, Q, O>& iirCoefficients,
-    //                   std::vector<std::vector<SignalType>>& delayLine) {
-    //     output = 0;
-    //     for (size_t i = 0; i < iirCoefficients.getMatrixRowCount(); i++) {
-    //         delayLine[i][0] = input - iirCoefficients.getMatrix(i, 4)*delayLine[i][1] - 
-    //                                     iirCoefficients.getMatrix(i, 5)*delayLine[i][2];
-    //         output += iirCoefficients.getMatrix(i, 0)*delayLine[i][0] + 
-    //                         iirCoefficients.getMatrix(i, 1)*delayLine[i][1] + 
-    //                         iirCoefficients.getMatrix(i, 2)*delayLine[i][2];
-    //         delayLine[i][2] = delayLine[i][1];
-    //         delayLine[i][1] = delayLine[i][0];
-    //     }
-    // }
+    template<typename SignalType>
+    void IIR_parallel(SignalType& input, SignalType& output, 
+                      const FxpMatrixHandler<W, I, S, Q, O>& iirCoefficients,
+                      std::vector<std::vector<SignalType>>& delayLine) {
+        output = 0;
+        for (size_t i = 0; i < iirCoefficients.getRowCount(); i++) {
+            delayLine[i][0] = input - iirCoefficients.getFxpReal(i, 4)*delayLine[i][1] - 
+                                        iirCoefficients.getFxpReal(i, 5)*delayLine[i][2];
+            output += iirCoefficients.getFxpReal(i, 0)*delayLine[i][0] + 
+                            iirCoefficients.getFxpReal(i, 1)*delayLine[i][1] + 
+                            iirCoefficients.getFxpReal(i, 2)*delayLine[i][2];
+            delayLine[i][2] = delayLine[i][1];
+            delayLine[i][1] = delayLine[i][0];
+        }
+    }
 
-    // template<int intermediate_I, int out_I>
-    // void deltaSigma(const FixedPoint<W, I, S, Q, O>& iirCoefficients) {
-    //     // Lambda to process both real and complex data
-    //     auto process = [&](auto& vector, const auto& iirCoefficients) -> void {
-    //         using OriginalSignalType = typename std::decay_t<decltype(vector)>::value_type;
-    //         using SignalType = std::conditional_t<
-    //             std::is_same_v<OriginalSignalType, ac_fixed<W, I, S, Q, O>>,
-    //             ac_fixed<2*W, intermediate_I, S, Q, O>,
-    //             ac_complex<ac_fixed<2*W, intermediate_I, S, Q, O>>
-    //         >;
-    //         using SignalTypeOut = std::conditional_t<
-    //             std::is_same_v<OriginalSignalType, ac_fixed<W, I, S, Q, O>>,
-    //             ac_fixed<out_I, out_I, S, Q, O>,
-    //             ac_complex<ac_fixed<out_I, out_I, S, Q, O>>
-    //         >;
+    template<int intermediate_I, int out_I>
+    void deltaSigma(const FxpMatrixHandler<W, I, S, Q, O>& iirCoefficients) {
+        // Lambda to process both real and complex data
+        auto process = [&](auto& vector) -> void {
+            using OriginalSignalType = typename std::decay_t<decltype(vector)>::value_type;
+            using SignalType = std::conditional_t<
+                std::is_same_v<OriginalSignalType, ac_fixed<W, I, S, Q, O>>,
+                ac_fixed<2*W, intermediate_I, S, Q, O>,
+                ac_complex<ac_fixed<2*W, intermediate_I, S, Q, O>>
+            >;
+            using SignalTypeOut = std::conditional_t<
+                std::is_same_v<OriginalSignalType, ac_fixed<W, I, S, Q, O>>,
+                ac_fixed<out_I, out_I, S, Q, O>,
+                ac_complex<ac_fixed<out_I, out_I, S, Q, O>>
+            >;
 
-    //         // Initialize variables for intermediate and feedback computations
-    //         SignalType iirOutput = 0, error = 0, intermediateOutput = 0;
-    //         SignalTypeOut outputSample = 0;
-    //         // Initialize IIR states (y, w, wd, wdd)
-    //         std::vector<std::vector<SignalType>> delayLine(
-    //             iirCoefficients.getMatrixRowCount(),
-    //             std::vector<SignalType>(3, SignalType())
-    //         );
+            // Initialize variables for intermediate and feedback computations
+            SignalType iirOutput = 0, error = 0, intermediateOutput = 0;
+            SignalTypeOut outputSample = 0;
+            // Initialize IIR states (y, w, wd, wdd)
+            std::vector<std::vector<SignalType>> delayLine(
+                iirCoefficients.getRowCount(),
+                std::vector<SignalType>(3, SignalType())
+            );
 
-    //         for (auto& sample : vector) {
-    //             intermediateOutput = sample + iirOutput;
-    //             outputSample = intermediateOutput;
-    //             // Append the processed sample to the output vector
-    //             sample = outputSample;
-    //             error = intermediateOutput - outputSample;
+            for (auto& sample : vector) {
+                intermediateOutput = sample + iirOutput;
+                outputSample = intermediateOutput;
+                // Append the processed sample to the output vector
+                sample = outputSample;
+                error = intermediateOutput - outputSample;
 
-    //             IIR_parallel<SignalType>(error, iirOutput, iirCoefficients, delayLine);
-    //         }
-    //     };
+                IIR_parallel<SignalType>(error, iirOutput, iirCoefficients, delayLine);
+            }
+        };
 
-    //     // Use std::visit ti handle variant
-    //     auto& variantData = this->vectorData;
-    //     std::visit([&](auto& vector) -> void {
-    //         process(vector, iirCoefficients);
-    //     }, variantData);
-    // }
+        // Use std::visit ti handle variant
+        auto& variantData = this->vectorData;
+        std::visit([&](auto& vector) -> void {
+            using T = std::decay_t<decltype(vector)>;
+            if constexpr (std::is_same_v<T, FxpRealVector> ||
+                          std::is_same_v<T, FxpComplexVector>) {
+                process(vector);
+            } else {
+                throw std::runtime_error("Incompatible type for Delta-Sigma modulation!");
+            }
+        }, variantData);
+    }
+
+    void serialConverter(std::vector<std::vector<int>>& LUT) {
+        // Validate the LUT: Check that all rows have the same number of columns
+        if (LUT.empty()) {
+            throw std::invalid_argument("LUT cannot be empty!");
+        }
+        // Validate the LUT: Check that all rows have the same number of columns
+        size_t columnSize = LUT[0].size();
+        for (const auto& row : LUT) {
+            if (row.size() != columnSize) {
+                throw std::invalid_argument("All rows in the LUT must have the same size!");
+            }
+        }
+
+        metadata["lut_width"] = static_cast<double>(columnSize);
+
+        auto processReal = [&](auto& vector) -> std::vector<int> {
+            std::vector<int> result;
+            // Correction factor for input signal values (shifts the input to match LUT indexing)
+            int correction = 1 << (C_BITS_NUM - 1);
+
+            // Process each value in the input signal
+            for (const auto& value : vector) {
+                // Compute the row index in the LUT by applying the correction
+                int pos = value.to_double() + correction;
+
+                // Ensure the computed index is within the bounds of the LUT
+                if (pos < 0 || static_cast<size_t>(pos) >= LUT.size()) {
+                    throw std::out_of_range("Input value out of LUT range!");
+                }
+
+                // Retrieve the corresponding row from the LUT
+                const auto& lutRow = LUT[LUT.size() - 1 - pos];
+                // Append the LUT row's values to the output signal
+                result.insert(result.end(), lutRow.begin(), lutRow.end());
+            }
+            return result;
+        };
+
+        auto processComplex = [&](auto& vector) -> std::vector<std::complex<int>> {
+            std::vector<std::complex<int>> result;
+            // Correction factor for input signal values (shifts the input to match LUT indexing)
+            int correction = 1 << (C_BITS_NUM - 1);
+
+            // Process each value in the input signal
+            for (const auto& value : vector) {
+                // Compute the row index in the LUT by applying the correction
+                int realPos = value.r().to_double() + correction;
+                int imagPos = value.i().to_double() + correction;
+
+                // Ensure the computed index is within the bounds of the LUT
+                if (realPos < 0 || static_cast<size_t>(realPos) >= LUT.size() ||
+                    imagPos < 0 || static_cast<size_t>(imagPos) >= LUT.size()) {
+                    throw std::out_of_range("Input value out of LUT range!");
+                }
+
+                // Retrieve the corresponding row from the LUT
+                const auto& realRow = LUT[LUT.size() - 1 - realPos];
+                const auto& imagRow = LUT[LUT.size() - 1 - imagPos];
+                // Combine real and imaginary rows into a complex vector
+                for (size_t i = 0; i < realRow.size(); i++) {
+                    result.emplace_back(realRow[i], imagRow[i]);
+                }
+            }
+            return result;
+        };
+
+        std::variant<FxpRealVector,
+                     FxpComplexVector,
+                     std::vector<int>,
+                     std::vector<std::complex<int>>> serialData;
+
+        auto& variantData = this->vectorData;
+        std::visit([&](auto& vector) -> void {
+            using T = std::decay_t<decltype(vector)>;
+            if constexpr (std::is_same_v<T, FxpRealVector>) {
+                serialData = processReal(vector);
+            } else if constexpr (std::is_same_v<T, FxpComplexVector>) {
+                serialData = processComplex(vector);
+            } else {
+                throw std::runtime_error("Incompatible type for serialConverter!");
+            }
+        }, variantData);
+
+        // Assign the output signal back to vectorData
+        vectorData = std::move(serialData);
+    }
 };
 
 #define IIR_FILTERS { \
@@ -522,29 +683,69 @@ int main() {
     // fxpData.printVector();
     // fxpData.printVectorMetadata();
 
-    // std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
+    
+    std::string file_path_lut = "../../data/luts/LUT3.json";
+    std::vector<std::vector<int>> LUT;
+    readLUT(file_path_lut, LUT);
 
-    // std::string file_path_in = "./data/input/sinData.txt";
-    // std::string file_path_out = "./data/output/sinData_out.txt";
+    std::string file_path_in1 = "./data/input/sinData.txt";
+    std::string file_path_out1 = "./data/output/sinData_deltaSigma.txt";
+    std::string file_path_out_1 = "./data/output/sinData_serial.txt";
 
-    // FixedPoint<W, I, S, Q, O> fxpData(true, true);
-    // fxpData.readVector(file_path_in);
-    // fxpData.writeVector(file_path_out);
-    // fxpData.initMatrix(iirCoeff);
-    // fxpData.printMatrix();
+    std::string file_path_in2 = "./data/input/sinDataComplex.txt";
+    std::string file_path_out2 = "./data/output/sinDataComplex_deltaSigma.txt";
+    std::string file_path_out_2 = "./data/output/sinDataComplex_serial.txt";
 
-    std::vector<double> realData = {1.0, 2.0, 3.0};
+    FixedPoint<W, I, S, Q, O> fxpData(true, true);
 
-    FixedPoint<W, I, S, Q, O> fxpData(true, false);
-    fxpData.initVector(realData);
-    double RealVal = fxpData.getReal(0);
+    std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
+    fxpData.initMatrix(iirCoeff);
 
-
-    // ac_fixed<W, I, S, Q, O> fxpRealVal = fxpData.getFxpReal(0);
-    // // ac_complex<ac_fixed<W, I, S, Q, O>> fxpComplexVal = fxpData.getFxpComplex(0);
-    // double RealVal = fxpData.getReal(0);
-    // std::complex<double> ComplexVal = fxpData.getComplex(0);
+    // Real ata processing
+    fxpData.readVector(file_path_in1);
+    fxpData.deltaSigma<4, 4>();
+    fxpData.writeVector(file_path_out1);
+    fxpData.serialConverter(LUT);
+    fxpData.writeVector(file_path_out_1);
+    // Complex data processing
+    fxpData.readVector(file_path_in2);
+    fxpData.deltaSigma<4, 4>();
+    fxpData.writeVector(file_path_out2);
+    fxpData.serialConverter(LUT);
+    fxpData.writeVector(file_path_out_2);
 
     return 0;
+}
+
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
+{
+    // Clear the LUT vector to ensure it starts empty
+    LUT.clear();
+
+    // Open the file
+    std::ifstream file(fileName);
+
+    // Check if the file can be opened successfully
+    if (!file.is_open())
+    {
+        // Throw an exception if the file cannot be opened
+        throw std::runtime_error("Could not open file: " + fileName);
+        return false; // Unnecessary but included for clarity
+    }
+
+    // Create a JSON object to hold the file content
+    nlohmann::json j;
+
+    // Parse the file content into the JSON object
+    file >> j;
+
+    // Close the file after reading
+    file.close();
+
+    // Convert the JSON object to a 2D vector of integers
+    LUT = j.get<std::vector<std::vector<int>>>();
+
+    // Return true to indicate successful parsing
+    return true;
 }
 

@@ -7,7 +7,7 @@ LIB_DIR1 = /home/urosminoski/Desktop/FAKS/libs/ac_types/include/
 LIB_DIR2 = /home/urosminoski/Desktop/FAKS/libs/json/include/
 
 CPP = g++
-CPPFLAGS = -g -Wall -Wextra -O0 -w -I$(INC_DIR1) -I$(INC_DIR2) -I$(LIB_DIR1) -I$(LIB_DIR2)
+CPPFLAGS = -g -Wall -Wextra -O0 -w -I$(INC_DIR1) -I$(LIB_DIR1) -I$(LIB_DIR2)
 
 # Source files
 TEST1_SRC = $(SRC_DIR)/test_readWrite.cpp
@@ -46,7 +46,7 @@ $(TEST3_BIN): $(TEST3_SRC) $(COMMON_SRCS) | $(BIN_DIR)
 test3: $(TEST3_BIN)
 
 # Rule to build test4
-$(TEST4_BIN): $(TEST4_SRC) $(COMMON_SRCS) | $(BIN_DIR)
+$(TEST4_BIN): $(TEST4_SRC) | $(BIN_DIR)
 	$(CPP) $(CPPFLAGS) -o $@ $^
 
 test4: $(TEST4_BIN)
