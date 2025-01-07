@@ -1,0 +1,16 @@
+Setting Up Anaconda Environment to Use System LaTeX This document explains how to configure your Anaconda environment to use the system-installed LaTeX instead of the one provided by Anaconda. 
+
+Steps: 1. Uninstall LaTeX packages from the Anaconda environment: If you have installed LaTeX inside the Anaconda environment (such as via texlive-core), you need to remove it first by running the following command in your terminal: conda remove texlive-core 
+Explanation: This removes the LaTeX package from the Anaconda environment to prevent conflicts between the system LaTeX and the Anaconda-installed one. 
+
+2. Ensure LaTeX is installed on your system: Before configuring Anaconda to use the system LaTeX, make sure it is installed on your machine. You can check by running the following command: latex --version If LaTeX is not installed, use the appropriate package manager for your operating system: 
+	- For Ubuntu/Debian: sudo apt-get install texlive 
+	- For Fedora: sudo dnf install texlive 
+	- For macOS (using Homebrew): brew install mactex 
+Explanation: This step ensures that you have a working LaTeX installation on your system. 
+
+3. Modify your Anaconda environment path: To make sure Anaconda uses the system LaTeX, you need to adjust the PATH variable inside the Anaconda environment. You can do this by running the following command each time you activate the environment, or add it to the ~/.bashrc or ~/.bash_profile file for persistence: export PATH=/usr/local/texlive/2023/bin/x86_64-linux:/usr/bin:/home/urosminoski/anaconda3/bin:/home/urosminoski/anaconda3/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin (Replace /usr/local/texlive/2023/bin/x86_64-linux with the correct path to your system LaTeX installation.) 
+Explanation: This command ensures that your system LaTeX is prioritized when calling LaTeX commands, even while inside the Anaconda environment. 
+
+4. Test the setup: Once you've done the above steps, test your configuration by running: latex --version The output should display the version of your system-installed LaTeX. If it does, you're all set! Explanation: By following these steps, you can use the system-installed LaTeX instead of any LaTeX packages within the Anaconda environment, ensuring better integration and avoiding conflicts.
+
