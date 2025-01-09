@@ -104,7 +104,6 @@ public:
         return matrixHandler->getReal(row, col);
     }
 
-
     size_t getSize() const {
         if (!vectorHandler) {
             throw std::runtime_error("Vector handler not initialized!");
@@ -135,6 +134,20 @@ public:
             throw std::runtime_error("Vector handler not initialized!");
         }
         return vectorHandler->getComplex(index);
+    }
+
+    bool getQFormat() {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getQFormat();
+    }
+
+    std::map<std::string, double> getMetadata() {
+        if (!vectorHandler) {
+            throw std::runtime_error("Vector handler not initialized!");
+        }
+        return vectorHandler->getMetadata();
     }
 
     // Perform delta-sigma modulation
@@ -253,6 +266,7 @@ private:
                  std::vector<int>,
                  std::vector<std::complex<int>>> vectorData;
     std::map<std::string, double> metadata;
+    bool qFormat;
 
     // Helper functions for file reading
     static void readMetadata(std::ifstream& inputFile, std::map<std::string, double>& metadata) {
@@ -308,6 +322,8 @@ private:
         }
     }
 
+    static void makeQ()
+
 public:
     // Default constructor
     FxpVectorHandler()
@@ -318,7 +334,7 @@ public:
     }
 
     // Initialize with real data
-    FxpVectorHandler(const std::vector<double>& inVector) {
+    FxpVectorHandler(const std::vector<double>& inVector, bool qFormat = false) {
         FxpRealVector fxpVector;
         for (const auto& val : inVector) {
             fxpVector.emplace_back(val);
@@ -326,7 +342,7 @@ public:
         vectorData = std::move(fxpVector);
     }
     // Initialize with complex data
-    FxpVectorHandler(const std::vector<std::complex<double>>& inVector) {
+    FxpVectorHandler(const std::vector<std::complex<double>>& inVector, bool qFormat = false) {
         FxpComplexVector fxpVector;
         for (const auto& val : inVector) {
             fxpVector.emplace_back(ac_fixed<W, I, S, Q, O>(val.real()),
@@ -336,7 +352,7 @@ public:
     }
 
     // Initialize with real data
-    void init(const std::vector<double>& inVector) {
+    void init(const std::vector<double>& inVector, bool qFormat = false) {
         vectorData.clear();     // Ensure empty vector
         FxpRealVector fxpVector;
         for (const auto& val : inVector) {
@@ -345,7 +361,7 @@ public:
         vectorData = std::move(fxpVector);
     }
     // Initialize with complex data
-    void init(const std::vector<std::complex<double>>& inVector) {
+    void init(const std::vector<std::complex<double>>& inVector, bool qFormat = false) {
         vectorData.clear();     // Ensure empty vector
         FxpComplexVector fxpVector;
         for (const auto& val : inVector) {
@@ -353,6 +369,14 @@ public:
                                    ac_fixed<W, I, S, Q, O>(val.imag()));
         }
         vectorData = std::move(fxpVector);
+    }
+
+    bool getQFormat() {
+        return qFormat;
+    }
+
+    std::map<std::string, double> getMetadata() {
+        return metadata;
     }
 
     size_t getSize() const {
@@ -506,6 +530,83 @@ public:
         }, vectorData);
     }
 
+    void resize(const int newW, const int newI) {
+        // Processing for real data
+        processReal = [&](auto& vector) -> std::vector<ac_fixed<newW, newI, S, Q, O>> {
+            std::vector<ac_fixed<newW, newI, S, Q, O>> resizedVector;
+            for (const auto& val : vector) {
+                resizedVector.emplace_back(val.to_double());
+            }
+            return resizedVector;
+        }
+    }
+
+    template<int firW, int firI = 1>
+    void FIR(std::vector<double>& firCoeff) {
+        // Check iof firCoeff is empty
+        if (firCoef.empty()) {
+            throw std::runtime_error("FIR coeffitients are empty!");
+        }
+        // Discretize FIR coeffitients
+        ac_fixed<firW, firI, firS, firQ, firO> fxpFirCoeff;
+        for (const auto& coeff : firCoeff) {
+            fxpFirCoeff.emplace_back(coeff);
+        }
+
+        process = [&](auto& data) {
+            // Preform FIR filtering
+            FxpRealVector delayLine(fxpFirCoeff.size(), ac_fixed<W+firW, firI, S, Q, O>(0.0));   // Initialize delay line
+            size_t k = 0;
+            for (size_t n = 0; n < vec.size(); n++) {
+                delayLine[k] = vec[n];
+                ac_fixed<W+firW, firI, firS, firQ, firO>
+
+            }
+        }
+    }
+
+    //static void fir(std::vector<double>& x, std::vector<double>& firCoeff, std::vector<double>& y)
+    // {
+    //     y.clear();  // Ensure output vector is empty
+        
+    //     // Discretize FIR coeffitients to fxFIR type
+    //     std::vector<fxFIR> fxFirCoeff;
+    //     for(size_t i = 0; i < firCoeff.size(); i++)
+    //     {
+    //         fxFirCoeff.push_back(firCoeff[i]);
+    //     }
+
+    //     // Perform filtering
+    //     std::vector<fxFIR> delayLine(fxFirCoeff.size(), fxFIR(0));  // Delay line is simulationg circular buffer
+    //     unsigned long int k = 0;      // Index of circular buffer
+
+    //     for(size_t n = 0; n < x.size(); n++)
+    //     {
+    //         delayLine[k] = x[n];
+    //         fxFIR sum = 0;
+
+    //         for(size_t m = 0; m < delayLine.size(); m++)
+    //         {
+    //             // Perform convolution
+    //             sum += fxFirCoeff[m] * delayLine[k++];
+
+    //             // Simulating circular buffer
+    //             if(k == fxFirCoeff.size())
+    //             {
+    //                 k = 0;
+    //             }
+    //         }
+    //         // Save sum to output vector
+    //         y.push_back(sum.to_double());
+
+    //         // Simulating circular buffer
+    //         if(k-- == 0)
+    //         {
+    //             k = fxFirCoeff.size() - 1;
+    //         }
+    //     }
+    // }
+
     template<typename SignalType>
     void IIR_parallel(SignalType& input, SignalType& output, 
                       const FxpMatrixHandler<W, I, S, Q, O>& iirCoefficients,
@@ -558,7 +659,7 @@ public:
             }
         };
 
-        // Use std::visit ti handle variant
+        // Use std::visit to handle variant
         auto& variantData = this->vectorData;
         std::visit([&](auto& vector) -> void {
             using T = std::decay_t<decltype(vector)>;
@@ -684,7 +785,7 @@ int main() {
     // fxpData.printVectorMetadata();
 
     
-    std::string file_path_lut = "../../data/luts/LUT3.json";
+    std::string file_path_lut = "../../data/luts/LUT4.json";
     std::vector<std::vector<int>> LUT;
     readLUT(file_path_lut, LUT);
 
