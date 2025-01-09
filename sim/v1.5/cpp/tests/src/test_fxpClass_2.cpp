@@ -6,6 +6,7 @@
 #include <variant>
 #include <memory>
 #include <type_traits>
+#include <algorithm>
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 #include <ac_complex.h>
@@ -342,7 +343,89 @@ public:
         }, fxpVector);
     }
 
+    template<size_t bitW>
+    void serialConverter(std::vector<std::vector<int>>& LUT) {
+        // Validate LUT: Check that LUT is not empty
+        if (LUT.empty()) {
+            throw std::invalid_argument("LUT cannot be empty!");
+        }
+
+        // Validate LUT: Check that all rows have the same number of columns
+        size_t columSize = LUT[0].size();
+        for (const auto& row : LUT) {
+            if (row.empty()) {
+                throw std::invalid_argument("LUT rows cannot be empty!");
+            }
+            if (row.size() != columSize) {
+                throw std::invalid_argument("All rows in LUT must have the same size!");
+            }
+        }
+
+        // Cast LUT to std::vector<std::vector<double>> to be compatible with fxpVector
+        std::vector<std::vector<double>> doubleLUT;
+        doubleLUT.reserve(LUT.size());
+        for (const auto& row : LUT) {
+            std::vector<double> doubleRow;
+            doubleRow.reserve(row.size());
+            std::transform(row.begin(), row.end(), std::back_inserter(doubleRow),
+                        [](int value) { return static_cast<double>(value); });
+            doubleLUT.emplace_back(std::move(doubleRow));
+        }
+
+        // Update metadata
+        metadata["lut_width"] = static_cast<double>(columSize);
+
+        // Lambda function to process both real and complex data
+        std::visit([&](auto& vector) {
+            int correction = 1 << (bitW - 1);
+
+            using T = typename std::decay_t<decltype(vector)>;
+            // Process each value
+            if constexpr (std::is_same_v<T, RealVector>) {
+                // Real data processing
+                RealVector result;
+                result.reserve(vector.size() * columSize);
+                for (const auto& value : vector) {
+                    auto correctedValue = value + correction;
+                    if (correctedValue < 0 || static_cast<size_t>(correctedValue) >= doubleLUT.size()) {
+                        throw std::out_of_range("Input value results in out-of-range LUT index!");
+                    }
+                    size_t position = static_cast<size_t>(correctedValue);
+                    const auto& lutRow = doubleLUT[doubleLUT.size() - 1 - position];
+                    result.insert(result.end(), lutRow.begin(), lutRow.end());
+                }
+                fxpVector = std::move(result);
+
+            } else if constexpr (std::is_same_v<T, ComplexVector>) {
+                // Complex data processing
+                ComplexVector result;
+                result.reserve(vector.size() * columSize * 2);
+                for (const auto& value : vector) {
+                    auto correctedReal = value.real() + correction;
+                    auto correctedImag = value.imag() + correction;
+                    if (correctedReal < 0 || correctedImag < 0 ||
+                        static_cast<size_t>(correctedReal) >= doubleLUT.size() ||
+                        static_cast<size_t>(correctedImag) >= doubleLUT.size()) {
+                        throw std::out_of_range("Input value results in out-of-range LUT index!");
+                    }
+                    size_t positionReal = static_cast<size_t>(correctedReal);
+                    size_t positionImag = static_cast<size_t>(correctedImag);
+                    const auto& realLutRow = doubleLUT[doubleLUT.size() - 1 - positionReal];
+                    const auto& imagLutRow = doubleLUT[doubleLUT.size() - 1 - positionImag];
+                    for (size_t i = 0; i < realLutRow.size(); i++) {
+                        result.emplace_back(realLutRow[i], imagLutRow[i]);
+                    }
+                }
+                fxpVector = std::move(result);
+
+            } else {
+                throw std::runtime_error("Incompatible type for serialConverter!");
+            }
+        }, fxpVector);
+    }
 };
+
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT);
 
 #define IIR_FILTERS { \
   {7.3765809    , 0             , 0 , 1 , -0.3466036    , 0             }, \
@@ -355,21 +438,31 @@ int main() {
 
     std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
 
+    std::string file_path_lut = "../../data/luts/LUT4.json";
+    std::vector<std::vector<int>> LUT;
+    readLUT(file_path_lut, LUT);
+
     std::string file_path_in_1          = "./data/input/sinData.txt";
     std::string file_path_deltaSigma_1  = "./data/output/sinData_deltaSigma.txt";
+    std::string file_path_serialized_1  = "./data/output/sinData_serial.txt";
 
     std::string file_path_in_2          = "./data/input/sinDataComplex.txt";
     std::string file_path_deltaSigma_2  = "./data/output/sinDataComplex_deltaSigma.txt";
+    std::string file_path_serialized_2  = "./data/output/sinDataComplex_serial.txt";
 
     MyFxpDsp realSignal;
     realSignal.readFromFile(file_path_in_1);
     realSignal.deltaSigma<24, 4, 4, 4, 12, 4>(iirCoeff);
     realSignal.writeToFile(file_path_deltaSigma_1);
+    realSignal.serialConverter<4>(LUT);
+    realSignal.writeToFile(file_path_serialized_1);
 
     MyFxpDsp complexSignal;
     complexSignal.readFromFile(file_path_in_2);
     complexSignal.deltaSigma<24, 4, 4, 4, 12, 4>(iirCoeff);
     complexSignal.writeToFile(file_path_deltaSigma_2);
+    complexSignal.serialConverter<4>(LUT);
+    complexSignal.writeToFile(file_path_serialized_2);
 
     // Example usage: Default constructor
     // MyFxpDsp fxpVector1;
@@ -398,4 +491,36 @@ int main() {
     // complexFxp.print();
 
     return 0;
+}
+
+bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT)
+{
+    // Clear the LUT vector to ensure it starts empty
+    LUT.clear();
+
+    // Open the file
+    std::ifstream file(fileName);
+
+    // Check if the file can be opened successfully
+    if (!file.is_open())
+    {
+        // Throw an exception if the file cannot be opened
+        throw std::runtime_error("Could not open file: " + fileName);
+        return false; // Unnecessary but included for clarity
+    }
+
+    // Create a JSON object to hold the file content
+    nlohmann::json j;
+
+    // Parse the file content into the JSON object
+    file >> j;
+
+    // Close the file after reading
+    file.close();
+
+    // Convert the JSON object to a 2D vector of integers
+    LUT = j.get<std::vector<std::vector<int>>>();
+
+    // Return true to indicate successful parsing
+    return true;
 }

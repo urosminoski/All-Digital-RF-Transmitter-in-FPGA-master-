@@ -175,6 +175,7 @@ def main():
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],  # Level -6.5
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Level -7.5
     ]
+    LUT4 = replace_zeros_with_minus_one(LUT4);
 
     LUT5 = [
         [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1],  # Level 7.5
@@ -194,6 +195,7 @@ def main():
         [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],  # Level -6.5
         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]   # Level -7.5    
     ]
+    LUT5 = replace_zeros_with_minus_one(LUT5);
 
     # Save LUTs to files
     LUTs = [LUT1, LUT2, LUT3, LUT4, LUT5]
