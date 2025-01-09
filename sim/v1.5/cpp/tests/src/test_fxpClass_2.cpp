@@ -14,6 +14,9 @@
 #include <sstream>
 #include <string>
 
+template <typename T>
+inline constexpr bool always_false_v = false;
+
 template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
 class FxpDsp {
 private:
@@ -249,27 +252,136 @@ public:
         }, fxpVector);
     }
 
+    template<typename SignalType, typename CoeffType>
+    void iirParallel(SignalType& input, SignalType& output,
+                     const std::vector<std::vector<double>>& iirCoeff,
+                     std::vector<std::vector<SignalType>>& delayLine) {
+        output = 0;
+        for (size_t i = 0; i < iirCoeff.size(); i++) {
+            delayLine[i][0] = input - CoeffType(iirCoeff[i][4])*delayLine[i][1] -
+                                      CoeffType(iirCoeff[i][5])*delayLine[i][2];
+            output += CoeffType(iirCoeff[i][0])*delayLine[i][0] +
+                      CoeffType(iirCoeff[i][1])*delayLine[i][1] +
+                      CoeffType(iirCoeff[i][2])*delayLine[i][2];
+            delayLine[i][2] = delayLine[i][1];
+            delayLine[i][1] = delayLine[i][0];
+        }
+    }
+
+    template<int iW = 2*W, int iI, int oW, 
+             int oI = oW, int iirW = W, int iirI = I>
+    void deltaSigma(const std::vector<std::vector<double>>& iirCoeff) {
+        // Ensure iirCoeff is not empty
+        if (iirCoeff.empty()) {
+            throw std::runtime_error("IIR coeffitients are empty!");
+        }
+
+        auto process = [&](auto& vector) -> void {
+            using OriginalSignalType    = typename std::decay_t<decltype(vector)>::value_type;
+            using SignalType            = std::conditional_t<
+                                            std::is_same_v<OriginalSignalType, double>,
+                                            ac_fixed<iW, iI, S, Q, O>,
+                                            ac_complex<ac_fixed<iW, iI, S, Q, O>>
+                                            >;
+            using SignalTypeIn         = std::conditional_t<
+                                            std::is_same_v<OriginalSignalType, double>,
+                                            ac_fixed<W, I, S, Q, O>,
+                                            ac_complex<ac_fixed<W, I, S, Q, O>>
+                                            >;
+            using SignalTypeOut         = std::conditional_t<
+                                            std::is_same_v<OriginalSignalType, double>,
+                                            ac_fixed<oW, oI, S, Q, O>,
+                                            ac_complex<ac_fixed<oW, oI, S, Q, O>>
+                                            >;
+            using CoeffType             = ac_fixed<iirW, iirI, S, Q, O>;
+            // Initialize variables for intermediate and feedback computations
+            SignalType iirOutput = 0, error = 0, intermediateOutput = 0;
+            SignalTypeOut outputSample = 0;
+            // Initialize IIR delay lines
+            std::vector<std::vector<SignalType>> delayLine(
+                iirCoeff.size(),
+                std::vector<SignalType>(3, SignalType())
+            );
+
+            for (auto& sample : vector) {
+                if constexpr (std::is_same_v<OriginalSignalType, double>) {
+                    SignalTypeIn fxpSample = sample;
+                    intermediateOutput  = fxpSample + iirOutput;
+                    outputSample        = intermediateOutput;
+                    sample              = outputSample.to_double();     // In-place processing
+                    error = intermediateOutput - outputSample;
+                    iirParallel<SignalType, CoeffType>(error, iirOutput, iirCoeff, delayLine);
+                } else if constexpr (std::is_same_v<OriginalSignalType, std::complex<double>>) {
+                    SignalTypeIn fxpSample(
+                        sample.real(),
+                        sample.imag()
+                    );
+                    intermediateOutput  = fxpSample + iirOutput;
+                    outputSample        = intermediateOutput;
+                    sample              = std::complex<double>(      // In-place processing
+                                            outputSample.r().to_double(),
+                                            outputSample.i().to_double()
+                                        );
+                    error = intermediateOutput - outputSample;
+                    iirParallel<SignalType, CoeffType>(error, iirOutput, iirCoeff, delayLine);
+                } else {
+                    static_assert(always_false_v<SignalTypeOut>, "Unsupported SignalTypeOut!");
+                }
+            }
+        };
+
+        // Use std::visit to handle variant
+        std::visit([&](auto& vector){
+            using T = typename std::decay_t<decltype(vector)>;
+            if constexpr (std::is_same_v<T, RealVector> ||
+                          std::is_same_v<T, ComplexVector>) {
+                process(vector);
+            } else {
+                throw std::runtime_error("Incompatible type for deltaSigma!");
+            }
+        }, fxpVector);
+    }
+
 };
+
+#define IIR_FILTERS { \
+  {7.3765809    , 0             , 0 , 1 , -0.3466036    , 0             }, \
+  {0.424071040  , -2.782608716  , 0 , 1 , -0.66591402   , 0.16260264    }, \
+  {-4.606822182 , 0.023331537   , 0 , 1 , -0.62380242   , 0.4509869     }  \
+}
 
 int main() {
     using MyFxpDsp = FxpDsp<12, 4, true, AC_RND, AC_SAT>;
 
-    std::string file_path_in_real = "./data/input/sinData_2.txt";
-    std::string file_path_out_real = "./data/output/sinData_2.txt";
-    std::string file_path_in_complex = "./data/input/sinDataComplex_2.txt";
-    std::string file_path_out_complex = "./data/output/sinDataComplex_2.txt";
+    std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
+
+    std::string file_path_in_1          = "./data/input/sinData.txt";
+    std::string file_path_deltaSigma_1  = "./data/output/sinData_deltaSigma.txt";
+
+    std::string file_path_in_2          = "./data/input/sinDataComplex.txt";
+    std::string file_path_deltaSigma_2  = "./data/output/sinDataComplex_deltaSigma.txt";
+
+    MyFxpDsp realSignal;
+    realSignal.readFromFile(file_path_in_1);
+    realSignal.deltaSigma<24, 4, 4, 4, 12, 4>(iirCoeff);
+    realSignal.writeToFile(file_path_deltaSigma_1);
+
+    MyFxpDsp complexSignal;
+    complexSignal.readFromFile(file_path_in_2);
+    complexSignal.deltaSigma<24, 4, 4, 4, 12, 4>(iirCoeff);
+    complexSignal.writeToFile(file_path_deltaSigma_2);
 
     // Example usage: Default constructor
-    MyFxpDsp fxpVector1;
-    fxpVector1.readFromFile(file_path_in_real);
-    fxpVector1.writeToFile(file_path_out_real);
-    fxpVector1.printMetadata();
-    fxpVector1.print();
-    MyFxpDsp fxpVector2;
-    fxpVector2.readFromFile(file_path_in_complex);
-    fxpVector2.writeToFile(file_path_out_complex);
-    fxpVector2.printMetadata();
-    fxpVector2.print();
+    // MyFxpDsp fxpVector1;
+    // fxpVector1.readFromFile(file_path_in_real);
+    // fxpVector1.writeToFile(file_path_out_real);
+    // fxpVector1.printMetadata();
+    // fxpVector1.print();
+    // MyFxpDsp fxpVector2;
+    // fxpVector2.readFromFile(file_path_in_complex);
+    // fxpVector2.writeToFile(file_path_out_complex);
+    // fxpVector2.printMetadata();
+    // fxpVector2.print();
 
     // // Example usage: Real data constructor
     // std::vector<double> realData = {1.78853123, -2.9231232, 3.235463542353};

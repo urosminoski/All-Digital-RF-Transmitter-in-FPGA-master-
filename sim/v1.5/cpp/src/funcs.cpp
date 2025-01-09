@@ -532,21 +532,35 @@ static void deltaSigma(const std::vector<double>& x, std::vector<double>& y)
     // Ensure output vector is empty before starting
     y.clear();
 
-    // H0 Coefficients: First stage coefficients for filtering and feedback
+    // // H0 Coefficients: First stage coefficients for filtering and feedback
+    // ac_fixed<12, 4, true, AC_RND, AC_SAT> b00 = 7.3765809;
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> a01 = 0.3466036;
+
+    // // H1 Coefficients: Second stage coefficients for filtering and feedback
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> b10 = 0.424071040;
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> a11 = 0.66591402;
+    // ac_fixed<12, 3, true, AC_RND, AC_SAT> b11 = 2.782608716;
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> a12 = 0.16260264;
+
+    // // H2 Coefficients: Third stage coefficients for filtering and feedback
+    // ac_fixed<12, 4, true, AC_RND, AC_SAT> b20 = 4.606822182;
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> a21 = 0.62380242;
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> b21 = 0.023331537;
+    // ac_fixed<12, 1, true, AC_RND, AC_SAT> a22 = 0.4509869;
     ac_fixed<12, 4, true, AC_RND, AC_SAT> b00 = 7.3765809;
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> a01 = 0.3466036;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> a01 = 0.3466036;
 
     // H1 Coefficients: Second stage coefficients for filtering and feedback
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> b10 = 0.424071040;
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> a11 = 0.66591402;
-    ac_fixed<12, 3, true, AC_RND, AC_SAT> b11 = 2.782608716;
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> a12 = 0.16260264;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> b10 = 0.424071040;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> a11 = 0.66591402;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> b11 = 2.782608716;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> a12 = 0.16260264;
 
     // H2 Coefficients: Third stage coefficients for filtering and feedback
     ac_fixed<12, 4, true, AC_RND, AC_SAT> b20 = 4.606822182;
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> a21 = 0.62380242;
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> b21 = 0.023331537;
-    ac_fixed<12, 1, true, AC_RND, AC_SAT> a22 = 0.4509869;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> a21 = 0.62380242;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> b21 = 0.023331537;
+    ac_fixed<12, 4, true, AC_RND, AC_SAT> a22 = 0.4509869;
 
     // Define a fixed-point type for intermediate calculations
     typedef ac_fixed<24, 5, true, AC_RND, AC_SAT> fx_ss;

@@ -79,7 +79,7 @@ def process_file(file_path):
     lut_width = metadata.get("LUTwidth", 1)
 
     # Compute the windowed data and spectrum
-    w = signal.barthann(len(data), False)
+    w = signal.windows.barthann(len(data), False)
     data_win = data * w
     spectrum = 20 * np.log10(np.abs(np.fft.fftshift(np.fft.fft(data_win))))
     spectrum -= np.max(spectrum)
