@@ -80,7 +80,7 @@ private:
 
         // Calculate I dynamically as int(log2(value + 1))
         int targetI = calculateI(value);
-        std::cout << targetI << std::endl;
+        // std::cout << targetI << std::endl;
 
         // Validate targetI
         if (targetI < IStart || targetI > IEnd) {
@@ -341,6 +341,94 @@ public:
         }, fxpVector);
     }
 
+    template<int firW, int firI>
+    void fir(std::vector<double>& firCoeff) {
+        // Ensure firCoeff is not empty
+        if (firCoeff.empty()) {
+            throw std::runtime_error("FIR coeffitients must not be empty!");
+        }
+
+        using CoeffType = ac_fixed<firW, firI, S, Q, O>;
+
+        // Real data processing
+        auto processReal = [&](auto& vector) {
+            using SignalType = ac_fixed<W+firW, I+firI, S, Q, O>;
+
+            std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0));
+            size_t k = 0;
+
+            for (size_t n = 0; n < vector.size(); n++) {
+                delayLine[k] = vector[n];
+                SignalType sum = 0;
+
+                for (size_t m = 0; m < delayLine.size(); m++) {
+                    // Perform convolution
+                    sum += CoeffType(firCoeff[m]) * delayLine[k++];
+                    // Simulating circular buffer
+                    if (k == delayLine.size()) {
+                        k = 0;
+                    }
+                }
+                // Save sum to the same place in vector (in-place processing)
+                vector[n] = sum.to_double();
+                // Simulating circular buffer
+                if (k-- == 0) {
+                    k = delayLine.size() - 1;
+                }
+            }
+        };
+
+        // Complex data processing
+        auto processComplex = [&](auto& vector) {
+            using SignalTypeR   = ac_fixed<W+firW, I+firI, S, Q, O>;
+            using SignalType    = ac_complex<ac_fixed<W+firW, I+firI, S, Q, O>>;
+
+            std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0));
+            size_t k = 0;
+
+            for (size_t n = 0; n < vector.size(); n++) {
+                delayLine[k] = SignalType(
+                    SignalTypeR(vector[n].real()),
+                    SignalTypeR(vector[n].imag())
+                );
+                SignalType sum = SignalType(
+                    SignalTypeR(0),
+                    SignalTypeR(0)
+                );
+
+                for (size_t m = 0; m < delayLine.size(); m++) {
+                    // Perform convolution
+                    sum += CoeffType(firCoeff[m]) * delayLine[k++];
+                    // Simulating circular buffer
+                    if (k == delayLine.size()) {
+                        k = 0;
+                    }
+                }
+                // Save sum to the same place in vector (in-place processing)
+                vector[n] = std::complex<double>(
+                    sum.r().to_double(),
+                    sum.i().to_double()
+                );
+                // Simulating circular buffer
+                if (k-- == 0) {
+                    k = delayLine.size() - 1;
+                }
+            }
+        };
+
+        // Using std::visit to deal with variant
+        std::visit([&](auto& vector){
+            using T = typename std::decay_t<decltype(vector)>;
+            if constexpr (std::is_same_v<T, RealVector>) {
+                processReal(vector);
+            } else if constexpr (std::is_same_v<T, ComplexVector>) {
+                processComplex(vector);
+            } else {
+                std::runtime_error("Invalid type for fir()!");
+            }
+        }, fxpVector);
+    }
+
     template<typename SignalType>
     void iirParallel(SignalType& input, SignalType& output,
                      const std::vector<std::vector<double>>& iirCoeff,
@@ -540,10 +628,13 @@ bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT);
   {-4.606822182 , 0.023331537   , 0 , 1 , -0.62380242   , 0.4509869     }  \
 }
 
+#define FIR_COEFF {-2.63665205e-17, 3.06687619e-01, 5.00000000e-01, 3.06687619e-01, -2.63665205e-17}
+
 int main() {
     using MyFxpDsp = FxpDsp<12, 4, true, AC_RND, AC_SAT>;
 
     std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
+    std::vector<double> firCoeff = FIR_COEFF;
 
     std::string file_path_lut = "../../data/luts/LUT4.json";
     std::vector<std::vector<int>> LUT;
@@ -552,21 +643,27 @@ int main() {
     std::string file_path_in_1          = "./data/input/sinData.txt";
     std::string file_path_deltaSigma_1  = "./data/output/sinData_deltaSigma.txt";
     std::string file_path_serialized_1  = "./data/output/sinData_serial.txt";
+    std::string file_path_fir_1         = "./data/output/sinData_fir.txt";
 
     std::string file_path_in_2          = "./data/input/sinDataComplex.txt";
     std::string file_path_deltaSigma_2  = "./data/output/sinDataComplex_deltaSigma.txt";
     std::string file_path_serialized_2  = "./data/output/sinDataComplex_serial.txt";
+    std::string file_path_fir_2         = "./data/output/sinDataComplex_fir.txt";
 
     MyFxpDsp realSignal;
     realSignal.readFromFile(file_path_in_1);
-    realSignal.deltaSigma<12, 4, 4, 4, true>(iirCoeff);
+    realSignal.fir<16, 1>(firCoeff);
+    realSignal.writeToFile(file_path_fir_1);
+    realSignal.deltaSigma<12, 4, 4, 4, false>(iirCoeff);
     realSignal.writeToFile(file_path_deltaSigma_1);
     realSignal.serialConverter<4>(LUT);
     realSignal.writeToFile(file_path_serialized_1);
 
     MyFxpDsp complexSignal;
     complexSignal.readFromFile(file_path_in_2);
-    complexSignal.deltaSigma<12, 4, 4, 4, true>(iirCoeff);
+    complexSignal.fir<16, 1>(firCoeff);
+    complexSignal.writeToFile(file_path_fir_2);
+    complexSignal.deltaSigma<12, 4, 4, 4, false>(iirCoeff);
     complexSignal.writeToFile(file_path_deltaSigma_2);
     complexSignal.serialConverter<4>(LUT);
     complexSignal.writeToFile(file_path_serialized_2);
