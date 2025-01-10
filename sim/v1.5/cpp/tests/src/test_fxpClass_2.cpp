@@ -7,6 +7,7 @@
 #include <memory>
 #include <type_traits>
 #include <algorithm>
+#include <cmath> // For log2
 #include <nlohmann/json.hpp>
 #include <ac_fixed.h>
 #include <ac_complex.h>
@@ -17,6 +18,93 @@
 
 template <typename T>
 inline constexpr bool always_false_v = false;
+
+// Abstract base class
+class FxpBase {
+public:
+    virtual ~FxpBase() = default;
+
+    // Method to return the stored value as a double
+    virtual double getDouble() const = 0;
+};
+
+// Derived template class for specific ac_fixed types
+template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
+class FxpDerived : public FxpBase {
+private:
+    ac_fixed<W, I, S, Q, O> value;
+
+public:
+    // Constructor to initialize the value
+    explicit FxpDerived(double v) : value(v) {}
+
+    // Return the stored value as a double
+    double getDouble() const override {
+        return value.to_double();
+    }
+};
+
+// Template class for the factory
+template<int W, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
+class FxpFactory {
+private:
+    constexpr static int IStart = 1; // Minimum I value
+
+    // Internal helper function to calculate I
+    static int calculateI(double value) {
+        if (value < 0) { value = -value; }
+        return static_cast<int>(std::ceil(std::log2(value + 1)) + 1); // Ensure I is at least IStart
+    }
+
+    // Internal helper template for handling different I values
+    template<int... IValues>
+    std::unique_ptr<FxpBase> createFixedImpl(double value, int targetI, std::integer_sequence<int, IValues...>) const {
+        std::unique_ptr<FxpBase> result = nullptr;
+
+        // Use a fold expression with a lambda
+        ([&]() {
+            if (targetI == IValues) {
+                result = std::make_unique<FxpDerived<W, IValues, S, Q, O>>(value);
+            }
+        }(), ...);
+
+        if (!result) {
+            throw std::runtime_error("Unsupported I value");
+        }
+        return result;
+    }
+
+    // Convert a single value to ac_fixed and return as double
+    double convertValue(double value) const {
+        constexpr int IEnd = W; // Maximum I value
+
+        // Calculate I dynamically as int(log2(value + 1))
+        int targetI = calculateI(value);
+        std::cout << targetI << std::endl;
+
+        // Validate targetI
+        if (targetI < IStart || targetI > IEnd) {
+            throw std::runtime_error("Value out of range for I");
+        }
+
+        // Create the appropriate FxpBase object and return its double value
+        auto fixedObj = createFixedImpl(value, targetI, std::make_integer_sequence<int, IEnd + 1 - IStart>());
+        return fixedObj->getDouble();
+    }
+
+public:
+    // Method to convert an entire matrix
+    std::vector<std::vector<double>> convertMatrix(const std::vector<std::vector<double>>& matrix) const {
+        std::vector<std::vector<double>> result = matrix; // Copy input matrix
+
+        for (size_t i = 0; i < matrix.size(); ++i) {
+            for (size_t j = 0; j < matrix[i].size(); ++j) {
+                result[i][j] = convertValue(matrix[i][j]); // Convert each value
+            }
+        }
+        return result;
+    }
+};
 
 template<int W, int I, bool S = true, ac_q_mode Q = AC_RND, ac_o_mode O = AC_SAT>
 class FxpDsp {
@@ -253,10 +341,11 @@ public:
         }, fxpVector);
     }
 
-    template<typename SignalType, typename CoeffType>
+    template<typename SignalType>
     void iirParallel(SignalType& input, SignalType& output,
                      const std::vector<std::vector<double>>& iirCoeff,
                      std::vector<std::vector<SignalType>>& delayLine) {
+        using CoeffType = ac_fixed<32, 16, S, Q, O>;
         output = 0;
         for (size_t i = 0; i < iirCoeff.size(); i++) {
             delayLine[i][0] = input - CoeffType(iirCoeff[i][4])*delayLine[i][1] -
@@ -269,20 +358,38 @@ public:
         }
     }
 
-    template<int iW = 2*W, int iI, int oW, 
-             int oI = oW, int iirW = W, int iirI = I>
+    template<int iirW, int iirI, int iI, 
+             int oW, bool highPrecision>
     void deltaSigma(const std::vector<std::vector<double>>& iirCoeff) {
         // Ensure iirCoeff is not empty
         if (iirCoeff.empty()) {
             throw std::runtime_error("IIR coeffitients are empty!");
         }
 
+        // Discretize iirCoeff
+        using CoeffType = ac_fixed<iirW, iirI, S, Q, O>;
+
+        // Define iirCoeff_fxp outside the conditional blocks
+        std::vector<std::vector<double>> iirCoeff_fxp;
+
+        if constexpr (!highPrecision) {
+            iirCoeff_fxp = iirCoeff;
+            for (size_t i = 0; i < iirCoeff.size(); i++) {
+                for (size_t j = 0; j < iirCoeff[i].size(); j++) {
+                    iirCoeff_fxp[i][j] = CoeffType(iirCoeff[i][j]).to_double();
+                }
+            }
+        } else if constexpr (highPrecision) {
+            FxpFactory<W, S, Q, O> factory;
+            iirCoeff_fxp = factory.convertMatrix(iirCoeff);
+        }
+
         auto process = [&](auto& vector) -> void {
             using OriginalSignalType    = typename std::decay_t<decltype(vector)>::value_type;
             using SignalType            = std::conditional_t<
                                             std::is_same_v<OriginalSignalType, double>,
-                                            ac_fixed<iW, iI, S, Q, O>,
-                                            ac_complex<ac_fixed<iW, iI, S, Q, O>>
+                                            ac_fixed<W+iirW, iI, S, Q, O>,
+                                            ac_complex<ac_fixed<W+iirW, iI, S, Q, O>>
                                             >;
             using SignalTypeIn         = std::conditional_t<
                                             std::is_same_v<OriginalSignalType, double>,
@@ -291,10 +398,10 @@ public:
                                             >;
             using SignalTypeOut         = std::conditional_t<
                                             std::is_same_v<OriginalSignalType, double>,
-                                            ac_fixed<oW, oI, S, Q, O>,
-                                            ac_complex<ac_fixed<oW, oI, S, Q, O>>
+                                            ac_fixed<oW, oW, S, Q, O>,
+                                            ac_complex<ac_fixed<oW, oW, S, Q, O>>
                                             >;
-            using CoeffType             = ac_fixed<iirW, iirI, S, Q, O>;
+            // using CoeffType             = ac_fixed<iirW, iirI, S, Q, O>;
             // Initialize variables for intermediate and feedback computations
             SignalType iirOutput = 0, error = 0, intermediateOutput = 0;
             SignalTypeOut outputSample = 0;
@@ -311,7 +418,7 @@ public:
                     outputSample        = intermediateOutput;
                     sample              = outputSample.to_double();     // In-place processing
                     error = intermediateOutput - outputSample;
-                    iirParallel<SignalType, CoeffType>(error, iirOutput, iirCoeff, delayLine);
+                    iirParallel<SignalType>(error, iirOutput, iirCoeff_fxp, delayLine);
                 } else if constexpr (std::is_same_v<OriginalSignalType, std::complex<double>>) {
                     SignalTypeIn fxpSample(
                         sample.real(),
@@ -324,7 +431,7 @@ public:
                                             outputSample.i().to_double()
                                         );
                     error = intermediateOutput - outputSample;
-                    iirParallel<SignalType, CoeffType>(error, iirOutput, iirCoeff, delayLine);
+                    iirParallel<SignalType>(error, iirOutput, iirCoeff_fxp, delayLine);
                 } else {
                     static_assert(always_false_v<SignalTypeOut>, "Unsupported SignalTypeOut!");
                 }
@@ -452,14 +559,14 @@ int main() {
 
     MyFxpDsp realSignal;
     realSignal.readFromFile(file_path_in_1);
-    realSignal.deltaSigma<24, 4, 4, 4, 12, 4>(iirCoeff);
+    realSignal.deltaSigma<12, 4, 4, 4, true>(iirCoeff);
     realSignal.writeToFile(file_path_deltaSigma_1);
     realSignal.serialConverter<4>(LUT);
     realSignal.writeToFile(file_path_serialized_1);
 
     MyFxpDsp complexSignal;
     complexSignal.readFromFile(file_path_in_2);
-    complexSignal.deltaSigma<24, 4, 4, 4, 12, 4>(iirCoeff);
+    complexSignal.deltaSigma<12, 4, 4, 4, true>(iirCoeff);
     complexSignal.writeToFile(file_path_deltaSigma_2);
     complexSignal.serialConverter<4>(LUT);
     complexSignal.writeToFile(file_path_serialized_2);
