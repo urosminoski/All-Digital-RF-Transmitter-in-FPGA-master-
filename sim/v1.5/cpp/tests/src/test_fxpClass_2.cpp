@@ -170,6 +170,70 @@ private:
         }
     }
 
+    template<typename SignalType>
+    void firSingleConcolution(SignalType& output, size_t& k,
+                              std::vector<SignalType>& delayLine,
+                              const std::vector<double>& firCoeff) {
+        // Iterate over delay elements
+        for (size_t m = 0; m < delayLine.size(); m++) {
+            // Perform convolution
+            output += SignalType(firCoeff[m]) * delayLine[k++];
+            // Simulating circular buffer
+            if (k == delayLine.size()) {
+                k = 0;
+            }
+        }
+    }
+
+    template<typename InputType, typename SignalType, typename CoeffType>
+    InputType firConvolution(const InputType& input, size_t& k,
+                          std::vector<SignalType>& delayLine,
+                          const std::vector<CoeffType>& fxpFirCoeff) {
+        
+        // Devide initialization based on type of input (real or complex)
+        SignalType sum;
+        if constexpr (std::is_same_v<InputType, double>) {
+            // Update delayLine with new input element
+            delayLine[k] = SignalType(input);
+            // Initialize accumulator with 0
+            sum = SignalType(0);
+
+        } else if constexpr (std::is_same_v<InputType, std::complex<double>>) {
+            // Update delayLine with new input element
+            delayLine[k] = SignalType(input.real(), input.imag());
+            // Initialize accumulator with 0
+            sum = SignalType(0.0, 0.0);
+
+        } else {
+            throw std::runtime_error("Invalid input signal type for FIR filtering!");
+        }
+
+        // Perform convolution
+        for (size_t m = 0; m < delayLine.size(); m++) {
+            sum += fxpFirCoeff[m] * delayLine[k++];
+            // Simulate corcular buffer (delayLine is circular buffer)
+            if (k == delayLine.size()) {
+                k = 0;
+            }
+        }
+        // Simulate circular buffer
+        if (k-- == 0) {
+            k = delayLine.size() - 1;
+        }
+
+        // Devide initialization based on type of input (real or complex)
+        if constexpr (std::is_same_v<InputType, double>) {
+            return sum.to_double();
+
+        } else if constexpr (std::is_same_v<InputType, std::complex<double>>) {
+            return std::complex<double>(
+                sum.r().to_double(),
+                sum.i().to_double()
+            );
+
+        }
+    }
+
 public:
     // Default constructor
     FxpDsp() 
@@ -342,90 +406,95 @@ public:
     }
 
     template<int firW, int firI>
-    void fir(std::vector<double>& firCoeff) {
+    void fir(const std::vector<double>& firCoeff) {
         // Ensure firCoeff is not empty
         if (firCoeff.empty()) {
             throw std::runtime_error("FIR coeffitients must not be empty!");
         }
+        // Discretize FIR coeffitients
+        using CoeffType     = ac_fixed<firW, firI, S, Q, O>;
+        std::vector<CoeffType> fxpFirCoeff;
+        fxpFirCoeff.reserve(firCoeff.size());
+        for (auto& coeff : firCoeff) {
+            fxpFirCoeff.emplace_back(coeff);
+        }
 
-        using CoeffType = ac_fixed<firW, firI, S, Q, O>;
-
-        // Real data processing
-        auto processReal = [&](auto& vector) {
-            using SignalType = ac_fixed<W+firW, I+firI, S, Q, O>;
-
+        std::visit([&](auto& vector) {
+            using InputType     = typename std::decay_t<decltype(vector)>::value_type;
+            using SignalType    = std::conditional_t<
+                                    std::is_same_v<InputType, double>,
+                                    ac_fixed<W+firW, I+firI, S, Q, O>,
+                                    ac_complex<ac_fixed<W+firW, I+firI, S, Q, O>>
+                                >;
             std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0));
             size_t k = 0;
 
             for (size_t n = 0; n < vector.size(); n++) {
-                delayLine[k] = vector[n];
-                SignalType sum = 0;
-
-                for (size_t m = 0; m < delayLine.size(); m++) {
-                    // Perform convolution
-                    sum += CoeffType(firCoeff[m]) * delayLine[k++];
-                    // Simulating circular buffer
-                    if (k == delayLine.size()) {
-                        k = 0;
-                    }
-                }
-                // Save sum to the same place in vector (in-place processing)
-                vector[n] = sum.to_double();
-                // Simulating circular buffer
-                if (k-- == 0) {
-                    k = delayLine.size() - 1;
-                }
+                vector[n] = firConvolution<InputType, SignalType, CoeffType>(vector[n], k, delayLine, fxpFirCoeff);
             }
-        };
 
-        // Complex data processing
-        auto processComplex = [&](auto& vector) {
-            using SignalTypeR   = ac_fixed<W+firW, I+firI, S, Q, O>;
-            using SignalType    = ac_complex<ac_fixed<W+firW, I+firI, S, Q, O>>;
+        }, fxpVector);
+    }
 
-            std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0));
-            size_t k = 0;
+    template<typename CoeffType, size_t ratio>
+    void makePolyFir(const std::vector<double>& firCoeff,
+                     std::vector<std::vector<CoeffType>>& firCoeff_poly) {
+        // Validate firCoeff: Check that firCoeff is not empty
+        if (firCoeff.empty()) {
+            throw std::invalid_argument("FIR coeffitients for interpolation cannot be empty!");
+        }
+
+        // Copy firCoeff to avoid modifying original
+        std::vector<double> firCoeff_padded = firCoeff;
+
+        // Calculate the next power of two
+        size_t targetSize = std::pow(2, std::ceil(std::log2(firCoeff_padded.size())));
+
+        // Resize padded vector and pad it with zeros
+        firCoeff_padded.resize(targetSize, 0.0);
+
+        // Divide coefficients into ratio parts
+        for (size_t i = 0; i < firCoeff_padded.size(); i++) {
+            CoeffType fxpCoeff = firCoeff_padded[i];
+            firCoeff_poly[i % ratio].emplace_back(fxpCoeff);
+        }
+    }
+
+    template<int intW, int intI, size_t ratio>
+    void interpolator(const std::vector<double>& firCoeff) {
+        // Validate firCoeff: Check that firCoeff is not empty
+        if (firCoeff.empty()) {
+            throw std::invalid_argument("FIR coeffitients for interpolation cannot be empty!");
+        }
+
+        using CoeffType = ac_fixed<intW, intI, S, Q, O>;
+
+        // Make polyphase filters out of firCoeff
+        std::vector<std::vector<CoeffType>> firCoeff_poly;
+        makePolyFir(firCoeff, firCoeff_poly);
+
+        std::visit([&](auto& vector) {
+            using InputType     = typename std::decay_t<decltype(vector)>::value_type;
+            using SignalType    = std::conditional_t<
+                                    std::is_same_v<InputType, double>,
+                                    ac_fixed<W+intW, I+intI, S, Q, O>,
+                                    ac_complex<ac_fixed<W+intW, I+intI, S, Q, O>>
+                                >;
+
+            std::vector<std::vector<SignalType>> delayLine(ratio, std::vector<SignalType>(firCoeff_poly[0].size(), SignalType(0.0)));
+            std::vector<size_t> k(ratio, 0);
+            std::vector<SignalType> outputVector;
+            SignalType output;
+
+            output.reserve(vector.size() * ratio);
 
             for (size_t n = 0; n < vector.size(); n++) {
-                delayLine[k] = SignalType(
-                    SignalTypeR(vector[n].real()),
-                    SignalTypeR(vector[n].imag())
-                );
-                SignalType sum = SignalType(
-                    SignalTypeR(0),
-                    SignalTypeR(0)
-                );
-
-                for (size_t m = 0; m < delayLine.size(); m++) {
-                    // Perform convolution
-                    sum += CoeffType(firCoeff[m]) * delayLine[k++];
-                    // Simulating circular buffer
-                    if (k == delayLine.size()) {
-                        k = 0;
-                    }
-                }
-                // Save sum to the same place in vector (in-place processing)
-                vector[n] = std::complex<double>(
-                    sum.r().to_double(),
-                    sum.i().to_double()
-                );
-                // Simulating circular buffer
-                if (k-- == 0) {
-                    k = delayLine.size() - 1;
+                for (size_t m = 0; m < ratio; m++) {
+                    output = firConvolution<InputType, SignalType, CoeffType>(vector[n], k[m], delayLine[m], firCoeff_poly[k]);
+                    outputVector.emplace_back(output);
                 }
             }
-        };
-
-        // Using std::visit to deal with variant
-        std::visit([&](auto& vector){
-            using T = typename std::decay_t<decltype(vector)>;
-            if constexpr (std::is_same_v<T, RealVector>) {
-                processReal(vector);
-            } else if constexpr (std::is_same_v<T, ComplexVector>) {
-                processComplex(vector);
-            } else {
-                std::runtime_error("Invalid type for fir()!");
-            }
+            vector = std::move(outputVector);
         }, fxpVector);
     }
 
