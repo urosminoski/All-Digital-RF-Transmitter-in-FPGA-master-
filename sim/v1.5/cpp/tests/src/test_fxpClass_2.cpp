@@ -238,6 +238,10 @@ public:
     // Default constructor
     FxpDsp() 
         : fxpVector(RealVector{}), metadata{}, qFormat(false) {}
+
+    // Empty constructor with qFormat
+    FxpDsp(bool qFormat) 
+        : fxpVector(RealVector{}), metadata{}, qFormat(qFormat) {}
     
     // Real data constructor
     FxpDsp(const RealVector& inVector,
@@ -453,6 +457,8 @@ public:
         // Resize padded vector and pad it with zeros
         firCoeff_padded.resize(targetSize, 0.0);
 
+        // Ensure firCoeff_poly has 'ratio' rows
+        firCoeff_poly.resize(ratio);
         // Divide coefficients into ratio parts
         for (size_t i = 0; i < firCoeff_padded.size(); i++) {
             CoeffType fxpCoeff = firCoeff_padded[i];
@@ -471,7 +477,7 @@ public:
 
         // Make polyphase filters out of firCoeff
         std::vector<std::vector<CoeffType>> firCoeff_poly;
-        makePolyFir(firCoeff, firCoeff_poly);
+        makePolyFir<CoeffType, ratio>(firCoeff, firCoeff_poly);
 
         std::visit([&](auto& vector) {
             using InputType     = typename std::decay_t<decltype(vector)>::value_type;
@@ -480,22 +486,36 @@ public:
                                     ac_fixed<W+intW, I+intI, S, Q, O>,
                                     ac_complex<ac_fixed<W+intW, I+intI, S, Q, O>>
                                 >;
+            using OutputType    = std::conditional_t<
+                                    std::is_same_v<InputType, double>,
+                                    RealVector,
+                                    ComplexVector
+                                >;
 
             std::vector<std::vector<SignalType>> delayLine(ratio, std::vector<SignalType>(firCoeff_poly[0].size(), SignalType(0.0)));
             std::vector<size_t> k(ratio, 0);
-            std::vector<SignalType> outputVector;
-            SignalType output;
+            OutputType outputVector;
+            InputType output;
 
-            output.reserve(vector.size() * ratio);
+            outputVector.reserve(vector.size() * ratio);
 
             for (size_t n = 0; n < vector.size(); n++) {
                 for (size_t m = 0; m < ratio; m++) {
-                    output = firConvolution<InputType, SignalType, CoeffType>(vector[n], k[m], delayLine[m], firCoeff_poly[k]);
+                    output = firConvolution<InputType, SignalType, CoeffType>(vector[n], k[m], delayLine[m], firCoeff_poly[m]);
                     outputVector.emplace_back(output);
                 }
             }
             vector = std::move(outputVector);
         }, fxpVector);
+    }
+
+    template<int intW, int intI>
+    void interpolation(const std::vector<std::vector<double>>& firCoeffs) {
+        size_t firNum = firCoeffs.size();
+
+        for (size_t i = 0; i < firNum; i++) {
+            interpolator<intW, intI, 2>(firCoeffs[i]);
+        }
     }
 
     template<typename SignalType>
@@ -697,13 +717,24 @@ bool readLUT(const std::string& fileName, std::vector<std::vector<int>>& LUT);
   {-4.606822182 , 0.023331537   , 0 , 1 , -0.62380242   , 0.4509869     }  \
 }
 
+#define FIR_INTERPOLATE \
+{ \
+    -0.004393929480052915, 0.008749809773518077, 0.011499714345511822, -0.014327285198710942, -0.02094230633524795, \
+     0.028314479232933752, 0.03988365038935077, -0.055454535750693694, -0.08422927461757014,  0.14585294238992308,  \
+     0.4493100249751224, 0.4493100249751224, 0.14585294238992308, -0.08422927461757014, -0.055454535750693694,     \
+     0.03988365038935077, 0.028314479232933752, -0.02094230633524795, -0.014327285198710942, 0.011499714345511822,  \
+     0.008749809773518077, -0.004393929480052915 \
+}
+
+
 #define FIR_COEFF {-2.63665205e-17, 3.06687619e-01, 5.00000000e-01, 3.06687619e-01, -2.63665205e-17}
 
 int main() {
-    using MyFxpDsp = FxpDsp<12, 4, true, AC_RND, AC_SAT>;
+    using MyFxpDsp = FxpDsp<12, 1, true, AC_RND, AC_SAT>;
 
     std::vector<std::vector<double>> iirCoeff = IIR_FILTERS;
     std::vector<double> firCoeff = FIR_COEFF;
+    std::vector<double> firPoly = FIR_INTERPOLATE;
 
     std::string file_path_lut = "../../data/luts/LUT4.json";
     std::vector<std::vector<int>> LUT;
@@ -719,23 +750,25 @@ int main() {
     std::string file_path_serialized_2  = "./data/output/sinDataComplex_serial.txt";
     std::string file_path_fir_2         = "./data/output/sinDataComplex_fir.txt";
 
-    MyFxpDsp realSignal;
+    MyFxpDsp realSignal(true);
     realSignal.readFromFile(file_path_in_1);
-    realSignal.fir<16, 1>(firCoeff);
+    // realSignal.fir<16, 1>(firCoeff);
+    realSignal.interpolator<16, 1, 2>(firPoly);
     realSignal.writeToFile(file_path_fir_1);
-    realSignal.deltaSigma<12, 4, 4, 4, false>(iirCoeff);
-    realSignal.writeToFile(file_path_deltaSigma_1);
-    realSignal.serialConverter<4>(LUT);
-    realSignal.writeToFile(file_path_serialized_1);
+    // realSignal.deltaSigma<12, 4, 4, 4, false>(iirCoeff);
+    // realSignal.writeToFile(file_path_deltaSigma_1);
+    // realSignal.serialConverter<4>(LUT);
+    // realSignal.writeToFile(file_path_serialized_1);
 
     MyFxpDsp complexSignal;
     complexSignal.readFromFile(file_path_in_2);
-    complexSignal.fir<16, 1>(firCoeff);
+    // complexSignal.fir<16, 1>(firCoeff);
+    complexSignal.interpolator<16, 1, 2>(firPoly);
     complexSignal.writeToFile(file_path_fir_2);
-    complexSignal.deltaSigma<12, 4, 4, 4, false>(iirCoeff);
-    complexSignal.writeToFile(file_path_deltaSigma_2);
-    complexSignal.serialConverter<4>(LUT);
-    complexSignal.writeToFile(file_path_serialized_2);
+    // complexSignal.deltaSigma<12, 4, 4, 4, false>(iirCoeff);
+    // complexSignal.writeToFile(file_path_deltaSigma_2);
+    // complexSignal.serialConverter<4>(LUT);
+    // complexSignal.writeToFile(file_path_serialized_2);
 
     // Example usage: Default constructor
     // MyFxpDsp fxpVector1;

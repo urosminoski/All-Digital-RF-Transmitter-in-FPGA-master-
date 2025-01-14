@@ -85,8 +85,8 @@ def main():
     # Signal parameters
     N = 8 * 1024
     M = 3
-    OSR = 8
-    f = 3.2 * 1e3
+    OSR = 1
+    f = 4 * 1e3
     fs = 10 * 1e3
 
     # Generate and write signal

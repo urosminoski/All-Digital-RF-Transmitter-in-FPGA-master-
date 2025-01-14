@@ -26,7 +26,7 @@ def remezlp( Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', nPoints=8192
             
     while N<Nmax:
         # Design the filter.
-        b = scipy.signal.remez(N, [0.0, Fpass, Fstop, 0.5], [1,0], [1, deltaPass/deltaStop])
+        b = scipy.signal.remez(N, [0.0, Fpass, Fstop, 0.5], [1, deltaPass/deltaStop])
         
         # Check if filter meets specifications
         w, h = freqz(b, 1, worN = nPoints, fs=1)
