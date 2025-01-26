@@ -53,6 +53,7 @@
         "regex": "cpp",
         "sstream": "cpp",
         "variant": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "*.tpp": "cpp"
     }
 }

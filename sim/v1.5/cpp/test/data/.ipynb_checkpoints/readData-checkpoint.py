@@ -5,10 +5,8 @@ import sys
 import numpy as np
 import scipy.signal as signal
 import matplotlib
-# matplotlib.use('Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-mpl.rcParams['text.usetex'] = False
 
 # Enable LaTeX rendering
 plt.rc('text', usetex=True)
@@ -70,7 +68,6 @@ def process_file(file_path):
     """
     print(f"Processing file: {file_path}")
     metadata, data = read_file_with_header(file_path)
-    print(metadata)
 
     if not data.size:
         print(f"Warning: No valid numerical data found in {file_path}")
@@ -79,11 +76,10 @@ def process_file(file_path):
     # Extract metadata
     OSR = int(metadata.get("OSR", 1))
     is_complex = metadata.get("complex", 0) == 1  # Check if the data is complex
-    lut_width = metadata.get("lut_width", 1)
+    lut_width = metadata.get("LUTwidth", 1)
 
     # Compute the windowed data and spectrum
-    print(lut_width)
-    w = signal.windows.hann(len(data), False)
+    w = signal.barthann(len(data), False)
     data_win = data * w
     spectrum = 20 * np.log10(np.abs(np.fft.fftshift(np.fft.fft(data_win))))
     spectrum -= np.max(spectrum)
@@ -112,80 +108,26 @@ def process_file(file_path):
     fig_path = os.path.join("./figs", file_name)
     plt.savefig(fig_path)
     print(f"Saved spectrum plot to {fig_path}")
-    # plt.close()
-    plt.show();
+    plt.close()
 
     # Additional printout for complex vs real
     data_type = "complex" if is_complex else "real"
     print(f"Processed {data_type} data from {file_path}")
 
 def main():
-    file_path = "input/sinData.txt"
-    process_file(file_path)
-    file_path = "output/sinData_interpolated.txt"
-    process_file(file_path)
-    file_path = "output/sinData_deltaSigma.txt"
-    process_file(file_path)
+    if len(sys.argv) < 2:
+        print("Usage: read_files.py <file1> [<file2> ...]")
+        sys.exit(1)
 
-    file_path = "input/sinDataComplex.txt"
-    process_file(file_path)
-    file_path = "output/sinDataComplex_interpolated.txt"
-    process_file(file_path)
-    file_path = "output/sinDataComplex_deltaSigma.txt"
-    process_file(file_path)
+    # Ensure output directory exists
+    os.makedirs("./figs", exist_ok=True)
+
+    # Process each file passed as an argument
+    for file_path in sys.argv[1:]:
+        if not os.path.isfile(file_path):
+            print(f"Error: File {file_path} does not exist.")
+            continue
+        process_file(file_path)
 
 if __name__ == "__main__":
     main()
-
-
-
-
-firResponse = [1.0, 1.0, 0, 0]
-firFreqs = [0, 0.2, 0.3, 0.5]
-firCoeff = signal.firls(5, firFreqs, firResponse, fs=1)
-print(firCoeff)
-
-
-
-
-
-
-
-
-
-
-
-import numpy as np
-import scipy.signal
-from remezlp import *
-
-N = 1024
-
-M = 3
-I = 8
-
-Fmax = 0.4
-Fpass = Fmax
-Fstop = 1 - Fpass
-AdB = 60
-deltaPass = 10**(-AdB/20)
-deltaStop = deltaPass
-
-iterator = int(np.log(I)/np.log(2))
-# xI = x
-Fpass_ = Fpass
-Fstop_ = Fstop
-
-for i in range(iterator):
-    Fpass_ /= 2
-    Fstop_ /= 2
-    firCoeff = remezlp(Fpass_, Fstop_, deltaPass, deltaStop, nPoints=N, Nmax=500)
-    print(f"N = {len(firCoeff)}")
-    print(firCoeff)
-    # firCoeff = firCoeff[1:-1]
-
-
-
-
-
-
