@@ -218,10 +218,11 @@ static void makePolyFir(std::vector<double>& firCoeff,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorReal(std::vector<double>& input, std::vector<double>& output,
-                      std::vector<double>& firCoeff, size_t interpolationRatio) {
-    if (input.empty()) {
-        throw std::runtime_error("input is empty!");
+void interpolatorReal(std::vector<double>& signal,
+                      std::vector<double>& firCoeff,
+                      size_t interpolationRatio) {
+    if (signal.empty()) {
+        throw std::runtime_error("signal is empty!");
     }
     if (firCoeff.empty()) {
         throw std::runtime_error("firCoeff is empty!");
@@ -231,31 +232,45 @@ void interpolatorReal(std::vector<double>& input, std::vector<double>& output,
     using SignalType    = ac_fixed<2*W, 2*I, S, Q, O>;
     using CoeffType     = ac_fixed<W, I, S, Q, O>;
 
-    // Make quantizied polyphase FIR
+    // Quantize the FIR coefficients into polyphase form
     std::vector<std::vector<CoeffType>> polyFirCoeffFxp;
     polyFirCoeffFxp.reserve(interpolationRatio);
     makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
 
+    // Initialize delay lines for each polyphase branch
     std::vector<std::vector<SignalType>> delayLine(
         interpolationRatio,
         std::vector<SignalType>(polyFirCoeffFxp[0].size(), SignalType(0.0))
     );
-    std::vector<size_t> k(interpolationRatio, 0);
+    std::vector<size_t> k(interpolationRatio, 0); // Circular buffer index for each phase
 
-    for (size_t i = 0; i < input.size(); i++) {
-        for (size_t j = 0; j < interpolationRatio; j++) {
-            InputType inputFxp = input[i];
+    // Prepare an extended signal for interpolation
+    std::vector<double> extendedSignal;
+    extendedSignal.reserve(signal.size() * interpolationRatio);
+
+    // Iterate over the original signal
+    for (size_t i = 0; i < signal.size(); ++i) {
+        for (size_t j = 0; j < interpolationRatio; ++j) {
+            InputType inputFxp = signal[i]; // Quantized input sample
             InputType outputFxp = 0.0;
+
+            // Perform convolution for the current polyphase filter
             firConvolution<InputType, SignalType, CoeffType>(inputFxp, outputFxp, delayLine[j], polyFirCoeffFxp[j], k[j]);
-            output.emplace_back(outputFxp.to_double());
+
+            // Append the interpolated value to the extended signal
+            extendedSignal.emplace_back(outputFxp.to_double());
         }
     }
+
+    // Replace the original signal with the extended/interpolated signal
+    signal = std::move(extendedSignal);
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorComplex(std::vector<std::complex<double>>& input, std::vector<std::complex<double>>& output,
-                         std::vector<double>& firCoeff, size_t interpolationRatio) {
-    if (input.empty()) {
+void interpolatorComplex(std::vector<std::complex<double>>& signal,
+                         std::vector<double>& firCoeff, 
+                         size_t interpolationRatio) {
+    if (signal.empty()) {
         throw std::runtime_error("input is empty!");
     }
     if (firCoeff.empty()) {
@@ -275,35 +290,56 @@ void interpolatorComplex(std::vector<std::complex<double>>& input, std::vector<s
         interpolationRatio,
         std::vector<SignalType>(polyFirCoeffFxp[0].size(), SignalType(0.0))
     );
-    std::vector<size_t> k(interpolationRatio, 0);
+    std::vector<size_t> k(interpolationRatio, 0);   // Circular buffer index for each phase
 
-    for (size_t i = 0; i < input.size(); i++) {
+    // Prepare an extended signal for interpolation
+    std::vector<std::complex<double>> extendedSignal;
+    extendedSignal.reserve(signal.size() * interpolationRatio);
+
+    for (size_t i = 0; i < signal.size(); i++) {
         for (size_t j = 0; j < interpolationRatio; j++) {
             InputType inputFxp = InputType(
-                input[i].real(),
-                input[i].imag()
+                signal[i].real(),
+                signal[i].imag()
             );
             InputType outputFxp = 0.0;
             firConvolution<InputType, SignalType, CoeffType>(inputFxp, outputFxp, delayLine[j], polyFirCoeffFxp[j], k[j]);
-            output.emplace_back(
+            extendedSignal.emplace_back(
                 outputFxp.r().to_double(),
                 outputFxp.i().to_double()
             );
         }
     }
+    // Replace the original signal with the extended/interpolated signal
+    signal = std::move(extendedSignal);
 }
 
-// template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-// void interpolationReal(std::vector<double>& input, std::vector<double>& output,
-//                        td::vector<double>& firCoeffs) {
-//     if (input.empty()) {
-//         throw std::runtime_error("input is empty!");
-//     }
-//     if (firCoeffs.empty()) {
-//         throw std::runtime_error("firCoeff is empty!");
-//     }
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void interpolationReal(std::vector<double>& signal,
+                       std::vector<std::vector<double>>& firCoeffs) {
+    if (signal.empty()) {
+        throw std::runtime_error("input is empty!");
+    }
+    if (firCoeffs.empty()) {
+        throw std::runtime_error("firCoeff is empty!");
+    }
 
-//     for (size_t i = 0; i < firCoeffs.size(); i++) {
-//         interpolatorReal
-//     }
-// }
+    for (size_t i = 0; i < firCoeffs.size(); i++) {
+        interpolatorReal<W, I, S, Q, O>(signal, firCoeffs[i], 2);
+    }
+}
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void interpolationComplex(std::vector<std::complex<double>>& signal,
+                          std::vector<std::vector<double>>& firCoeffs) {
+    if (signal.empty()) {
+        throw std::runtime_error("input is empty!");
+    }
+    if (firCoeffs.empty()) {
+        throw std::runtime_error("firCoeff is empty!");
+    }
+
+    for (size_t i = 0; i < firCoeffs.size(); i++) {
+        interpolatorComplex<W, I, S, Q, O>(signal, firCoeffs[i], 2);
+    }
+}

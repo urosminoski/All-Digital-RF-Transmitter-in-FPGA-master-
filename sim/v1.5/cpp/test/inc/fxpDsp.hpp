@@ -26,12 +26,22 @@ void firComplex(std::vector<std::complex<double>>& input, std::vector<std::compl
                 std::vector<double>& firCoeff);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorReal(std::vector<double>& input, std::vector<double>& output,
-                      std::vector<double>& firCoeff, size_t interpolationRatio);
+void interpolatorReal(std::vector<double>& signal,
+                      std::vector<double>& firCoeff, 
+                      size_t interpolationRatio);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorComplex(std::vector<std::complex<double>>& input, std::vector<std::complex<double>>& output,
-                         std::vector<double>& firCoeff, size_t interpolationRatio);
+void interpolatorComplex(std::vector<std::complex<double>>& signal,
+                         std::vector<double>& firCoeff, 
+                         size_t interpolationRatio);
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void interpolationReal(std::vector<double>& signal,
+                       std::vector<std::vector<double>>& firCoeffs);
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void interpolationComplex(std::vector<std::complex<double>>& signal,
+                          std::vector<std::vector<double>>& firCoeffs);
 
 #include "../src/fxpDsp.tpp"
 
