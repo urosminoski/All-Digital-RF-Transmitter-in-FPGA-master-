@@ -128,9 +128,9 @@ static void firConvolution(InputType& input, InputType& output, std::vector<Sign
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void firReal(std::vector<double>& input, std::vector<double>& output,
+void firReal(std::vector<double>& signal,
              std::vector<double>& firCoeff) {
-    if (input.empty()) {
+    if (signal.empty()) {
         throw std::runtime_error("input is empty!");
     }
     if (firCoeff.empty()) {
@@ -148,18 +148,44 @@ void firReal(std::vector<double>& input, std::vector<double>& output,
     std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0));
     size_t k = 0;
 
-    for (size_t i = 0; i < input.size(); i++) {
-        InputType inputFxp = input[i];
+    for (size_t i = 0; i < signal.size(); i++) {
+        InputType inputFxp = signal[i];
         InputType outputFxp = 0;;
         firConvolution<InputType, SignalType, CoeffType>(inputFxp, outputFxp, delayLine, firCoeffFxp, k);
-        output.emplace_back(outputFxp.to_double());
+        signal[i] = outputFxp.to_double();
     }
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void firComplex(std::vector<std::complex<double>>& input, std::vector<std::complex<double>>& output,
+static void firReal(std::vector<double>& signal,
+                    std::vector<ac_fixed<W, I, S, Q, O>>& firCoeffFxp) {
+    if (signal.empty()) {
+        throw std::runtime_error("input is empty!");
+    }
+    if (firCoeffFxp.empty()) {
+        throw std::runtime_error("firCoeff is empty!");
+    }
+
+    using InputType     = ac_fixed<W, I, S, Q, O>;
+    using SignalType    = ac_fixed<2*W, 2*I, S, Q, O>;
+    using CoeffType     = ac_fixed<W, I, S, Q, O>;
+
+    // Define delayLine
+    std::vector<SignalType> delayLine(firCoeffFxp.size(), SignalType(0));
+    size_t k = 0;
+
+    for (size_t i = 0; i < signal.size(); i++) {
+        InputType inputFxp = signal[i];
+        InputType outputFxp = 0;;
+        firConvolution<InputType, SignalType, CoeffType>(inputFxp, outputFxp, delayLine, firCoeffFxp, k);
+        signal[i] = outputFxp.to_double();
+    }
+}
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void firComplex(std::vector<std::complex<double>>& signal,
                 std::vector<double>& firCoeff) {
-    if (input.empty()) {
+    if (signal.empty()) {
         throw std::runtime_error("input is empty!");
     }
     if (firCoeff.empty()) {
@@ -177,14 +203,46 @@ void firComplex(std::vector<std::complex<double>>& input, std::vector<std::compl
     std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0.0));
     size_t k = 0;
 
-    for (size_t i = 0; i < input.size(); i++) {
+    for (size_t i = 0; i < signal.size(); i++) {
         InputType inputFxp = InputType(
-            input[i].real(),
-            input[i].imag()
+            signal[i].real(),
+            signal[i].imag()
         );
         InputType outputFxp = 0;
         firConvolution<InputType, SignalType, CoeffType>(inputFxp, outputFxp, delayLine, firCoeffFxp, k);
-        output.emplace_back(
+        signal[i] = std::complex<double>(
+            outputFxp.r().to_double(),
+            outputFxp.i().to_double()
+        );
+    }
+}
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+static void firComplex(std::vector<std::complex<double>>& signal,
+                       std::vector<ac_fixed<W, I, S, Q, O>>& firCoeffFxp) {
+    if (signal.empty()) {
+        throw std::runtime_error("input is empty!");
+    }
+    if (firCoeffFxp.empty()) {
+        throw std::runtime_error("firCoeff is empty!");
+    }
+
+    using InputType     = ac_complex<ac_fixed<W, I, S, Q, O>>;
+    using SignalType    = ac_complex<ac_fixed<2*W, 2*I, S, Q, O>>;
+    using CoeffType     = ac_fixed<W, I, S, Q, O>;
+
+    // Define delayLine
+    std::vector<SignalType> delayLine(firCoeffFxp.size(), SignalType(0.0));
+    size_t k = 0;
+
+    for (size_t i = 0; i < signal.size(); i++) {
+        InputType inputFxp = InputType(
+            signal[i].real(),
+            signal[i].imag()
+        );
+        InputType outputFxp = 0;
+        firConvolution<InputType, SignalType, CoeffType>(inputFxp, outputFxp, delayLine, firCoeffFxp, k);
+        signal[i] = std::complex<double>(
             outputFxp.r().to_double(),
             outputFxp.i().to_double()
         );
@@ -193,8 +251,8 @@ void firComplex(std::vector<std::complex<double>>& input, std::vector<std::compl
 
 template<typename CoeffType>
 static void makePolyFir(std::vector<double>& firCoeff, 
-                   std::vector<std::vector<CoeffType>>& polyFirCoeffFxp,
-                   size_t interpolationRatio) {
+                        std::vector<std::vector<CoeffType>>& polyFirCoeffFxp,
+                        size_t interpolationRatio) {
     if (firCoeff.empty()) {
         throw std::runtime_error("firCoeff is empty!");
     }
@@ -342,4 +400,54 @@ void interpolationComplex(std::vector<std::complex<double>>& signal,
     for (size_t i = 0; i < firCoeffs.size(); i++) {
         interpolatorComplex<W, I, S, Q, O>(signal, firCoeffs[i], 2);
     }
+}
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void delayReal(std::vector<double>& signal, 
+               std::vector<double>& firCoeff, 
+               size_t interpolationRatio,
+               size_t delayRatio) {
+    if (signal.empty()) {
+        throw std::runtime_error("input is empty!");
+    }
+    if (firCoeff.empty()) {
+        throw std::runtime_error("firCoeff is empty!");
+    }
+    if (delayRatio >= interpolationRatio) {
+        throw std::runtime_error("Delay cannot be greater then interpolation ratio!");
+    }
+
+    using CoeffType = ac_fixed<W, I, S, Q, O>;
+
+    std::vector<std::vector<CoeffType>> polyFirCoeffFxp;
+    polyFirCoeffFxp.reserve(interpolationRatio);
+    makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
+
+    size_t delayIndex = interpolationRatio - delayRatio - 1;
+    firReal<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
+}
+
+template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+void delayComplex(std::vector<std::complex<double>>& signal, 
+                  std::vector<double>& firCoeff, 
+                  size_t interpolationRatio,
+                  size_t delayRatio) {
+    if (signal.empty()) {
+        throw std::runtime_error("input is empty!");
+    }
+    if (firCoeff.empty()) {
+        throw std::runtime_error("firCoeff is empty!");
+    }
+    if (delayRatio >= interpolationRatio) {
+        throw std::runtime_error("Delay cannot be greater then interpolation ratio!");
+    }
+
+    using CoeffType = ac_fixed<W, I, S, Q, O>;
+
+    std::vector<std::vector<CoeffType>> polyFirCoeffFxp;
+    polyFirCoeffFxp.reserve(interpolationRatio);
+    makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
+
+    size_t delayIndex = interpolationRatio - delayRatio - 1;
+    firComplex<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
 }

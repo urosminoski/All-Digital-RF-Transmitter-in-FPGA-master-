@@ -31,6 +31,7 @@ def generate_poly_fir_data(I, Fpass, Fstop, AdB, N=1024, Nmax=500):
         Fpass_ /= 2
         Fstop_ /= 2
         firCoeff = remezlp(Fpass_, Fstop_, deltaPass, deltaStop, nPoints=N, Nmax=Nmax)
+        firCoeff /= np.max(np.abs(firCoeff))
         print(len(firCoeff))
         fir_coefficients.append(firCoeff)
 
