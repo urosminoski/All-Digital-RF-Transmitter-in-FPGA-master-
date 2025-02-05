@@ -1,5 +1,76 @@
 #include "fxpDsp.hpp"
 
+// Internal base class for ac_fixed types
+class FxpBase {
+public:
+    virtual ~FxpBase() = default;
+
+    // Method to return the stored value as a double
+    virtual double getDouble() const = 0;
+};
+
+// Derived template class for specific ac_fixed types
+template<int LocalW, int LocalI, bool LocalS, ac_q_mode LocalQ, ac_o_mode LocalO>
+class FxpDerived : public FxpBase {
+private:
+    ac_fixed<LocalW, LocalI, LocalS, LocalQ, LocalO> value;
+
+public:
+    explicit FxpDerived(double v) : value(v) {}
+    double getDouble() const override { return value.to_double(); }
+};
+
+// Factory class for creating ac_fixed instances dynamically
+template<int W, bool S, ac_q_mode Q, ac_o_mode O>
+class FxpFactory {
+private:
+    constexpr static int IStart = 1;
+
+    static int calculateI(double value) {
+        if (value < 0) { value = -value; }
+        return static_cast<int>(std::ceil(std::log2(value + 1)) + 1);
+    }
+
+    template<int... IValues>
+    std::unique_ptr<FxpBase> createFixedImpl(double value, int targetI, std::integer_sequence<int, IValues...>) const {
+        std::unique_ptr<FxpBase> result = nullptr;
+
+        ([&]() {
+            if (targetI == IValues) {
+                result = std::make_unique<FxpDerived<W, IValues, S, Q, O>>(value);
+            }
+        }(), ...);
+
+        if (!result) {
+            throw std::runtime_error("Unsupported I value");
+        }
+        return result;
+    }
+
+    double convertValue(double value) const {
+        constexpr int IEnd = W;
+        int targetI = calculateI(value);
+
+        if (targetI < IStart || targetI > IEnd) {
+            throw std::runtime_error("Value out of range for I");
+        }
+
+        auto fixedObj = createFixedImpl(value, targetI, std::make_integer_sequence<int, IEnd + 1 - IStart>());
+        return fixedObj->getDouble();
+    }
+
+public:
+    std::vector<std::vector<double>> convertMatrix(const std::vector<std::vector<double>>& matrix) const {
+        std::vector<std::vector<double>> result = matrix;
+        for (size_t i = 0; i < matrix.size(); ++i) {
+            for (size_t j = 0; j < matrix[i].size(); ++j) {
+                result[i][j] = convertValue(matrix[i][j]);
+            }
+        }
+        return result;
+    }
+};
+
 // Converts a vector of ac_fixed fixed-point numbers to a vector of doubles
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 static void fxp2double(std::vector<ac_fixed<W, I, S, Q, O>>& input,
@@ -35,7 +106,7 @@ static void fxp2complex(std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>& input,
 
 // Quantizes a vector of doubles into a vector of ac_fixed fixed-point numbers
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-static void quantizeRealFxp(std::vector<double>& input, 
+static void quantize_realFxp(std::vector<double>& input, 
                             std::vector<ac_fixed<W, I, S, Q, O>>& output) {
     // Ensure input vector isn't empty
     if (input.empty()) {
@@ -50,7 +121,7 @@ static void quantizeRealFxp(std::vector<double>& input,
 
 // Quantizes a vector of std::complex<double> into a vector of ac_complex fixed-point numbers
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-static void quantizeComplexFxp(std::vector<std::complex<double>>& input, 
+static void quantize_complexFxp(std::vector<std::complex<double>>& input, 
                                std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>>& output) {
     // Ensure input vector isn't empty
     if (input.empty()) {
@@ -71,7 +142,7 @@ static void quantizeComplexFxp(std::vector<std::complex<double>>& input,
 
 // Wrapper function to quantize a vector of doubles and convert back to doubles
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void quantizeReal(std::vector<double>& input,
+void quantize_real(std::vector<double>& input,
                   std::vector<double>& output) {
     // Ensure input vector isn't empty
     if (input.empty()) {
@@ -82,7 +153,7 @@ void quantizeReal(std::vector<double>& input,
     std::vector<ac_fixed<W, I, S, Q, O>> outputFxp;
 
     // Quantize input doubles to fixed-point values
-    quantizeRealFxp<W, I, S, Q, O>(input, outputFxp);
+    quantize_realFxp<W, I, S, Q, O>(input, outputFxp);
 
     // Convert fixed-point values back to doubles
     fxp2double<W, I, S, Q, O>(outputFxp, output);
@@ -90,7 +161,7 @@ void quantizeReal(std::vector<double>& input,
 
 // Wrapper function to quantize a vector of std::complex<double> and convert back to std::complex<double>
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void quantizeComplex(std::vector<std::complex<double>>& input,
+void quantize_complex(std::vector<std::complex<double>>& input,
                      std::vector<std::complex<double>>& output) {
     // Ensure input vector isn't empty
     if (input.empty()) {
@@ -101,7 +172,7 @@ void quantizeComplex(std::vector<std::complex<double>>& input,
     std::vector<ac_complex<ac_fixed<W, I, S, Q, O>>> outputFxp;
 
     // Quantize input complex values to fixed-point complex values
-    quantizeComplexFxp<W, I, S, Q, O>(input, outputFxp);
+    quantize_complexFxp<W, I, S, Q, O>(input, outputFxp);
 
     // Convert fixed-point complex values back to std::complex<double>
     fxp2complex<W, I, S, Q, O>(outputFxp, output);
@@ -128,7 +199,7 @@ static void firConvolution(InputType& input, InputType& output, std::vector<Sign
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void firReal(std::vector<double>& signal,
+void fir_real(std::vector<double>& signal,
              std::vector<double>& firCoeff) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
@@ -143,7 +214,7 @@ void firReal(std::vector<double>& signal,
 
     // Quantize firCoeff
     std::vector<CoeffType> firCoeffFxp;
-    quantizeRealFxp<W, I, S, Q, O>(firCoeff, firCoeffFxp);
+    quantize_realFxp<W, I, S, Q, O>(firCoeff, firCoeffFxp);
     // Define delayLine
     std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0));
     size_t k = 0;
@@ -157,7 +228,7 @@ void firReal(std::vector<double>& signal,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-static void firReal(std::vector<double>& signal,
+static void fir_real(std::vector<double>& signal,
                     std::vector<ac_fixed<W, I, S, Q, O>>& firCoeffFxp) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
@@ -183,7 +254,7 @@ static void firReal(std::vector<double>& signal,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void firComplex(std::vector<std::complex<double>>& signal,
+void fir_complex(std::vector<std::complex<double>>& signal,
                 std::vector<double>& firCoeff) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
@@ -198,7 +269,7 @@ void firComplex(std::vector<std::complex<double>>& signal,
 
     // Quantize firCoeff
     std::vector<CoeffType> firCoeffFxp;
-    quantizeRealFxp<W, I, S, Q, O>(firCoeff, firCoeffFxp);
+    quantize_realFxp<W, I, S, Q, O>(firCoeff, firCoeffFxp);
     // Define delayLine
     std::vector<SignalType> delayLine(firCoeff.size(), SignalType(0.0));
     size_t k = 0;
@@ -218,7 +289,7 @@ void firComplex(std::vector<std::complex<double>>& signal,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-static void firComplex(std::vector<std::complex<double>>& signal,
+static void fir_complex(std::vector<std::complex<double>>& signal,
                        std::vector<ac_fixed<W, I, S, Q, O>>& firCoeffFxp) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
@@ -276,7 +347,7 @@ static void makePolyFir(std::vector<double>& firCoeff,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorReal(std::vector<double>& signal,
+void interpolator_real(std::vector<double>& signal,
                       std::vector<double>& firCoeff,
                       size_t interpolationRatio) {
     if (signal.empty()) {
@@ -325,7 +396,7 @@ void interpolatorReal(std::vector<double>& signal,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorComplex(std::vector<std::complex<double>>& signal,
+void interpolator_complex(std::vector<std::complex<double>>& signal,
                          std::vector<double>& firCoeff, 
                          size_t interpolationRatio) {
     if (signal.empty()) {
@@ -373,7 +444,7 @@ void interpolatorComplex(std::vector<std::complex<double>>& signal,
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolationReal(std::vector<double>& signal,
+void interpolation_real(std::vector<double>& signal,
                        std::vector<std::vector<double>>& firCoeffs) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
@@ -383,12 +454,12 @@ void interpolationReal(std::vector<double>& signal,
     }
 
     for (size_t i = 0; i < firCoeffs.size(); i++) {
-        interpolatorReal<W, I, S, Q, O>(signal, firCoeffs[i], 2);
+        interpolator_real<W, I, S, Q, O>(signal, firCoeffs[i], 2);
     }
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolationComplex(std::vector<std::complex<double>>& signal,
+void interpolation_complex(std::vector<std::complex<double>>& signal,
                           std::vector<std::vector<double>>& firCoeffs) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
@@ -398,12 +469,12 @@ void interpolationComplex(std::vector<std::complex<double>>& signal,
     }
 
     for (size_t i = 0; i < firCoeffs.size(); i++) {
-        interpolatorComplex<W, I, S, Q, O>(signal, firCoeffs[i], 2);
+        interpolator_complex<W, I, S, Q, O>(signal, firCoeffs[i], 2);
     }
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void delayReal(std::vector<double>& signal, 
+void delay_real(std::vector<double>& signal, 
                std::vector<double>& firCoeff, 
                size_t interpolationRatio,
                size_t delayRatio) {
@@ -424,11 +495,11 @@ void delayReal(std::vector<double>& signal,
     makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
 
     size_t delayIndex = interpolationRatio - delayRatio - 1;
-    firReal<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
+    fir_real<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
 }
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void delayComplex(std::vector<std::complex<double>>& signal, 
+void delay_complex(std::vector<std::complex<double>>& signal, 
                   std::vector<double>& firCoeff, 
                   size_t interpolationRatio,
                   size_t delayRatio) {
@@ -449,5 +520,89 @@ void delayComplex(std::vector<std::complex<double>>& signal,
     makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
 
     size_t delayIndex = interpolationRatio - delayRatio - 1;
-    firComplex<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
+    fir_complex<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
+}
+
+template<typename SignalType, typename CoeffType>
+static void iirParallel_single(SignalType& input, SignalType& output,
+                               const std::vector<std::vector<CoeffType>>& iirCoeff,
+                               std::vector<std::vector<SignalType>>& delayLine) {
+
+    output = 0;
+    for (size_t i = 0; i < iirCoeff.size(); i++) {
+        delayLine[i][0] = input - CoeffType(iirCoeff[i][4])*delayLine[i][1] -
+                                  CoeffType(iirCoeff[i][5])*delayLine[i][2];
+        output += CoeffType(iirCoeff[i][0])*delayLine[i][0] +
+                  CoeffType(iirCoeff[i][1])*delayLine[i][1] +
+                  CoeffType(iirCoeff[i][2])*delayLine[i][2];
+        delayLine[i][2] = delayLine[i][1];
+        delayLine[i][1] = delayLine[i][0];
+    }
+}
+
+template<int in_w, int in_i, int iir_w, int iir_i, int out_w,
+         bool S, ac_q_mode Q, ac_o_mode O>
+void deltaSigma_real(std::vector<double>& signal,
+                     const std::vector<std::vector<double>>& iirCoeff,
+                     const bool full_precision) {
+    // Ensure signal is not empty
+    if (signal.empty()) {
+        throw std::runtime_error("Input signal is empty!");
+    }
+    // Ensure IIR coeff is not empty
+    if (iirCoeff.empty()) {
+        throw std::runtime_error("IIR coeffitients are empty!");
+    }
+
+    using CoeffType     = ac_fixed<iir_w, iir_i, S, Q, O>;
+    using SignalType    = ac_fixed<in_w + iir_w, in_i + iir_i, S, Q, O>;
+    using InType        = ac_fixed<in_w, in_i, S, Q, O>;
+    using OutType       = ac_fixed<out_w, out_w, S, Q, O>; 
+
+    // Discretize IIR coeffitients
+    std::vector<std::vector<double>> iirCoeffs_double;
+    iirCoeffs_double.reserve(iirCoeff.size());
+    if (!full_precision) {
+        for (size_t i = 0; i < iirCoeff.size(); i++) {
+            std::vector<double> row;
+            row.reserve(iirCoeff[i].size());
+            for (size_t j = 0; j < iirCoeff[i].size(); j++) {
+                row.emplace_back(CoeffType(iirCoeff[i][j]).to_double());
+            }
+            iirCoeffs_double.emplace_back(row);
+        }
+    } else {
+        FxpFactory<iir_w, S, Q, O> factory;
+        iirCoeffs_double = factory.convertMatrix(iirCoeff);
+    }
+
+    using CoeffType_2   = ac_fixed<32, 12, S, Q, O>;
+    std::vector<std::vector<CoeffType_2>> iirCoeffs_fxp;
+    iirCoeffs_fxp.reserve(iirCoeffs_double.size());
+    for (size_t i = 0; i < iirCoeffs_double.size(); i++) {
+        std::vector<CoeffType_2> row;
+        row.reserve(iirCoeffs_double.size());
+        for (size_t j = 0; j < iirCoeffs_double[i].size(); j++) {
+            row.emplace_back(iirCoeffs_double[i][j]);
+        }
+        iirCoeffs_fxp.emplace_back(row);
+    }
+
+    // Initialize variables for intermediate and feedback computations
+    SignalType iirOutput = 0, error = 0, intermediateOutput = 0;
+    OutType outputSample = 0;
+    // Initialize IIR delay lines
+    std::vector<std::vector<SignalType>> delayLine(
+        iirCoeff.size(),
+        std::vector<SignalType>(3, SignalType())
+    );
+
+    for (auto& sample : signal) {
+        InType fxpSample = sample;
+        intermediateOutput  = fxpSample + iirOutput;
+        outputSample        = intermediateOutput;
+        sample              = outputSample.to_double();     // In-place processing
+        error = intermediateOutput - outputSample;
+        iirParallel_single<SignalType, CoeffType_2>(error, iirOutput, iirCoeffs_fxp, delayLine);
+    }
 }

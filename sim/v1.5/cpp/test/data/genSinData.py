@@ -18,7 +18,7 @@ def generate_signal(N, M, OSR, f, fs):
     """
     F = f / fs
     x = 2**(M-1) * np.exp(1j * 2 * np.pi * F * np.arange(N) / OSR)
-    x+= 2**(M-1) * np.exp(1j * 2 * np.pi * 0.1 * np.arange(N) / OSR)
+    # x+= 2**(M-1) * np.exp(1j * 2 * np.pi * 0.1 * np.arange(N) / OSR)
     return x
 
 
@@ -56,10 +56,10 @@ def write_signal_to_file(filename, signal, OSR, fs):
 
 if __name__ == "__main__":
     # Signal parameters
-    N = 8 * 1024 + 111
-    M = 0
+    N = 2**12
+    M = 1
     OSR = 1
-    f = 4 * 1e3
+    f = 2.5 * 1e3
     fs = 10 * 1e3
 
     # Generate and write signal

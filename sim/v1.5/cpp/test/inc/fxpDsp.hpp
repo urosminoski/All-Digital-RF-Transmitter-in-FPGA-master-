@@ -9,51 +9,57 @@
 
 // Function to quantize real values
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void quantizeReal(std::vector<double>& input, 
+void quantize_real(std::vector<double>& input, 
                   std::vector<double>& output);
 
 // Function to quantize complex values
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void quantizeComplex(std::vector<std::complex<double>>& input, 
+void quantize_complex(std::vector<std::complex<double>>& input, 
                      std::vector<std::complex<double>>& output);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void firReal(std::vector<double>& input,
+void fir_real(std::vector<double>& input,
              std::vector<double>& firCoeff);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void firComplex(std::vector<std::complex<double>>& input,
+void fir_complex(std::vector<std::complex<double>>& input,
                 std::vector<double>& firCoeff);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorReal(std::vector<double>& signal,
-                      std::vector<double>& firCoeff, 
-                      size_t interpolationRatio);
+void interpolator_real(std::vector<double>& signal,
+                       std::vector<double>& firCoeff, 
+                       size_t interpolationRatio);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolatorComplex(std::vector<std::complex<double>>& signal,
-                         std::vector<double>& firCoeff, 
-                         size_t interpolationRatio);
+void interpolator_complex(std::vector<std::complex<double>>& signal,
+                          std::vector<double>& firCoeff, 
+                          size_t interpolationRatio);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolationReal(std::vector<double>& signal,
-                       std::vector<std::vector<double>>& firCoeffs);
+void interpolation_real(std::vector<double>& signal,
+                        std::vector<std::vector<double>>& firCoeffs);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void interpolationComplex(std::vector<std::complex<double>>& signal,
-                          std::vector<std::vector<double>>& firCoeffs);
+void interpolation_complex(std::vector<std::complex<double>>& signal,
+                           std::vector<std::vector<double>>& firCoeffs);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void delayReal(std::vector<double>& signal, 
+void delay_real(std::vector<double>& signal, 
                std::vector<double>& firCoeff, 
                size_t interpolationRatio,
                size_t delayRatio);
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void delayComplex(std::vector<std::complex<double>>& signal, 
+void delay_complex(std::vector<std::complex<double>>& signal, 
                   std::vector<double>& firCoeff, 
                   size_t interpolationRatio,
                   size_t delayRatio);
+
+template<int in_w, int in_i, int iir_w, int iir_i, int out_w,
+         bool s, ac_q_mode Q, ac_o_mode O>
+void deltaSigma_real(std::vector<double>& signal,
+                     const std::vector<std::vector<double>>& iirCoeff,
+                     const bool full_precision = false);
 
 #include "../src/fxpDsp.tpp"
 
