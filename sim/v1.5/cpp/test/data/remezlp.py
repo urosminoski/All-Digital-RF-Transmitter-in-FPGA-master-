@@ -37,6 +37,8 @@ def remezlp( Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', nPoints=8192
             specOK = False
         if numpy.sum(((w>Fstop)*H)>deltaStop)>0:
             specOK = False
+        if N%2 == 0:
+            specOK = False
     
         if specOK:
             return b

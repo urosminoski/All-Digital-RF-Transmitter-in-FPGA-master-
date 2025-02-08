@@ -348,8 +348,8 @@ static void makePolyFir(std::vector<double>& firCoeff,
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 void interpolator_real(std::vector<double>& signal,
-                      std::vector<double>& firCoeff,
-                      size_t interpolationRatio) {
+                       std::vector<double>& firCoeff,
+                       size_t interpolationRatio) {
     if (signal.empty()) {
         throw std::runtime_error("signal is empty!");
     }
@@ -445,7 +445,7 @@ void interpolator_complex(std::vector<std::complex<double>>& signal,
 
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 void interpolation_real(std::vector<double>& signal,
-                       std::vector<std::vector<double>>& firCoeffs) {
+                        std::vector<std::vector<double>>& firCoeffs) {
     if (signal.empty()) {
         throw std::runtime_error("input is empty!");
     }
@@ -605,4 +605,26 @@ void deltaSigma_real(std::vector<double>& signal,
         error = intermediateOutput - outputSample;
         iirParallel_single<SignalType, CoeffType_2>(error, iirOutput, iirCoeffs_fxp, delayLine);
     }
+}
+
+template<typename InputType, typename SignalType>
+void h0_fir(InputType& input, InputType& output, std::vector<SignalType>& delayLine,
+                   size_t& k, size_t M) {
+    delayLine[k] = input;
+    size_t cnt = 0;
+    for (size_t i = 0; i < M; i++) {
+        if (i == M - 1) {
+            output = delayLine[k];
+        } else {
+            output = 0;
+        }
+        if (k++ == M) {
+            k = 0;
+        }
+        std::cout << k << ", ";
+    }
+    if (k-- == 0) {
+        k = M - 1;
+    }
+    std::cout << "\n";
 }

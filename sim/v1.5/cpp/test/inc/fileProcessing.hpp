@@ -1,6 +1,7 @@
 #ifndef FILE_PROCESSING_HPP
 #define FILE_PROCESSING_HPP
 
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>

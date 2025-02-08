@@ -134,7 +134,7 @@ void readComplexData(const std::string& filename,
 // Function to write metadata to a file
 void writeMetadata(std::ofstream& outputFile, const std::unordered_map<std::string, std::string>& metadata) {
     for (const auto& [key, value] : metadata) {
-        outputFile << "#" << key << " = " << value << "\n";
+        outputFile << "#" << key << "=" << value << "\n";
     }
 }
 
@@ -155,6 +155,7 @@ void writeRealData(const std::string& filename,
         outputFile << value << "\n";
     }
 
+    std::cout << "File written to " << filename << "\n";
     outputFile.close();
 }
 

@@ -1,66 +1,50 @@
-def remezlp(Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', nPoints=8192, Nmax=200):
+import scipy.signal
+import numpy
+
+def remezlp( Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', nPoints=8192, Nmax=200):
     """
-    Design an optimized low-pass FIR filter using the Remez exchange algorithm.
+    Design low pass FIR filter with given specifications.
+    Parameter forceOrder can be used to force even or odd filter order
+    """
     
-    Parameters:
-    -----------
-    Fpass : float
-        Normalized passband edge frequency (0 < Fpass < 0.5).
-    Fstop : float
-        Normalized stopband edge frequency (Fstop > Fpass).
-    deltaPass : float
-        Allowed ripple in the passband.
-    deltaStop : float
-        Allowed ripple in the stopband.
-    forceOrder : str, optional
-        Force filter order to be 'even' or 'odd'. Default is 'none'.
-    nPoints : int, optional
-        Number of frequency points for validation. Default is 8192.
-    Nmax : int, optional
-        Maximum number of filter taps. Default is 200.
-
-    Returns:
-    --------
-    np.ndarray
-        FIR filter coefficients. Returns an empty array if the design fails.
-    """
-    if Fpass >= Fstop or deltaPass <= 0 or deltaStop <= 0:
-        raise ValueError("Invalid filter specifications: Fpass < Fstop, deltaPass > 0, deltaStop > 0 required.")
-
-    # Initial guess for the number of taps
-    N = int(-20 * np.log10(deltaStop) / (23 * (Fstop - Fpass)))
-
-    # Adjust the order based on forceOrder
-    if forceOrder == 'even' and N % 2 == 0:
-        N += 1
-    elif forceOrder == 'odd' and N % 2 == 1:
-        N += 1
-
-    # Iteratively design the filter
-    while N <= Nmax:
-        # Design filter using remez
-        try:
-            b = remez(
-                numtaps=N,
-                bands=[0.0, Fpass, Fstop, 0.5],
-                desired=[1, 0],
-                weight=[1, deltaPass / deltaStop],
-                fs=1.0  # Normalized frequency
-            )
-        except ValueError as e:
-            print(f"Error in remez design: {e}")
-            return np.array([])
-
-        # Validate the filter using frequency response
-        w, h = freqz(b, worN=nPoints, fs=1.0)
-        H = np.abs(h)
-
-        passband_ok = np.all(H[w <= Fpass] >= (1 - deltaPass))
-        stopband_ok = np.all(H[w >= Fstop] <= deltaStop)
-
-        if passband_ok and stopband_ok:
-            return b  # Filter meets specifications
+    if (Fpass>Fstop) or (deltaPass<0) or (deltaStop<0):
+        # Specifications are not valid
+        return numpy.array([])
+    
+    remez = scipy.signal.remez
+    freqz = scipy.signal.freqz
+    
+    # Filter order initial guess
+    N = int(-20*numpy.log10(deltaStop)/(23*(Fstop-Fpass)))
+    # Scipy Remez uses number of taps instead of filter order.
+    if forceOrder == 'even':
+        if N%2==0:
+            N += 1
+    if forceOrder == 'odd':
+        if N%2==1:
+            N += 1
+            
+    while N<Nmax:
+        # Design the filter.
+        b = scipy.signal.remez(N, [0.0, Fpass, Fstop, 0.5], [1,0], weight=[1, deltaPass/deltaStop], fs = 1)
+        
+        # Check if filter meets specifications
+        w, h = freqz(b, 1, worN = nPoints, fs=1)
+        H = abs(h)
+        specOK = True
+        # Check specifications in pass band
+        if numpy.sum(((w<Fpass)*abs(H-1.0))>deltaPass)>0:
+            specOK = False
+        if numpy.sum(((w>Fstop)*H)>deltaStop)>0:
+            specOK = False
+    
+        if specOK:
+            return b
         else:
-            N += 2 if forceOrder in ['even', 'odd'] else 1
+            if (forceOrder == 'even') or (forceOrder == 'odd'):
+                N += 2
+            else:
+                N += 1
+    return []
+    
 
-    return np.array([])  # Return empty array if design fails

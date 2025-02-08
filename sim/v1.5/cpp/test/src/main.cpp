@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <complex>
+#include <unordered_map>
 #include <nlohmann/json.hpp> // JSON handling library
 #include "fxpDsp.hpp"
 #include "fileProcessing.hpp"
@@ -11,6 +12,7 @@ void splitComplexVector(const std::vector<std::complex<double>>& complexVec,
                         std::vector<double>& imagVec);
 std::vector<std::complex<double>> combineRealImagVectors(const std::vector<double>& realVec, 
                                                          const std::vector<double>& imagVec);
+void scale_vector(std::vector<double> vector, double scale);
 
 int main() {
 
@@ -20,11 +22,11 @@ int main() {
     constexpr ac_q_mode Q = AC_RND;
     constexpr ac_o_mode O = AC_SAT;
 
-     // std::string fileName_deltaSigma_iirs    = "../../data/input/deltaSigma_iirs.txt"; 
+
 
     // Load FIR coeffitients for T/2 and T/4 delay
-    std::string fileName_delayFirCofficients_5   = "./data/input/delayFirCoefficients_5_80dB.txt";     // T/2 delay
-    std::string fileName_delayFirCofficients_25  = "./data/input/delayFirCoefficients_25_80dB.txt";    // T/4 delay
+    std::string fileName_delayFirCofficients_5   = "./data/input/delayFirCoefficients_5_20dB.txt";     // T/2 delay
+    std::string fileName_delayFirCofficients_25  = "./data/input/delayFirCoefficients_25_20dB.txt";    // T/4 delay
     std::vector<double> delayFirCofficients_5;  
     std::vector<double> delayFirCofficients_25; 
     std::unordered_map<std::string, std::string>    delayFirMetadata_5;
@@ -33,7 +35,7 @@ int main() {
     readRealData(fileName_delayFirCofficients_25, delayFirMetadata_25, delayFirCofficients_25);
 
     // Load FIR coeffitients for polyphase interpolation
-    std::string fileName_polyFirCofficients   = "./data/input/polyFirCofficients_80dB.txt"; 
+    std::string fileName_polyFirCofficients   = "./data/input/polyFirCofficients_20dB.txt"; 
     std::vector<std::vector<double>> polyFirCofficients;
     std::unordered_map<std::string, std::string> polyFirMetadata;
     readReal2dData(fileName_polyFirCofficients, polyFirMetadata, polyFirCofficients);
@@ -44,37 +46,65 @@ int main() {
     std::unordered_map<std::string, std::string> iir_deltaSigma_metadata;
     readReal2dData(fileName_iir_deltaSigma, iir_deltaSigma_metadata, iir_deltaSigma);
 
-    std::string fileName_sinData_complex    = "./data/input/sinDataComplex.txt";
-    std::string fileName_delayR_5           = "./data/output/sinDataR_delay_5.txt";
-    std::string fileName_delayI_25          = "./data/output/sinDataI_delay_25.txt";
-    std::string fileName_OSR_8              = "./data/output/sinData_OSR_8.txt";
-    std::string fileName_sinData_deltaSigma = "./data/output/sinData_deltaSigma.txt";
+    std::string fileName_sinData_complex        = "./data/input/sinDataComplex.txt";
+    std::string fileName_sinDataR_delay_5       = "./data/output/sinDataR_delay_5.txt";
+    std::string fileName_sinDataI_delay_25      = "./data/output/sinDataI_delay_25.txt";
+    std::string fileName_sinDataR_OSR_8         = "./data/output/sinDataR_OSR_8.txt";
+    std::string fileName_sinDataI_OSR_8         = "./data/output/sinDataI_OSR_8.txt";
+    std::string fileName_sinDataR_deltaSigma    = "./data/output/sinDataR_deltaSigma.txt";
+    std::string fileName_sinDataI_deltaSigma    = "./data/output/sinDataI_deltaSigma.txt";
+    std::string fileName_sinData_deltaSigma_d   = "./data/output/sinData_deltaSigma_double.txt";
 
     // Load input complex sin data
-    std::vector<std::complex>                       inSignal;
-    std::unordered_map<std::string, std::string>    sinMeatadata;
-    readRealData(fileName_sinData_complex, sinMeatadata, inSignal);
+    std::vector<std::complex<double>>               inSignal;
+    std::unordered_map<std::string, std::string>    metadata;
+    readComplexData(fileName_sinData_complex, metadata, inSignal);
 
     // Vectors to hold real and imaginary parts
-    std::vector<double> R, I;
-    R.reserve(inSignal.size());
-    I.reserve(inSignal.size());
-    splitComplexVector(inSignal, R, I);
+    std::vector<double> realPart, imagPart;
+    realPart.reserve(inSignal.size());
+    imagPart.reserve(inSignal.size());
+    splitComplexVector(inSignal, realPart, imagPart);
+
+    metadata["complex"] = "0";
 
     // Delay Real Part for T/2
-    delay_real<W, I, S, Q, O>(R, delayFirCofficients_5, 2, 1);
-    writeRealData(fileName_delayR_5, sinMeatadata, R);
+    delay_real<W, I, S, Q, O>(realPart, delayFirCofficients_5, 2, 1);
+    metadata["complex"] = "0";
+    writeRealData(fileName_sinDataR_delay_5, metadata, realPart);
 
     // Delay Imaginary Part for T/4
-    delay_real<W, I, S, Q, O>(I, delayFirCofficients_25, 4, 3);
-    writeRealData(fileName_delayI_25, sinMeatadata, I);
+    delay_real<W, I, S, Q, O>(imagPart, delayFirCofficients_25, 4, 3);
+    writeRealData(fileName_sinDataI_delay_25, metadata, imagPart);
+
+    metadata["OSR"] = std::to_string(static_cast<int>(std::pow(2, polyFirCofficients.size())));
 
     // Perform Interpolation by a factor of 8
-    interpolation_real<W, I, S, Q, O>(R, polyFirCofficients);
-    interpolation_real<W, I, S, Q, O>(I, polyFirCofficients);
-    std::vector<std::complex> signalOSR = combineRealImagVectors(R, I);
-    writeComplexData(fileName_OSR_8, sinMeatadata, signalOSR);
+    interpolation_real<W, I, S, Q, O>(realPart, polyFirCofficients);
+    interpolation_real<W, I, S, Q, O>(imagPart, polyFirCofficients);
+    writeRealData(fileName_sinDataR_OSR_8, metadata, realPart);
+    writeRealData(fileName_sinDataI_OSR_8, metadata, imagPart);
+
+    scale_vector(realPart, 4);
+    scale_vector(imagPart, 4);
     
+    // Perform delta-sigma modulation on real and imaginary parts
+    deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(realPart, iir_deltaSigma, true);
+    deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(imagPart, iir_deltaSigma, true);
+    writeRealData(fileName_sinDataR_deltaSigma, metadata, realPart);
+    writeRealData(fileName_sinDataI_deltaSigma, metadata, imagPart);
+
+
+
+
+    // Load input complex sin data
+    std::vector<double>               inSignal_OSR8;
+    std::unordered_map<std::string, std::string>    metadata_OSR8;
+    readRealData("./data/input/sinData_OSR8.txt", metadata_OSR8, inSignal_OSR8);
+
+    // Perform delta-sigma modulation on real and imaginary parts
+    deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(inSignal_OSR8, iir_deltaSigma, true);
+    writeRealData(fileName_sinData_deltaSigma_d, metadata, inSignal_OSR8);
 
 
 
@@ -130,19 +160,20 @@ int main() {
     // // Load input complex sin data
     // std::vector<std::complex<double>>               sinDataComplex;
     // std::unordered_map<std::string, std::string>    sinComplexMeatadata;
-    // readComplexData(fileName_sinDataComplex, sinComplexMeatadata, sinDataComplex);
+    // readComplexData("./data/input/sinDataComplex.txt", sinComplexMeatadata, sinDataComplex);
 
-    // // // // Quantize complex sin data and write it to file
-    // // std::vector<std::complex<double>> sinDataComplexQuant;
-    // // sinDataComplexQuant.reserve(sinDataComplex.size());
-    // // quantizeComplex<W, I, S, Q, O>(sinDataComplex, sinDataComplexQuant);
-    // // writeComplexData(fileName_sinDataComplexQuant, sinComplexMeatadata, sinDataComplexQuant);
+    // // // // // Quantize complex sin data and write it to file
+    // // // std::vector<std::complex<double>> sinDataComplexQuant;
+    // // // sinDataComplexQuant.reserve(sinDataComplex.size());
+    // // // quantizeComplex<W, I, S, Q, O>(sinDataComplex, sinDataComplexQuant);
+    // // // writeComplexData(fileName_sinDataComplexQuant, sinComplexMeatadata, sinDataComplexQuant);
 
-    // // // Perform FIR filtering
-    // // std::vector<std::complex<double>> sinDataComplexFir(sinDataComplex.size());
-    // // std::copy(sinDataComplex.begin(), sinDataComplex.end(), sinDataComplexFir.begin());
-    // // firComplex<W, I, S, Q, O>(sinDataComplexFir, delayFirCofficients_5);
-    // // writeComplexData(fileName_sinDataComplexFir, sinComplexMeatadata, sinDataComplexFir);
+    // // Perform FIR filtering
+    // std::vector<std::complex<double>> sinDataComplexFir(sinDataComplex.size());
+    // std::copy(sinDataComplex.begin(), sinDataComplex.end(), sinDataComplexFir.begin());
+    // interpolator_complex<W, I, S, Q, O>(sinDataComplexFir, polyFirCofficients[0], 2);
+    // interpolator_complex<W, I, S, Q, O>(sinDataComplexFir, polyFirCofficients[1], 2);
+    // writeComplexData("./data/output/tmp1.txt", sinComplexMeatadata, sinDataComplexFir);
 
     // // Perform T/2 delay
     // std::vector<std::complex<double>> sinDataComplexDelay_5(sinDataComplex.size());
@@ -229,4 +260,19 @@ std::vector<std::complex<double>> combineRealImagVectors(const std::vector<doubl
     }
 
     return complexVec;
+}
+
+void scale_vector(std::vector<double> vector, double scale) {
+    // Ensure vector is not empty
+    if (vector.empty()) {
+        throw std::runtime_error("Input vector is empty!");
+    }
+    // Ensure scale is not 0
+    if (scale == 0) {
+        throw std::runtime_error("Scale cannot be 0!");
+    }
+
+    for (auto& val : vector) {
+        val *= scale;
+    }
 }

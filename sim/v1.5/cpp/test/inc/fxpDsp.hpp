@@ -61,6 +61,10 @@ void deltaSigma_real(std::vector<double>& signal,
                      const std::vector<std::vector<double>>& iirCoeff,
                      const bool full_precision = false);
 
+template<typename InputType, typename SignalType>
+void h0_fir(InputType& input, InputType& output, std::vector<SignalType>& delayLine,
+                   size_t& k, size_t M);
+
 #include "../src/fxpDsp.tpp"
 
 #endif // QUANTIZE_HPP

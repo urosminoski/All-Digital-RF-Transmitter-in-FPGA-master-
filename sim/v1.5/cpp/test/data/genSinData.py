@@ -57,12 +57,12 @@ def write_signal_to_file(filename, signal, OSR, fs):
 if __name__ == "__main__":
     # Signal parameters
     N = 2**12
-    M = 1
-    OSR = 1
+    M = 3
+    OSR = 8
     f = 2.5 * 1e3
     fs = 10 * 1e3
 
     # Generate and write signal
     signal = generate_signal(N, M, OSR, f, fs)
-    write_signal_to_file("./data/input/sinDataComplex.txt", signal, OSR, fs)
-    write_signal_to_file("./data/input/sinData.txt", signal.real, OSR, fs)
+    write_signal_to_file("./data/input/sinDataComplex_OSR8.txt", signal, OSR, fs)
+    write_signal_to_file("./data/input/sinData_OSR8.txt", signal.real, OSR, fs)
