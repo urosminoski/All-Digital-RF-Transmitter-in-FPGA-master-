@@ -1,7 +1,7 @@
 import scipy.signal
 import numpy
 
-def remezlp( Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', nPoints=8192, Nmax=200):
+def remezlp( Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', even_n = False, nPoints=8192, Nmax=200):
     """
     Design low pass FIR filter with given specifications.
     Parameter forceOrder can be used to force even or odd filter order
@@ -37,8 +37,12 @@ def remezlp( Fpass, Fstop, deltaPass, deltaStop, forceOrder='none', nPoints=8192
             specOK = False
         if numpy.sum(((w>Fstop)*H)>deltaStop)>0:
             specOK = False
-        if N%2 == 0:
-            specOK = False
+        if even_n == False:
+            if N%2 == 0:
+                specOK = False
+        else:
+            if N%2 == 1:
+                specOK = False
     
         if specOK:
             return b

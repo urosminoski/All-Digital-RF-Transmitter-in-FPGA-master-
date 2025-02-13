@@ -479,49 +479,61 @@ void delay_real(std::vector<double>& signal,
                size_t interpolationRatio,
                size_t delayRatio) {
     if (signal.empty()) {
-        throw std::runtime_error("input is empty!");
+        throw std::runtime_error("Input signal is empty!");
     }
     if (firCoeff.empty()) {
-        throw std::runtime_error("firCoeff is empty!");
+        throw std::runtime_error("FIR coefficients are empty!");
     }
     if (delayRatio >= interpolationRatio) {
-        throw std::runtime_error("Delay cannot be greater then interpolation ratio!");
+        throw std::runtime_error("Delay cannot be greater than interpolation ratio!");
     }
 
     using CoeffType = ac_fixed<W, I, S, Q, O>;
 
+    // Generate polyphase filter coefficients
     std::vector<std::vector<CoeffType>> polyFirCoeffFxp;
     polyFirCoeffFxp.reserve(interpolationRatio);
     makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
 
     size_t delayIndex = interpolationRatio - delayRatio - 1;
-    fir_real<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
+    size_t delay = static_cast<size_t>((polyFirCoeffFxp[delayIndex].size() - 1) / 2);
+
+    // Step 1: Concatenate signal with signal[:delay]
+    std::vector<double> extended_signal = signal;  // Copy original signal
+    extended_signal.insert(extended_signal.end(), signal.begin(), signal.begin() + delay);
+
+    // Step 2: Apply FIR filtering
+    fir_real<W, I, S, Q, O>(extended_signal, polyFirCoeffFxp[delayIndex]);
+
+    // Step 3: Extract signal[delay:]
+    signal.assign(extended_signal.begin() + delay, extended_signal.end());
 }
 
-template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
-void delay_complex(std::vector<std::complex<double>>& signal, 
-                  std::vector<double>& firCoeff, 
-                  size_t interpolationRatio,
-                  size_t delayRatio) {
-    if (signal.empty()) {
-        throw std::runtime_error("input is empty!");
-    }
-    if (firCoeff.empty()) {
-        throw std::runtime_error("firCoeff is empty!");
-    }
-    if (delayRatio >= interpolationRatio) {
-        throw std::runtime_error("Delay cannot be greater then interpolation ratio!");
-    }
 
-    using CoeffType = ac_fixed<W, I, S, Q, O>;
+// template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
+// void delay_complex(std::vector<std::complex<double>>& signal, 
+//                   std::vector<double>& firCoeff, 
+//                   size_t interpolationRatio,
+//                   size_t delayRatio) {
+//     if (signal.empty()) {
+//         throw std::runtime_error("input is empty!");
+//     }
+//     if (firCoeff.empty()) {
+//         throw std::runtime_error("firCoeff is empty!");
+//     }
+//     if (delayRatio >= interpolationRatio) {
+//         throw std::runtime_error("Delay cannot be greater then interpolation ratio!");
+//     }
 
-    std::vector<std::vector<CoeffType>> polyFirCoeffFxp;
-    polyFirCoeffFxp.reserve(interpolationRatio);
-    makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
+//     using CoeffType = ac_fixed<W, I, S, Q, O>;
 
-    size_t delayIndex = interpolationRatio - delayRatio - 1;
-    fir_complex<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
-}
+//     std::vector<std::vector<CoeffType>> polyFirCoeffFxp;
+//     polyFirCoeffFxp.reserve(interpolationRatio);
+//     makePolyFir<CoeffType>(firCoeff, polyFirCoeffFxp, interpolationRatio);
+
+//     size_t delayIndex = interpolationRatio - delayRatio - 1;
+//     fir_complex<W, I, S, Q, O>(signal, polyFirCoeffFxp[delayIndex]);
+// }
 
 template<typename SignalType, typename CoeffType>
 static void iirParallel_single(SignalType& input, SignalType& output,

@@ -35,7 +35,7 @@ int main() {
     readRealData(fileName_delayFirCofficients_25, delayFirMetadata_25, delayFirCofficients_25);
 
     // Load FIR coeffitients for polyphase interpolation
-    std::string fileName_polyFirCofficients   = "./data/input/polyFirCofficients_20dB.txt"; 
+    std::string fileName_polyFirCofficients   = "./data/input/polyFirCofficients_80dB.txt"; 
     std::vector<std::vector<double>> polyFirCofficients;
     std::unordered_map<std::string, std::string> polyFirMetadata;
     readReal2dData(fileName_polyFirCofficients, polyFirMetadata, polyFirCofficients);

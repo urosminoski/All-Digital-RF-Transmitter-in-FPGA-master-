@@ -4,7 +4,7 @@ import numpy as np
 import scipy.signal
 from remezlp import remezlp
 
-def generate_poly_fir_data(I, Fpass, Fstop, AdB, N=1024, Nmax=500):
+def generate_poly_fir_data(I, Fpass, Fstop, AdB, even_N = False, N=1024, Nmax=500):
     """
     Generate polyphase FIR coefficients for a given stage.
 
@@ -24,7 +24,7 @@ def generate_poly_fir_data(I, Fpass, Fstop, AdB, N=1024, Nmax=500):
 
     Fpass /= I
     Fstop /= I
-    firCoeff = remezlp(Fpass, Fstop, deltaPass, deltaStop, nPoints=N, Nmax=Nmax)
+    firCoeff = remezlp(Fpass, Fstop, deltaPass, deltaStop, even_N, nPoints=N, Nmax=Nmax)
     firCoeff /= np.max(np.abs(firCoeff))
 
     return firCoeff
@@ -66,8 +66,8 @@ if __name__ == "__main__":
 
     for AdB in AdBs:
         # Generate FIR coefficients
-        delayFir_5 = generate_poly_fir_data(2, Fpass, Fstop, AdB, N=N)   # Delay for T/2
-        delayFir_25 = generate_poly_fir_data(4, Fpass, Fstop, AdB, N=N)  # Delay for T/4
+        delayFir_5 = generate_poly_fir_data(2, Fpass, Fstop, AdB, even_N = False, N=N)   # Delay for T/2
+        delayFir_25 = generate_poly_fir_data(2, Fpass, Fstop, AdB, even_N = True, N=N)  # Delay for T/4
     
         # Write FIR coefficients to file
         output_file_5 = f"./data/input/delayFirCoefficients_5_{AdB}dB.txt"
