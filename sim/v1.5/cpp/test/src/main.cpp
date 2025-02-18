@@ -19,7 +19,7 @@ int main() {
     constexpr int W = 18;
     constexpr int I = 1;
     constexpr bool S = true;
-    constexpr ac_q_mode Q = AC_RND;
+    constexpr ac_q_mode Q = AC_TRN;
     constexpr ac_o_mode O = AC_SAT;
 
 
@@ -46,6 +46,12 @@ int main() {
     std::unordered_map<std::string, std::string> iir_deltaSigma_metadata;
     readReal2dData(fileName_iir_deltaSigma, iir_deltaSigma_metadata, iir_deltaSigma);
 
+    // Load LUT data for parallel-to-serial conversion
+    std::string fileName_LUT   = "./data/input/LUT3.txt";
+    std::vector<std::vector<double>> LUT;
+    std::unordered_map<std::string, std::string> LUT_metadata;
+    readReal2dData(fileName_LUT, LUT_metadata, LUT);
+
     std::string fileName_sinData_complex        = "./data/input/sinDataComplex.txt";
     std::string fileName_sinDataR_delay_5       = "./data/output/sinDataR_delay_5.txt";
     std::string fileName_sinDataI_delay_25      = "./data/output/sinDataI_delay_25.txt";
@@ -54,6 +60,8 @@ int main() {
     std::string fileName_sinDataR_deltaSigma    = "./data/output/sinDataR_deltaSigma.txt";
     std::string fileName_sinDataI_deltaSigma    = "./data/output/sinDataI_deltaSigma.txt";
     std::string fileName_sinData_deltaSigma_d   = "./data/output/sinData_deltaSigma_double.txt";
+    std::string fileName_sinDataR_serial        = "./data/output/sinDataR_serial.txt";
+    std::string fileName_sinDataI_serial        = "./data/output/sinDataI_serial.txt";
 
     // Load input complex sin data
     std::vector<std::complex<double>>               inSignal;
@@ -94,17 +102,20 @@ int main() {
     writeRealData(fileName_sinDataR_deltaSigma, metadata, realPart);
     writeRealData(fileName_sinDataI_deltaSigma, metadata, imagPart);
 
+    // Perform parallel-to-serial conversion on real and imaginary parts
+    metadata["lut_width"] = std::to_string(LUT[0].size());
+    serialConverter<4>(realPart, LUT);
+    serialConverter<4>(imagPart, LUT);
+    writeRealData(fileName_sinDataR_serial, metadata, realPart);
+    writeRealData(fileName_sinDataI_serial, metadata, imagPart);
 
 
 
-    // Load input complex sin data
-    std::vector<double>               inSignal_OSR8;
-    std::unordered_map<std::string, std::string>    metadata_OSR8;
-    readRealData("./data/input/sinData_OSR8.txt", metadata_OSR8, inSignal_OSR8);
+    // std::vector<double> a = {1.2, -2.5, 0.9, 2.1, 3.4, -3.7};
+    // std::vector<double> b;
+    // quantize_real<3, 3, true, AC_TRN, AC_SAT>(a, b);
+    // writeRealData("./data/output/tmp.txt", metadata, b);
 
-    // Perform delta-sigma modulation on real and imaginary parts
-    deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(inSignal_OSR8, iir_deltaSigma, true);
-    writeRealData(fileName_sinData_deltaSigma_d, metadata, inSignal_OSR8);
 
 
 

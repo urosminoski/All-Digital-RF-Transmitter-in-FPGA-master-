@@ -509,7 +509,6 @@ void delay_real(std::vector<double>& signal,
     signal.assign(extended_signal.begin() + delay, extended_signal.end());
 }
 
-
 // template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 // void delay_complex(std::vector<std::complex<double>>& signal, 
 //                   std::vector<double>& firCoeff, 
@@ -619,24 +618,40 @@ void deltaSigma_real(std::vector<double>& signal,
     }
 }
 
-template<typename InputType, typename SignalType>
-void h0_fir(InputType& input, InputType& output, std::vector<SignalType>& delayLine,
-                   size_t& k, size_t M) {
-    delayLine[k] = input;
-    size_t cnt = 0;
-    for (size_t i = 0; i < M; i++) {
-        if (i == M - 1) {
-            output = delayLine[k];
-        } else {
-            output = 0;
-        }
-        if (k++ == M) {
-            k = 0;
-        }
-        std::cout << k << ", ";
+template <size_t bitW>
+void serialConverter(std::vector<double>& signal,
+                     std::vector<std::vector<double>>& LUT) {
+    // Validate LUT: Check that LUT is not empty
+    if (LUT.empty()) {
+        throw std::invalid_argument("LUT cannot be empty!");
     }
-    if (k-- == 0) {
-        k = M - 1;
+
+    // Validate LUT: Check that all rows have the same number of columns
+    size_t columSize = LUT[0].size();
+    for (const auto& row : LUT) {
+        if (row.empty()) {
+            throw std::invalid_argument("LUT rows cannot be empty!");
+        }
+        if (row.size() != columSize) {
+            throw std::invalid_argument("All rows in LUT must have the same size!");
+        }
     }
-    std::cout << "\n";
+
+    int correction = 1 << (bitW - 1);
+    std::vector<double> signalSerial;
+    signalSerial.reserve(signal.size() * columSize);
+
+    for (const auto& val : signal) {
+        auto correctedValue = val + correction;
+
+        if (correctedValue < 0 || static_cast<size_t>(correctedValue) >= LUT.size()) {
+            throw std::out_of_range("Input value results in out-of-range LUT index!");
+        }
+
+        size_t position = static_cast<size_t>(correctedValue);
+        const auto& lutRow = LUT[LUT.size() - 1 - position];
+        signalSerial.insert(signalSerial.end(), lutRow.begin(), lutRow.end());
+    }
+    signal = std::move(signalSerial);
 }
+

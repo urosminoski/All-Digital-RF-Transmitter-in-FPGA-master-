@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
-import json
+import os
 
-def save_luts_to_json(luts, filenames):
+def save_luts_to_txt(luts, filenames):
     """
-    Save multiple LUTs to JSON files.
+    Save multiple LUTs to text files, replacing 0s with -1s.
 
     Parameters:
     - luts: List of LUTs to save
     - filenames: Corresponding list of file names
     """
     for lut, filename in zip(luts, filenames):
+        os.makedirs(os.path.dirname(filename), exist_ok=True)  # Ensure directory exists
         with open(filename, 'w') as f:
-            json.dump(lut, f, indent=4)
+            for row in lut:
+                modified_row = ["-1" if x == 0 else str(x) for x in row]  # Replace 0s with -1s
+                f.write(" ".join(modified_row) + "\n")  # Convert list to space-separated string
         print(f"LUT written to {filename}")
-
 
 def main():
     # Define LUTs
@@ -119,15 +121,15 @@ def main():
     # Combine LUTs and file names
     LUTs = [LUT1, LUT2, LUT3, LUT4, LUT5]
     filenames = [
-        './data/input/LUT1.json',
-        './data/input/LUT2.json',
-        './data/input/LUT3.json',
-        './data/input/LUT4.json',
-        './data/input/LUT5.json'
+        './data/input/LUT1.txt',
+        './data/input/LUT2.txt',
+        './data/input/LUT3.txt',
+        './data/input/LUT4.txt',
+        './data/input/LUT5.txt'
     ]
 
     # Save LUTs to JSON files
-    save_luts_to_json(LUTs, filenames)
+    save_luts_to_txt(LUTs, filenames)
 
 
 if __name__ == "__main__":
