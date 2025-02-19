@@ -12,14 +12,14 @@ void splitComplexVector(const std::vector<std::complex<double>>& complexVec,
                         std::vector<double>& imagVec);
 std::vector<std::complex<double>> combineRealImagVectors(const std::vector<double>& realVec, 
                                                          const std::vector<double>& imagVec);
-void scale_vector(std::vector<double> vector, double scale);
+void scale_vector(std::vector<double>& vector, double scale);
 
 int main() {
 
     constexpr int W = 18;
     constexpr int I = 1;
     constexpr bool S = true;
-    constexpr ac_q_mode Q = AC_TRN;
+    constexpr ac_q_mode Q = AC_RND;
     constexpr ac_o_mode O = AC_SAT;
 
 
@@ -62,6 +62,7 @@ int main() {
     std::string fileName_sinData_deltaSigma_d   = "./data/output/sinData_deltaSigma_double.txt";
     std::string fileName_sinDataR_serial        = "./data/output/sinDataR_serial.txt";
     std::string fileName_sinDataI_serial        = "./data/output/sinDataI_serial.txt";
+    std::string fileName_sinDataR_rfiq          = "./data/output/sinData_rfiq.txt";
 
     // Load input complex sin data
     std::vector<std::complex<double>>               inSignal;
@@ -78,11 +79,10 @@ int main() {
 
     // Delay Real Part for T/2
     delay_real<W, I, S, Q, O>(realPart, delayFirCofficients_5, 2, 1);
-    metadata["complex"] = "0";
     writeRealData(fileName_sinDataR_delay_5, metadata, realPart);
 
     // Delay Imaginary Part for T/4
-    delay_real<W, I, S, Q, O>(imagPart, delayFirCofficients_25, 4, 3);
+    delay_real<W, I, S, Q, O>(imagPart, delayFirCofficients_25, 2, 1);
     writeRealData(fileName_sinDataI_delay_25, metadata, imagPart);
 
     metadata["OSR"] = std::to_string(static_cast<int>(std::pow(2, polyFirCofficients.size())));
@@ -93,8 +93,10 @@ int main() {
     writeRealData(fileName_sinDataR_OSR_8, metadata, realPart);
     writeRealData(fileName_sinDataI_OSR_8, metadata, imagPart);
 
+    std::cout << "Before : " << realPart[10] << std::endl;  
     scale_vector(realPart, 4);
     scale_vector(imagPart, 4);
+    std::cout << "After : " << realPart[10] << std::endl;
     
     // Perform delta-sigma modulation on real and imaginary parts
     deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(realPart, iir_deltaSigma, true);
@@ -108,6 +110,11 @@ int main() {
     serialConverter<4>(imagPart, LUT);
     writeRealData(fileName_sinDataR_serial, metadata, realPart);
     writeRealData(fileName_sinDataI_serial, metadata, imagPart);
+
+    // Perform RFIQ reconstruction
+    std::vector<double> recSignal;
+    rfiq(realPart, imagPart, recSignal);
+    writeRealData(fileName_sinDataR_rfiq, metadata, recSignal);
 
 
 
@@ -273,7 +280,7 @@ std::vector<std::complex<double>> combineRealImagVectors(const std::vector<doubl
     return complexVec;
 }
 
-void scale_vector(std::vector<double> vector, double scale) {
+void scale_vector(std::vector<double>& vector, double scale) {
     // Ensure vector is not empty
     if (vector.empty()) {
         throw std::runtime_error("Input vector is empty!");

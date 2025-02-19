@@ -487,6 +487,7 @@ void delay_real(std::vector<double>& signal,
     if (delayRatio >= interpolationRatio) {
         throw std::runtime_error("Delay cannot be greater than interpolation ratio!");
     }
+    std::cout << "N = " << firCoeff.size() << std::endl;
 
     using CoeffType = ac_fixed<W, I, S, Q, O>;
 
@@ -653,5 +654,28 @@ void serialConverter(std::vector<double>& signal,
         signalSerial.insert(signalSerial.end(), lutRow.begin(), lutRow.end());
     }
     signal = std::move(signalSerial);
+}
+
+void rfiq(const std::vector<double>& realPart,
+          const std::vector<double>& imagPart,
+          std::vector<double>& recSignal) {
+    // Validate realPart and imagPart: Check that they are not empty, and are equal in size
+    if (realPart.empty() || imagPart.empty()) {
+        throw std::invalid_argument("Input signals cannot be empty!");
+    }
+    if (realPart.size() != imagPart.size()) {
+        throw std::invalid_argument("Input signals must be same in size!");
+    }
+
+    std::vector<double> result;
+    result.reserve(realPart.size() * 4);
+    for (size_t i = 0; i < realPart.size(); i++) {
+        result.emplace_back(realPart[i]);
+        result.emplace_back(imagPart[i]);
+        result.emplace_back(-realPart[i]);
+        result.emplace_back(-imagPart[i]);
+    }
+
+    recSignal = std::move(result);
 }
 

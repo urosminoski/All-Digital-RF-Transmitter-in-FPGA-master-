@@ -61,9 +61,9 @@ void deltaSigma_real(std::vector<double>& signal,
                      const std::vector<std::vector<double>>& iirCoeff,
                      const bool full_precision = false);
 
-template<typename InputType, typename SignalType>
-void h0_fir(InputType& input, InputType& output, std::vector<SignalType>& delayLine,
-                   size_t& k, size_t M);
+void rfiq(const std::vector<double>& realPart,
+          const std::vector<double>& imagPart,
+          std::vector<double>& recSignal);
 
 #include "../src/fxpDsp.tpp"
 
