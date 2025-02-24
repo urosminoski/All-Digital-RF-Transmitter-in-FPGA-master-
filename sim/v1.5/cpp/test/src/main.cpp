@@ -14,7 +14,12 @@ std::vector<std::complex<double>> combineRealImagVectors(const std::vector<doubl
                                                          const std::vector<double>& imagVec);
 void scale_vector(std::vector<double>& vector, double scale);
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    if (argc != 8) {  // Adjust the count based on the number of expected file paths
+        std::cerr << "Usage: " << argv[0] << " <signal_input> <signal_output> <delayFirCoeff_5> <delayFirCoeff_25> <polyFirCoeff> <deltaSigmaIIR> <LUT> " << std::endl;
+        return 1;
+    }
 
     constexpr int W = 18;
     constexpr int I = 1;
@@ -22,11 +27,19 @@ int main() {
     constexpr ac_q_mode Q = AC_RND;
     constexpr ac_o_mode O = AC_SAT;
 
+    std::string fileName_signal_input               = argv[1];
+    std::string fileName_signal_output              = argv[2];
+    std::string fileName_delayFirCofficients_5      = argv[3];
+    std::string fileName_delayFirCofficients_25     = argv[4];
+    std::string fileName_polyFirCofficients         = argv[5];
+    std::string fileName_iir_deltaSigma             = argv[6];
+    std::string fileName_LUT                        = argv[7];
+
 
 
     // Load FIR coeffitients for T/2 and T/4 delay
-    std::string fileName_delayFirCofficients_5   = "./data/input/delayFirCoefficients_5_20dB.txt";     // T/2 delay
-    std::string fileName_delayFirCofficients_25  = "./data/input/delayFirCoefficients_25_20dB.txt";    // T/4 delay
+    // std::string fileName_delayFirCofficients_5   = "./data/input/delayFirCoefficients_5_20dB.txt";     // T/2 delay
+    // std::string fileName_delayFirCofficients_25  = "./data/input/delayFirCoefficients_25_20dB.txt";    // T/4 delay
     std::vector<double> delayFirCofficients_5;  
     std::vector<double> delayFirCofficients_25; 
     std::unordered_map<std::string, std::string>    delayFirMetadata_5;
@@ -35,39 +48,37 @@ int main() {
     readRealData(fileName_delayFirCofficients_25, delayFirMetadata_25, delayFirCofficients_25);
 
     // Load FIR coeffitients for polyphase interpolation
-    std::string fileName_polyFirCofficients   = "./data/input/polyFirCofficients_80dB.txt"; 
+    // std::string fileName_polyFirCofficients   = "./data/input/polyFirCofficients_80dB.txt"; 
     std::vector<std::vector<double>> polyFirCofficients;
     std::unordered_map<std::string, std::string> polyFirMetadata;
     readReal2dData(fileName_polyFirCofficients, polyFirMetadata, polyFirCofficients);
 
     // Load IIR coeffitients for delta-sigma modulation
-    std::string fileName_iir_deltaSigma   = "./data/input/deltaSigma_iirs.txt"; 
+    // std::string fileName_iir_deltaSigma   = "./data/input/deltaSigma_iirs.txt"; 
     std::vector<std::vector<double>> iir_deltaSigma;
     std::unordered_map<std::string, std::string> iir_deltaSigma_metadata;
     readReal2dData(fileName_iir_deltaSigma, iir_deltaSigma_metadata, iir_deltaSigma);
 
     // Load LUT data for parallel-to-serial conversion
-    std::string fileName_LUT   = "./data/input/LUT3.txt";
+    // std::string fileName_LUT   = "./data/input/LUT3.txt";
     std::vector<std::vector<double>> LUT;
     std::unordered_map<std::string, std::string> LUT_metadata;
     readReal2dData(fileName_LUT, LUT_metadata, LUT);
 
-    std::string fileName_sinData_complex        = "./data/input/sinDataComplex.txt";
-    std::string fileName_sinDataR_delay_5       = "./data/output/sinDataR_delay_5.txt";
-    std::string fileName_sinDataI_delay_25      = "./data/output/sinDataI_delay_25.txt";
-    std::string fileName_sinDataR_OSR_8         = "./data/output/sinDataR_OSR_8.txt";
-    std::string fileName_sinDataI_OSR_8         = "./data/output/sinDataI_OSR_8.txt";
-    std::string fileName_sinDataR_deltaSigma    = "./data/output/sinDataR_deltaSigma.txt";
-    std::string fileName_sinDataI_deltaSigma    = "./data/output/sinDataI_deltaSigma.txt";
-    std::string fileName_sinData_deltaSigma_d   = "./data/output/sinData_deltaSigma_double.txt";
-    std::string fileName_sinDataR_serial        = "./data/output/sinDataR_serial.txt";
-    std::string fileName_sinDataI_serial        = "./data/output/sinDataI_serial.txt";
-    std::string fileName_sinDataR_rfiq          = "./data/output/sinData_rfiq.txt";
+    std::string fileName_signalR_delay_5        = "./data/output/signalR_delay_5.txt";
+    std::string fileName_signalI_delay_25       = "./data/output/signalI_delay_25.txt";
+    std::string fileName_signalR_OSR_8          = "./data/output/signalR_OSR_8.txt";
+    std::string fileName_signalI_OSR_8          = "./data/output/signalI_OSR_8.txt";
+    std::string fileName_signalR_deltaSigma     = "./data/output/signalR_deltaSigma.txt";
+    std::string fileName_signalI_deltaSigma     = "./data/output/signalI_deltaSigma.txt";
+    std::string fileName_signalR_serial         = "./data/output/signalR_serial.txt";
+    std::string fileName_signalI_serial         = "./data/output/signalI_serial.txt";
+    // std::string fileName_signal_rfiq            = "./data/output/signal_rfiq.txt";
 
     // Load input complex sin data
     std::vector<std::complex<double>>               inSignal;
     std::unordered_map<std::string, std::string>    metadata;
-    readComplexData(fileName_sinData_complex, metadata, inSignal);
+    readComplexData(fileName_signal_input, metadata, inSignal);
 
     // Vectors to hold real and imaginary parts
     std::vector<double> realPart, imagPart;
@@ -79,42 +90,41 @@ int main() {
 
     // Delay Real Part for T/2
     delay_real<W, I, S, Q, O>(realPart, delayFirCofficients_5, 2, 1);
-    writeRealData(fileName_sinDataR_delay_5, metadata, realPart);
+    writeRealData(fileName_signalR_delay_5, metadata, realPart);
 
     // Delay Imaginary Part for T/4
     delay_real<W, I, S, Q, O>(imagPart, delayFirCofficients_25, 2, 1);
-    writeRealData(fileName_sinDataI_delay_25, metadata, imagPart);
+    writeRealData(fileName_signalI_delay_25, metadata, imagPart);
 
     metadata["OSR"] = std::to_string(static_cast<int>(std::pow(2, polyFirCofficients.size())));
 
     // Perform Interpolation by a factor of 8
     interpolation_real<W, I, S, Q, O>(realPart, polyFirCofficients);
     interpolation_real<W, I, S, Q, O>(imagPart, polyFirCofficients);
-    writeRealData(fileName_sinDataR_OSR_8, metadata, realPart);
-    writeRealData(fileName_sinDataI_OSR_8, metadata, imagPart);
-
-    std::cout << "Before : " << realPart[10] << std::endl;  
+    writeRealData(fileName_signalR_OSR_8, metadata, realPart);
+    writeRealData(fileName_signalI_OSR_8, metadata, imagPart);
+ 
     scale_vector(realPart, 4);
     scale_vector(imagPart, 4);
-    std::cout << "After : " << realPart[10] << std::endl;
     
     // Perform delta-sigma modulation on real and imaginary parts
     deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(realPart, iir_deltaSigma, true);
     deltaSigma_real<12, 4, 12, 4, 4, S, Q, O>(imagPart, iir_deltaSigma, true);
-    writeRealData(fileName_sinDataR_deltaSigma, metadata, realPart);
-    writeRealData(fileName_sinDataI_deltaSigma, metadata, imagPart);
+    writeRealData(fileName_signalR_deltaSigma, metadata, realPart);
+    writeRealData(fileName_signalI_deltaSigma, metadata, imagPart);
 
     // Perform parallel-to-serial conversion on real and imaginary parts
     metadata["lut_width"] = std::to_string(LUT[0].size());
     serialConverter<4>(realPart, LUT);
     serialConverter<4>(imagPart, LUT);
-    writeRealData(fileName_sinDataR_serial, metadata, realPart);
-    writeRealData(fileName_sinDataI_serial, metadata, imagPart);
+    writeRealData(fileName_signalR_serial, metadata, realPart);
+    writeRealData(fileName_signalI_serial, metadata, imagPart);
 
     // Perform RFIQ reconstruction
+    metadata["fc"] = "1";
     std::vector<double> recSignal;
     rfiq(realPart, imagPart, recSignal);
-    writeRealData(fileName_sinDataR_rfiq, metadata, recSignal);
+    writeRealData(fileName_signal_output, metadata, recSignal);
 
 
 

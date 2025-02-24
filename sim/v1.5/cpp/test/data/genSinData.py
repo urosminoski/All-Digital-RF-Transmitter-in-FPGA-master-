@@ -34,12 +34,13 @@ def write_signal_to_file(filename, signal, OSR, fs):
     """
     with open(filename, "w") as file:
         # Write metadata
-        file.write(f"# OSR={OSR}\n")
-        file.write(f"# fs={fs}\n")
+        file.write(f"#OSR={OSR}\n")
+        file.write(f"#fs={fs}\n")
+        file.write(f"#fc=0\n")
 
         # Check if the signal contains complex values
         is_complex = np.iscomplexobj(signal)
-        file.write(f"# complex={1 if is_complex else 0}\n")
+        file.write(f"#complex={1 if is_complex else 0}\n")
 
         # Write signal data
         if is_complex:
@@ -57,12 +58,12 @@ def write_signal_to_file(filename, signal, OSR, fs):
 if __name__ == "__main__":
     # Signal parameters
     N = 2**12
-    M = 3
-    OSR = 8
+    M = 1
+    OSR = 1
     f = 2.5 * 1e3
     fs = 10 * 1e3
 
     # Generate and write signal
     signal = generate_signal(N, M, OSR, f, fs)
-    write_signal_to_file("./data/input/sinDataComplex_OSR8.txt", signal, OSR, fs)
-    write_signal_to_file("./data/input/sinData_OSR8.txt", signal.real, OSR, fs)
+    write_signal_to_file("./data/input/sinDataComplex.txt", signal, OSR, fs)
+    write_signal_to_file("./data/input/sinData.txt", signal.real, OSR, fs)
