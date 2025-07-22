@@ -11,36 +11,70 @@ SRC_DIR = src
 OBJ_DIR = obj
 BUILD_DIR = build
 
-# Source files and object files
+# ----------------------------
+# 👇 DELTA-SIGMA TARGET SETUP
+# ----------------------------
+
+# Source files and object files for delta-sigma
 SRCS = $(SRC_DIR)/delta-sigma.cpp $(SRC_DIR)/fileProcessing.cpp
 OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
 DEPS = $(OBJS:.o=.d)
-
-# Final binary
 TARGET = $(BUILD_DIR)/delta-sigma
 
-# Default target
+# -------------------------
+# 👇 RF-PROCESS TARGET SETUP
+# -------------------------
+
+# Source and object files for rf-process
+RF_SRCS = $(SRC_DIR)/rf_process.cpp $(SRC_DIR)/fileProcessing.cpp
+RF_OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(RF_SRCS))
+RF_DEPS = $(RF_OBJS:.o=.d)
+RF_TARGET = $(BUILD_DIR)/rf-process
+
+# -----------------------
+# 👇 Default Build Target
+# -----------------------
 all: $(TARGET)
 
-# Compile rule (object files in obj/)
+# -------------------------------
+# 👇 Compile Rule for Any .cpp -> .o
+# -------------------------------
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-# Link rule (binaries in build/)
+# -----------------------------
+# 👇 Link Rule: Delta-Sigma Main
+# -----------------------------
 $(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-# Run target
+# ---------------------------
+# 👇 Link Rule: RF Process Main
+# ---------------------------
+rf: $(RF_TARGET)
+
+$(RF_TARGET): $(RF_OBJS)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
+
+# ---------------------
+# 👇 Run Delta-Sigma Main
+# ---------------------
 run: $(TARGET)
 	./$<
 
-# Clean target
+# ----------------
+# 👇 Clean All
+# ----------------
 clean:
 	@rm -rf $(OBJ_DIR) $(BUILD_DIR)
 
-# Dependency includes
+# -----------------------------
+# 👇 Include Dependency Headers
+# -----------------------------
 -include $(DEPS)
+-include $(RF_DEPS)
 
-.PHONY: all clean run
+.PHONY: all clean run rf

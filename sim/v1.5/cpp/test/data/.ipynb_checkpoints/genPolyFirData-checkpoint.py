@@ -62,7 +62,7 @@ if __name__ == "__main__":
     Fmax = 0.5 * (1 - perc)
     Fpass = Fmax
     Fstop = 1 - Fpass
-    AdBs = [20, 30, 40, 50, 60, 70, 80]
+    AdBs = [20, 30, 40, 50, 60, 70, 80, 100]
 
     for AdB in AdBs:
         # Generate FIR coefficients

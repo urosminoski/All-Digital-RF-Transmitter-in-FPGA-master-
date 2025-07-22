@@ -155,7 +155,7 @@ void writeRealData(const std::string& filename,
         outputFile << value << "\n";
     }
 
-    std::cout << "File written to " << filename << "\n";
+    // std::cout << "File written to " << filename << "\n";
     outputFile.close();
 }
 
