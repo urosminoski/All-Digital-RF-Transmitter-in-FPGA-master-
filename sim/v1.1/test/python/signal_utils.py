@@ -114,6 +114,7 @@ def interpolate(x, I, F, delta, show=False, prt=False):
         Fstop = (1 - Fpass)/2
         Fpass /= 2
         firCoeff = remezlp(Fpass, Fstop, deltaPass, deltaStop, even_n = False, nPoints=N, Nmax=N)
+        firCoeff /= np.sum(np.array(firCoeff))
         # print(len(firCoeff))
         x = expander(x, 2)
         x = signal.lfilter(firCoeff, 1.0, np.concatenate((x, x[:len(firCoeff)-1])))[len(firCoeff)-1:]
