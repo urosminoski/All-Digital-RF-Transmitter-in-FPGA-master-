@@ -1,105 +1,75 @@
--- ===============================================================
---  tb_deltaSigma.vhd  (VHDL-2008)
---  Testbench za delta_sigma: x = sfixed(3 downto -8)  (12 bita)
---                            y = sfixed(3 downto  0)  (4  bita)
---  Upisuje izlaz u "./simulator_output.txt"
--- ===============================================================
-
--- Instanciraj generic paket sa podrazumevanim parametrima
-package fixed_pkg is new work.fixed_generic_pkg;
-use work.fixed_pkg.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.fixed_float_types.all;  -- tipovi za sfixed/ufixed
-use work.fixed_pkg.all;          -- funkcije/to_integer/konverzije
+use ieee.fixed_float_types.all;
+use ieee.fixed_pkg.all;
 
 library std;
-use std.textio.all;              -- TEXT, LINE, write/writeline, file I/O
+use std.textio.all;
 
 entity tb_deltaSigma is
-end entity tb_deltaSigma;
+end entity;
 
 architecture tb of tb_deltaSigma is
+	constant C_CLK_FREQ   : integer := 150_000_000;
+	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 
-	constant C_CLK_FREQ		: integer := 150_000_000;
-	constant C_CLK_PERIOD 	: time := 1 sec / C_CLK_FREQ;
-	
-	signal clk	: std_logic := '0';
-	signal rst 	: std_logic := '1';
-	signal x 	: std_logic_vector(11 downto 0) := (others => '0');
-	signal y 	: std_logic_vector(3 downto 0) := (others => '0');
-	
-	file input_file 	: text open read_mode is "..\data\xin.txt";
-	file output_file 	: text open write_mode is "..\data\xout.txt";
+	signal clk       : std_logic := '0';
+	signal rst       : std_logic := '1';
+	signal x         : std_logic_vector(11 downto 0) := (others => '0');
+	signal y         : std_logic_vector(3 downto 0)  := (others => '0');
 
-  constant C_CLK_PERIOD : time := 1 ns;
+	-- Lokalni “handshake” u TB:
+	signal out_ready : std_logic := '0';
+	signal xout_en   : std_logic := '1';  -- ako nemaš en iz UUT, samo drži '1'
 
-  signal clk  : std_logic := '1';
-  signal rst  : std_logic := '1';
-
-  -- Usaglašene širine sa DUT (prethodno dobijene iz poruke kompajlera):
-  signal x : sfixed(3 downto -8) := (others => '0');  -- 12 bita
-  signal y : sfixed(3 downto  0);                     -- 4  bita
-
-  -- Stimulus: 1024 real vrednosti; ovde inicijalizovano na 0.0
-  -- (po potrebi kasnije učitaj iz fajla u procesu, ali konstanta mora imati vrednost)
-  type x_input is array (0 to 1023) of real;
-  constant x_in : x_input := (others => 0.0);
+	file input_file  : text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\xin_test.txt";
+	file output_file : text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\xout_test.txt";
 
 begin
+	uut: entity work.deltaSigma
+		port map (
+			clk => clk,
+			rst => rst,
+			x   => x,
+			y   => y
+		);
 
-  -- ====== DUT instanca ======
-  -- Ako ti je entitet nazvan "deltaSigma", promeni sledeću liniju u: entity work.deltaSigma
-  I_DUT : entity work.deltaSigma
-    port map (
-      clk => clk,
-      rst => rst,
-      x   => x,
-      y   => y
-    );
+	clk <= not clk after C_CLK_PERIOD/2;
+	rst <= '0' after 6*C_CLK_PERIOD;
 
-  -- ====== Clock ======
-  clk <= not clk after C_CLK_PERIOD/2;
+	-- Čitanje ulaza, sa EOF zaštitom
+	read_file : process(clk)
+		variable L : line;
+		variable v : integer;
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				x        <= (others => '0');
+				out_ready <= '0';
+			else
+				if not endfile(input_file) then
+					readline(input_file, L);
+					read(L, v);
+					x        <= std_logic_vector(to_signed(v, 12));
+					out_ready <= '1';
+				else
+					out_ready <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
 
-  -- ====== Reset ======
-  p_reset : process
-  begin
-    rst <= '1';
-    wait for 5 * C_CLK_PERIOD;  -- kratko drži reset
-    rst <= '0';
-    wait;
-  end process;
+	-- Upis izlaza
+	write_file : process(clk)
+		variable L : line;
+	begin
+		if falling_edge(clk) then
+			if out_ready = '1' and xout_en = '1' then
+				write(L, to_integer(signed(y)));
+				writeline(output_file, L);
+			end if;
+		end if;
+	end process;
 
-  -- ====== Ulazni stimulus ======
-  p_input : process(clk)
-    variable i : integer := 0;
-  begin
-    if rst = '1' then
-      i := 0;
-      x <= (others => '0');
-    elsif rising_edge(clk) then
-      if i <= 1023 then
-        -- Konverzija real -> sfixed(3 downto -8)
-        x <= to_sfixed(x_in(i), 3, -8);
-        i := i + 1;
-      end if;
-    end if;
-  end process;
-
-  -- ====== Izlazni log u fajl ======
-  p_output : process(clk)
-    file file_pointer : TEXT open WRITE_MODE is "./simulator_output.txt";
-    variable line_el   : LINE;
-    variable y_integer : integer;
-  begin
-    if rising_edge(clk) then
-      -- Direktno iz sfixed u integer (funkcija iz fixed_pkg instance)
-      y_integer := to_integer(y);
-      write(line_el, y_integer);
-      writeline(file_pointer, line_el);
-    end if;
-  end process;
-
-end architecture tb;
+end architecture;
