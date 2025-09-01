@@ -1,1 +1,59 @@
+C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/tb/tb_deltaSigma.vhd {0 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/tb/tb_deltaSigma.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Compiling package instance fixed_pkg
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package fixed_float_types
+-- Loading package fixed_generic_pkg
+-- Loading package MATH_REAL
+-- Loading package body fixed_generic_pkg
+-- Loading package instance fixed_pkg
+-- Compiling entity tb_deltaSigma
+-- Compiling architecture tb of tb_deltaSigma
+** Error: (vcom-13) Recompile work.deltasigma because work.fixed_pkg has changed.
+** Error (suppressible): C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/tb/tb_deltaSigma.vhd(44): (vcom-1195) Cannot find expanded name "work.deltaSigma".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/tb/tb_deltaSigma.vhd(44): Unknown expanded name.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/tb/tb_deltaSigma.vhd(94): VHDL Compiler exiting
 
+} {15.0 16.0 17.0 19.0} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/deltaSigma.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/deltaSigma.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Compiling package instance fixed_pkg
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package fixed_float_types
+-- Loading package fixed_generic_pkg
+-- Loading package MATH_REAL
+-- Loading package body fixed_generic_pkg
+-- Loading package instance fixed_pkg
+-- Compiling entity deltaSigma
+-- Compiling architecture rti of deltaSigma
+
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg-body.vhdl {2 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg-body.vhdl
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package MATH_REAL
+-- Compiling package body fixed_generic_pkg
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package fixed_float_types
+-- Loading package fixed_generic_pkg
+** Warning: C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg-body.vhdl(50): (vcom-1246) Range 0 downto 1 is null.
+** Warning: C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg-body.vhdl(51): (vcom-1246) Range 0 downto 1 is null.
+** Warning: C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg-body.vhdl(52): (vcom-1246) Range 0 downto 1 is null.
+** Warning: C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg-body.vhdl(5001): (vcom-1246) Range 2 to 1 is null.
+
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg.vhdl {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/vhdl/src/fixed_generic_pkg.vhdl
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package fixed_float_types
+-- Compiling package fixed_generic_pkg
+
+} {} {}}
