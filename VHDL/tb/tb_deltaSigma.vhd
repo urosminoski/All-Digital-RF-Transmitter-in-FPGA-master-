@@ -61,8 +61,8 @@ begin
 	-- end process;
 	read_file : process(clk)
 		variable L : line;
-		variable r : real;  -- čitamo float iz fajla
-		variable s : sfixed(3 downto -8);  -- 12-bitni sfixed
+		variable r : real;
+		variable s : sfixed(3 downto -8);
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
@@ -71,22 +71,20 @@ begin
 			else
 				if not endfile(input_file) then
 					readline(input_file, L);
-					read(L, r);   -- učitaj real
-
-					-- konverzija real → sfixed
+					read(L, r);
 					s := to_sfixed(r, s'high, s'low);
-
-					-- sfixed → std_logic_vector
 					x <= to_slv(s);
-
 					out_ready <= '1';
 				else
 					out_ready <= '0';
+
+					-- Zaustavi simulaciju
+					report "Kraj ulaznog fajla - simulacija se zaustavlja." severity note;
+					std.env.stop;  -- VHDL-2008
 				end if;
 			end if;
 		end if;
 	end process;
-
 
 	-- Upis izlaza
 	write_file : process(clk)
