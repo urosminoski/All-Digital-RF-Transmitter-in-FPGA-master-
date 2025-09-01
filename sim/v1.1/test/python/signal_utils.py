@@ -371,6 +371,17 @@ def poly_decimation_q1n(x_q, h_q, D, n_frac):
 
     return acc
 
+def poly_interpolation_q1n(x_q, h_q, I, n_frac):
+    x_q = np.asarray(x_q)
+    poly_h_q = makePolyphase(h_q, I)
+    xout = np.zeros(len(x_q)*I, dtype=x_q.dtype)
+    for i in range(I):
+        FIR_in = x_q
+        tmp = fir_transposed_q1n(FIR_in, poly_h_q[i], n_frac=2*n_frac, saturate=False)
+        xout[i::I] = tmp
+
+    return xout
+
 LUT1 = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Level 8
     [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Level 7
