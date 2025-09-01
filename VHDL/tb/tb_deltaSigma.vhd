@@ -39,9 +39,30 @@ begin
 	rst <= '0' after 6*C_CLK_PERIOD;
 
 	-- Čitanje ulaza, sa EOF zaštitom
+	-- read_file : process(clk)
+		-- variable L : line;
+		-- variable v : integer;
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- x        <= (others => '0');
+				-- out_ready <= '0';
+			-- else
+				-- if not endfile(input_file) then
+					-- readline(input_file, L);
+					-- read(L, v);
+					-- x        <= std_logic_vector(to_signed(v, 12));
+					-- out_ready <= '1';
+				-- else
+					-- out_ready <= '0';
+				-- end if;
+			-- end if;
+		-- end if;
+	-- end process;
 	read_file : process(clk)
 		variable L : line;
-		variable v : integer;
+		variable r : real;  -- čitamo float iz fajla
+		variable s : sfixed(3 downto -8);  -- 12-bitni sfixed
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
@@ -50,8 +71,14 @@ begin
 			else
 				if not endfile(input_file) then
 					readline(input_file, L);
-					read(L, v);
-					x        <= std_logic_vector(to_signed(v, 12));
+					read(L, r);   -- učitaj real
+
+					-- konverzija real → sfixed
+					s := to_sfixed(r, s'high, s'low);
+
+					-- sfixed → std_logic_vector
+					x <= to_slv(s);
+
 					out_ready <= '1';
 				else
 					out_ready <= '0';
@@ -59,6 +86,7 @@ begin
 			end if;
 		end if;
 	end process;
+
 
 	-- Upis izlaza
 	write_file : process(clk)
