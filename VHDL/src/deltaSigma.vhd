@@ -7,8 +7,10 @@ use ieee.fixed_pkg.all;
 entity deltaSigma is
 	port(
 		clk, rst : in  std_logic;
-		x        : in  std_logic_vector(11 downto 0);
-		y        : out std_logic_vector(3 downto 0)
+		-- x        : in  std_logic_vector(11 downto 0);
+		-- y        : out std_logic_vector(3 downto 0)
+		x : in sfixed(3 downto -8);
+		y : out sfixed(3 downto 0)
 	);
 end entity;
 
@@ -54,8 +56,9 @@ begin
 			y_sfixed <= to_sfixed(0, y_sfixed);
 		elsif rising_edge(clk) then
 		
-			x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
-			y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
+			-- x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
+			-- y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
+			y_i      := resize(x + y_iir, y_i'high, y_i'low);
 			v        := resize(y_i, v'high, v'low);
 			if v(v'right) = '0' then
 				v := resize(v + to_sfixed(1, v), v'high, v'low);
@@ -70,8 +73,9 @@ begin
 			y_iir := resize(x0 + x1 + x2,             y_iir'high, y_iir'low);
 			x0d := x0;  w1dd := w1d;  w1d := w1;  w2dd := w2d;  w2d := w2;
 		end if;
-		y_sfixed <= v;
+		-- y_sfixed <= v;
+		y <= v;
 	end process;
 
-	y <= to_slv(y_sfixed);                                   -- sfixed → std_logic_vector:contentReference[oaicite:2]{index=2}
+	-- y <= to_slv(y_sfixed);                                   -- sfixed → std_logic_vector:contentReference[oaicite:2]{index=2}
 end architecture;

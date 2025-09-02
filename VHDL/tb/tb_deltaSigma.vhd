@@ -16,12 +16,13 @@ architecture tb of tb_deltaSigma is
 
 	signal clk       : std_logic := '0';
 	signal rst       : std_logic := '1';
-	signal x         : std_logic_vector(11 downto 0) := (others => '0');
-	signal y         : std_logic_vector(3 downto 0)  := (others => '0');
+	-- signal x         : std_logic_vector(11 downto 0) := (others => '0');
+	-- signal y         : std_logic_vector(3 downto 0)  := (others => '0');
+	signal x : sfixed(3 downto -8);
+	signal y : sfixed(3 downto 0);
 
 	-- Lokalni “handshake” u TB:
 	signal out_ready : std_logic := '0';
-	signal xout_en   : std_logic := '1';  -- ako nemaš en iz UUT, samo drži '1'
 
 	file input_file  : text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\xin_test.txt";
 	file output_file : text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\xout_test.txt";
@@ -73,7 +74,7 @@ begin
 					readline(input_file, L);
 					read(L, r);
 					s := to_sfixed(r, s'high, s'low);
-					x <= to_slv(s);
+					x <= s; --to_slv(s);
 					out_ready <= '1';
 				else
 					out_ready <= '0';
@@ -91,7 +92,7 @@ begin
 		variable L : line;
 	begin
 		if falling_edge(clk) then
-			if out_ready = '1' and xout_en = '1' then
+			if out_ready = '1' then
 				write(L, to_integer(signed(y)));
 				writeline(output_file, L);
 			end if;
