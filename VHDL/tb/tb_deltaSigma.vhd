@@ -16,10 +16,10 @@ architecture tb of tb_deltaSigma is
 
 	signal clk       : std_logic := '0';
 	signal rst       : std_logic := '1';
-	-- signal x         : std_logic_vector(11 downto 0) := (others => '0');
-	-- signal y         : std_logic_vector(3 downto 0)  := (others => '0');
-	signal x : sfixed(3 downto -8);
-	signal y : sfixed(3 downto 0);
+	signal x         : std_logic_vector(11 downto 0) := (others => '0');
+	signal y         : std_logic_vector(3 downto 0)  := (others => '0');
+	-- signal x : sfixed(3 downto -8);
+	-- signal y : sfixed(3 downto 0);
 
 	-- Lokalni “handshake” u TB:
 	signal out_ready : std_logic := '0';
@@ -74,7 +74,7 @@ begin
 					readline(input_file, L);
 					read(L, r);
 					s := to_sfixed(r, s'high, s'low);
-					x <= s; --to_slv(s);
+					x <= to_slv(s);
 					out_ready <= '1';
 				else
 					out_ready <= '0';
