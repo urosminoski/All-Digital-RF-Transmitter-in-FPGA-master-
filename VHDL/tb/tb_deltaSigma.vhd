@@ -16,87 +16,98 @@ architecture tb of tb_deltaSigma is
 
 	signal clk       : std_logic := '0';
 	signal rst       : std_logic := '1';
-	signal x         : std_logic_vector(11 downto 0) := (others => '0');
-	signal y         : std_logic_vector(3 downto 0)  := (others => '0');
+	signal xi         : std_logic_vector(11 downto 0) := (others => '0');
+	signal yi         : std_logic_vector(3 downto 0)  := (others => '0');
+	signal xq         : std_logic_vector(11 downto 0) := (others => '0');
+	signal yq         : std_logic_vector(3 downto 0)  := (others => '0');
 	-- signal x : sfixed(3 downto -8);
 	-- signal y : sfixed(3 downto 0);
 
 	-- Lokalni “handshake” u TB:
 	signal out_ready : std_logic := '0';
 
-	file input_file  : text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xin_test.txt";
-	file output_file : text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xout_test.txt";
+	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xin_i_test.txt";
+	file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xin_q_test.txt";
+	file output_file_i 	: text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xout_i_test.txt";
+	file output_file_q 	: text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xout_q_test.txt";
 
 begin
-	uut: entity work.deltaSigma
+	uut_i: entity work.deltaSigma
 		port map (
 			clk => clk,
 			rst => rst,
-			x   => x,
-			y   => y
+			x   => xi,
+			y   => yi
+		);
+	
+	uut_q: entity work.deltaSigma
+		port map (
+			clk => clk,
+			rst => rst,
+			x   => xq,
+			y   => yq
 		);
 
 	clk <= not clk after C_CLK_PERIOD/2;
 	rst <= '0' after 6*C_CLK_PERIOD;
-
-	-- Čitanje ulaza, sa EOF zaštitom
-	-- read_file : process(clk)
-		-- variable L : line;
-		-- variable v : integer;
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- x        <= (others => '0');
-				-- out_ready <= '0';
-			-- else
-				-- if not endfile(input_file) then
-					-- readline(input_file, L);
-					-- read(L, v);
-					-- x        <= std_logic_vector(to_signed(v, 12));
-					-- out_ready <= '1';
-				-- else
-					-- out_ready <= '0';
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
-	read_file : process(clk)
-		variable L : line;
-		variable r : real;
-		variable s : sfixed(3 downto -8);
+	
+	read_files : process(clk)
+		variable L_i, L_q : line;
+		variable r_i, r_q : real;
+		variable s_i, s_q : sfixed(3 downto -8);
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
-				x        <= (others => '0');
+				xi        <= (others => '0');
+				xq        <= (others => '0');
 				out_ready <= '0';
 			else
-				if not endfile(input_file) then
-					readline(input_file, L);
-					read(L, r);
-					s := to_sfixed(r, s'high, s'low);
-					x <= to_slv(s);
+				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
+				if (not endfile(input_file_i)) and (not endfile(input_file_q)) then
+					-- I kanal
+					readline(input_file_i, L_i);
+					read(L_i, r_i);
+					s_i := to_sfixed(r_i, s_i'high, s_i'low);
+
+					-- Q kanal
+					readline(input_file_q, L_q);
+					read(L_q, r_q);
+					s_q := to_sfixed(r_q, s_q'high, s_q'low);
+
+					-- Izlazi (ako su xi/xq tipa std_logic_vector)
+					xi <= to_slv(s_i);
+					xq <= to_slv(s_q);
+
+					-- Ako su xi/xq sfixed tipa, umesto prethodne dve linije uradi:
+					-- xi <= s_i; 
+					-- xq <= s_q;
+
 					out_ready <= '1';
 				else
 					out_ready <= '0';
-
-					-- Zaustavi simulaciju
-					report "Kraj ulaznog fajla - simulacija se zaustavlja." severity note;
+					report "Kraj jednog od fajlova - simulacija se zaustavlja." severity note;
 					std.env.stop;  -- VHDL-2008
 				end if;
 			end if;
 		end if;
 	end process;
 
-	-- Upis izlaza
-	write_file : process(clk)
-		variable L : line;
+
+	write_files : process(clk)
+		variable L_i, L_q : line;
 	begin
 		if falling_edge(clk) then
 			if out_ready = '1' then
-				write(L, to_integer(signed(y)));
-				writeline(output_file, L);
+				-- upis I izlaza
+				write(L_i, to_integer(signed(yi)));
+				writeline(output_file_i, L_i);
+
+				-- upis Q izlaza
+				write(L_q, to_integer(signed(yq)));
+				writeline(output_file_q, L_q);
 			end if;
 		end if;
 	end process;
+
 
 end architecture;

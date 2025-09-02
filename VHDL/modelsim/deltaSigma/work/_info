@@ -25,9 +25,9 @@ VV3>ek^kDz:G2fG<:o_9Ya3
 !s100 6T28b7E8;FS0OLfW19D6W3
 Z10 OV;C;10.5b;63
 33
-Z11 !s110 1756833918
+Z11 !s110 1756834517
 !i10b 1
-Z12 !s108 1756833918.000000
+Z12 !s108 1756834517.000000
 Z13 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/deltaSigma.vhd|
 Z14 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/deltaSigma.vhd|
 !i113 1
@@ -125,7 +125,7 @@ R19
 R20
 R16
 Etb_deltasigma
-Z21 w1756833927
+Z21 w1756834513
 R2
 R3
 R4
@@ -141,16 +141,16 @@ VoZcNE_75J^`2JU8mP]gMM2
 !s100 c^5GM]2]?Woz2HL7MfMGQ0
 R10
 33
-Z24 !s110 1756833930
+R11
 !i10b 1
-Z25 !s108 1756833930.000000
-Z26 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_deltaSigma.vhd|
-Z27 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_deltaSigma.vhd|
+R12
+Z24 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_deltaSigma.vhd|
+Z25 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_deltaSigma.vhd|
 !i113 1
 R15
 R16
 Atb
-Z28 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
+Z26 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
 R17
 R2
 R3
@@ -158,18 +158,18 @@ R4
 R5
 R6
 R7
-Z29 DEx4 work 13 tb_deltasigma 0 22 oZcNE_75J^`2JU8mP]gMM2
-l30
+Z27 DEx4 work 13 tb_deltasigma 0 22 oZcNE_75J^`2JU8mP]gMM2
+l34
 L13
-Ve3:L5YaRYEAOXUoH@jM[D1
-!s100 XUXWaE_F=BY]2;;QCEG:;3
+VdEVdQG7A:RXP1_GK:ClQ22
+!s100 iOczoKDhg>Dl=]joj3HkZ1
 R10
 33
-R24
+R11
 !i10b 1
+R12
+R24
 R25
-R26
-R27
 !i113 1
 R15
 R16
