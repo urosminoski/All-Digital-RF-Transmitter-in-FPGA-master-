@@ -24,8 +24,8 @@ architecture tb of tb_deltaSigma is
 	-- Lokalni “handshake” u TB:
 	signal out_ready : std_logic := '0';
 
-	file input_file  : text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\xin_test.txt";
-	file output_file : text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\xout_test.txt";
+	file input_file  : text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xin_test.txt";
+	file output_file : text open write_mode is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\deltaSigma_test\xout_test.txt";
 
 begin
 	uut: entity work.deltaSigma
