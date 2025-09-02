@@ -60,9 +60,9 @@ begin
 			-- y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
 			y_i      := resize(x + y_iir, y_i'high, y_i'low);
 			v        := resize(y_i, v'high, v'low);
-			if v(v'right) = '0' then
-				v := resize(v + to_sfixed(1, v), v'high, v'low);
-			end if;
+			-- if v(v'right) = '0' then
+				-- v := resize(v + to_sfixed(1, v), v'high, v'low);
+			-- end if;
 
 			e   := resize(y_i - v, e'high, e'low);
 			x0  := resize(b00*e + a01*x0d,            x0'high, x0'low);
