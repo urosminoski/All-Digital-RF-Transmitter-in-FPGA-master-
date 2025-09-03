@@ -115,6 +115,8 @@ architecture rtl of interpolation is
 	signal shift0 	: shift0_array_t;
 	signal shift0_2 : shift0_array_t_2;
 	
+	signal acc : sfixed(N_INT downto N_FRAC_2);
+	
 	signal x_sfixed 	: sfixed(0 downto -11) := (others => '0');
 
 	signal x0_phase0, 		x0_phase1 	: sfixed(N_INT downto N_FRAC_2);
@@ -137,28 +139,59 @@ begin
 	end process;
 	
 	-- FIR 0
-	mul0(0) <= resize(x_sfixed * fir0_phase0(N0-1), mul0(0)'high, mul0(0)'low);
-	add0(0) <= mul0(0);
+	-- mul0(0) <= resize(x_sfixed * fir0_phase0(N0-1), mul0(0)'high, mul0(0)'low);
+	-- add0(0) <= mul0(0);
 	
-	gen_mul0 : for i in 1 to N0-1 generate
+	-- gen_mul0 : for i in 1 to N0-1 generate
+	-- begin
+		-- mul0(i) 	<= resize(x_sfixed * fir0_phase0(N0-1-i), 	mul0(i)'high, mul0(i)'low);
+		-- add0(i)		<= resize(shift0(i) + mul0(i), 				add0(i)'high, add0(i)'low);
+	-- end generate;
+	
+	-- shift0_process : process(clk0)
+	-- begin
+		-- if rising_edge(clk0) then
+			-- if rst = '1' then
+				-- shift0 <= (others => (others => '0'));
+			-- else
+				-- for i in 1 to N0-1 loop
+					-- shift0(i) <= add0(i-1);
+				-- end loop;
+				-- shift0(0) <= add0(0);
+			-- end if;
+		-- end if;
+	-- end process shift0_process;
+	
+	
+	
+	gen_mul0 : for i in 0 to N0-1 generate
 	begin
-		mul0(i) 	<= resize(x_sfixed * fir0_phase0(N0-1-i), mul0(i)'high, mul0(i)'low);
-		add0(i)	<= resize(shift0(i) + mul0(i), add0(i)'high, add0(i)'low);
+		mul0(i) 	<= resize(x_sfixed * fir0_phase0(N0-1-i), 	mul0(i)'high, mul0(i)'low);
 	end generate;
 	
-	shift0_process : process(clk0)
+	process(clk0)
 	begin
 		if rising_edge(clk0) then
 			if rst = '1' then
 				shift0 <= (others => (others => '0'));
 			else
-				for i in 1 to N0-1 loop
-					shift0(i) <= add0(i-1);
+				for i in 0 to N0-3 loop
+					shift0(i) <= resize(shift0(i+1) + mul0(i+1), shift0(i)'high, shift0(i)'low); --add_out(i+1); 
 				end loop;
-				shift0(0) <= add0(0);
+				shift0(N0-2) <= mul0(N0-1); --add_out(C_NUM_TAMPS-1)
 			end if;
 		end if;
-	end process shift0_process;
+	end process;
+
+	acc <= resize(shift0(0) + mul0(0), acc'high, acc'low); -- add_out(0);
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	shift0_process_2: process(clk0)
 	begin
@@ -181,7 +214,7 @@ begin
 				x0_phase0 <= (others => '0');
 				x0_phase1 <= (others => '0');
 			else
-				x0_phase0 <= add0(N0-1);
+				x0_phase0 <= acc;--add0(N0-1);
 				x0_phase1 <= shift0_2(N0/2-1);
 			end if;
 		end if;

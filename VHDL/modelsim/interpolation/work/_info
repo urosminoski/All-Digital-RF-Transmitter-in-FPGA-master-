@@ -78,7 +78,7 @@ R9
 R3
 R4
 Einterpolation
-Z10 w1756934515
+Z10 w1756935199
 Z11 DPx4 ieee 17 fixed_generic_pkg 0 22 `=cI_4Mf07Y0RE[dTgE=F2
 Z12 DPx4 ieee 9 fixed_pkg 0 22 6nURH]dUY5@T6S0eLDXJe2
 R5
@@ -94,9 +94,9 @@ V7gAKBnKkPV`OZ[a`6z[ZL2
 !s100 UPbFMPLWgniKzH_QoLfZP0
 R1
 33
-Z15 !s110 1756934521
+Z15 !s110 1756935202
 !i10b 1
-Z16 !s108 1756934521.000000
+Z16 !s108 1756935202.000000
 Z17 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation.vhd|
 Z18 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation.vhd|
 !i113 1
@@ -110,10 +110,10 @@ R6
 R8
 R7
 Z20 DEx4 work 13 interpolation 0 22 7gAKBnKkPV`OZ[a`6z[ZL2
-l126
+l128
 L16
-V]zUHSh`=7bbAZN<>zBM8f1
-!s100 9zdK9Pe;1[dlDAWIH4m590
+VO>G6<k6MF>@afJkk][gLZ3
+!s100 Ng[=n_ELHj=EST33MiN1[1
 R1
 33
 R15
