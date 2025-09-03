@@ -1,4 +1,4 @@
-C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_interpolation.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_interpolation.vhd
+C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_interpolation.vhd {0 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_interpolation.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -13,5 +13,7 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling architecture tb of tb_interpolation
 -- Loading entity interpolation
 -- Loading package ENV
+** Error (suppressible): C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_interpolation.vhd(37): (vcom-1272) Length of formal "x" is 23; length of actual is 22.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_interpolation.vhd(93): VHDL Compiler exiting
 
-} {} {}}
+} {17.0 18.0} {}}
