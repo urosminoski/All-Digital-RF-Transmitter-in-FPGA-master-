@@ -16,8 +16,8 @@ architecture tb of tb_interpolation is
 
 	signal clk0, clk1, clk2   	: std_logic := '0';
 	signal rst       			: std_logic := '1';
-	signal x         			: std_logic_vector(21 downto 0) := (others => '0');
-	signal y         			: std_logic_vector(43 downto 0) := (others => '0');
+	signal x         			: std_logic_vector(11 downto 0) := (others => '0');
+	signal y         			: std_logic_vector(27 downto 0) := (others => '0');
 	-- signal x : sfixed(3 downto -8);
 	-- signal y : sfixed(3 downto 0);
 
@@ -45,7 +45,7 @@ begin
 	read_files : process(clk0)
 		variable L : line;
 		variable r : real;
-		variable s : sfixed(0 downto -21);
+		variable s : sfixed(0 downto -11);
 	begin
 		if rising_edge(clk0) then
 			if rst = '1' then
