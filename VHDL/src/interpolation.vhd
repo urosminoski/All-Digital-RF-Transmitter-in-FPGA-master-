@@ -26,48 +26,48 @@ architecture rtl of interpolation is
 
 	-- FIR 0 Coeffitients
 	constant fir0_phase0 : fir0_array_t := (
-		to_sfixed( 0.000014, 0, N_FRAC),
-		to_sfixed(-0.000040, 0, N_FRAC),
-		to_sfixed( 0.000091, 0, N_FRAC),
-		to_sfixed(-0.000184, 0, N_FRAC),
-		to_sfixed( 0.000337, 0, N_FRAC),
-		to_sfixed(-0.000578, 0, N_FRAC),
-		to_sfixed( 0.000940, 0, N_FRAC),
-		to_sfixed(-0.001464, 0, N_FRAC),
-		to_sfixed( 0.002199, 0, N_FRAC),
-		to_sfixed(-0.003205, 0, N_FRAC),
-		to_sfixed( 0.004552, 0, N_FRAC),
-		to_sfixed(-0.006333, 0, N_FRAC),
-		to_sfixed( 0.008663, 0, N_FRAC),
-		to_sfixed(-0.011709, 0, N_FRAC),
-		to_sfixed( 0.015718, 0, N_FRAC),
-		to_sfixed(-0.021112, 0, N_FRAC),
-		to_sfixed( 0.028669, 0, N_FRAC),
-		to_sfixed(-0.040070, 0, N_FRAC),
-		to_sfixed( 0.059695, 0, N_FRAC),
-		to_sfixed(-0.103678, 0, N_FRAC),
-		to_sfixed( 0.317493, 0, N_FRAC),
-		to_sfixed( 0.317493, 0, N_FRAC),
-		to_sfixed(-0.103678, 0, N_FRAC),
-		to_sfixed( 0.059695, 0, N_FRAC),
-		to_sfixed(-0.040070, 0, N_FRAC),
-		to_sfixed( 0.028669, 0, N_FRAC),
-		to_sfixed(-0.021112, 0, N_FRAC),
-		to_sfixed( 0.015718, 0, N_FRAC),
-		to_sfixed(-0.011709, 0, N_FRAC),
-		to_sfixed( 0.008663, 0, N_FRAC),
-		to_sfixed(-0.006333, 0, N_FRAC),
-		to_sfixed( 0.004552, 0, N_FRAC),
-		to_sfixed(-0.003205, 0, N_FRAC),
-		to_sfixed( 0.002199, 0, N_FRAC),
-		to_sfixed(-0.001464, 0, N_FRAC),
-		to_sfixed( 0.000940, 0, N_FRAC),
-		to_sfixed(-0.000578, 0, N_FRAC),
-		to_sfixed( 0.000337, 0, N_FRAC),
-		to_sfixed(-0.000184, 0, N_FRAC),
-		to_sfixed( 0.000091, 0, N_FRAC),
-		to_sfixed(-0.000040, 0, N_FRAC),
-		to_sfixed( 0.000014, 0, N_FRAC)
+		to_sfixed( 0.000014291322, 0, N_FRAC),
+		to_sfixed(-0.000039516421, 0, N_FRAC),
+		to_sfixed( 0.000091072642, 0, N_FRAC),
+		to_sfixed(-0.000183517720, 0, N_FRAC),
+		to_sfixed( 0.000337020847, 0, N_FRAC),
+		to_sfixed(-0.000578304995, 0, N_FRAC),
+		to_sfixed( 0.000940386412, 0, N_FRAC),
+		to_sfixed(-0.001464323420, 0, N_FRAC),
+		to_sfixed( 0.002199199950, 0, N_FRAC),
+		to_sfixed(-0.003204611510, 0, N_FRAC),
+		to_sfixed( 0.004552420300, 0, N_FRAC),
+		to_sfixed(-0.006332841260, 0, N_FRAC),
+		to_sfixed( 0.008663313130, 0, N_FRAC),
+		to_sfixed(-0.011708605900, 0, N_FRAC),
+		to_sfixed( 0.015718495800, 0, N_FRAC),
+		to_sfixed(-0.021111531700, 0, N_FRAC),
+		to_sfixed( 0.028669391700, 0, N_FRAC),
+		to_sfixed(-0.040069744000, 0, N_FRAC),
+		to_sfixed( 0.059694815000, 0, N_FRAC),
+		to_sfixed(-0.103678482000, 0, N_FRAC),
+		to_sfixed( 0.317492818000, 0, N_FRAC),
+		to_sfixed( 0.317492818000, 0, N_FRAC),
+		to_sfixed(-0.103678482000, 0, N_FRAC),
+		to_sfixed( 0.059694815000, 0, N_FRAC),
+		to_sfixed(-0.040069744000, 0, N_FRAC),
+		to_sfixed( 0.028669391700, 0, N_FRAC),
+		to_sfixed(-0.021111531700, 0, N_FRAC),
+		to_sfixed( 0.015718495800, 0, N_FRAC),
+		to_sfixed(-0.011708605900, 0, N_FRAC),
+		to_sfixed( 0.008663313130, 0, N_FRAC),
+		to_sfixed(-0.006332841260, 0, N_FRAC),
+		to_sfixed( 0.004552420300, 0, N_FRAC),
+		to_sfixed(-0.003204611510, 0, N_FRAC),
+		to_sfixed( 0.002199199950, 0, N_FRAC),
+		to_sfixed(-0.001464323420, 0, N_FRAC),
+		to_sfixed( 0.000940386412, 0, N_FRAC),
+		to_sfixed(-0.000578304995, 0, N_FRAC),
+		to_sfixed( 0.000337020847, 0, N_FRAC),
+		to_sfixed(-0.000183517720, 0, N_FRAC),
+		to_sfixed( 0.000091072642, 0, N_FRAC),
+		to_sfixed(-0.000039516421, 0, N_FRAC),
+		to_sfixed( 0.000014291322, 0, N_FRAC)
 	);
 	
 	constant fir0_phase1 : sfixed(0 downto N_FRAC) := to_sfixed(0.5, 0, N_FRAC);
@@ -211,10 +211,10 @@ begin
 		  toggle := '0';
 		else
 		  if toggle = '0' then
-			xout0 <= ph1_reg_clk1;
+			xout0 <= ph0_reg_clk1;
 			toggle := '1';
 		  else
-			xout0 <= ph0_reg_clk1;
+			xout0 <= ph1_reg_clk1;
 			toggle := '0';
 		  end if;
 		end if;
