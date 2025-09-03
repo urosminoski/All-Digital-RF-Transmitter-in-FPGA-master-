@@ -9,7 +9,7 @@ entity interpolation is
 		clk0, clk1, clk2 	: in std_logic;
 		rst 				: in  std_logic;
 		x      				: in  std_logic_vector(11 downto 0);
-		y      				: out std_logic_vector(23 downto 0)
+		y      				: out std_logic_vector(11 downto 0)
 	);
 end entity;
 
@@ -103,7 +103,7 @@ architecture rtl of interpolation is
 	
 	signal x_sfixed 	: sfixed(0 downto -11) := (others => '0');
 
-	signal x0_phase0, 		x0_phase1 	: sfixed(2 downto -21);
+	signal x0_phase0, 		x1_phase0 	: sfixed(2 downto -21);
 	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(2 downto -21);
 	
 	signal xout0 		: sfixed(2 downto -21) := (others => '0');
@@ -130,7 +130,7 @@ begin
 	begin
 		mul0(i) 	<= resize(x_sfixed * fir0_phase0(N0-1-i), mul0(i)'high, mul0(i)'low);
 		add0(i)	<= resize(shift0(i) + mul0(i), add0(i)'high, add0(i)'low);
-	end generate;
+	end generate gen_mul;
 	
 	shift0_process : process(clk0)
 	begin
@@ -146,7 +146,7 @@ begin
 		end if;
 	end process shift0_process;
 	
-	shift0_process_2: process(clk0)
+	shift0_process_2: process(clk0):
 	begin
 		if rising_edge(clk0) then
 			if rst = '1' then
@@ -206,8 +206,6 @@ begin
 		end if;
 	  end if;
 	end process;
-	
-	y <= to_slv(xout0);
 	
 	-- FIR 1
 
