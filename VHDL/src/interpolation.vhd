@@ -211,10 +211,10 @@ begin
 		  toggle := '0';
 		else
 		  if toggle = '0' then
-			xout0 <= ph0_reg_clk1;
+			xout0 <= ph1_reg_clk1;
 			toggle := '1';
 		  else
-			xout0 <= ph1_reg_clk1;
+			xout0 <= ph0_reg_clk1;
 			toggle := '0';
 		  end if;
 		end if;
