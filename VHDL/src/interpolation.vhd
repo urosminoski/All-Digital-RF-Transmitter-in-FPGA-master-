@@ -9,15 +9,15 @@ entity interpolation is
 		clk0, clk1, clk2 	: in std_logic;
 		rst 				: in  std_logic;
 		x      				: in  std_logic_vector(11 downto 0);
-		y      				: out std_logic_vector(23 downto 0)
+		y      				: out std_logic_vector(27 downto 0)
 	);
 end entity;
 
 architecture rtl of interpolation is
 
-	constant N_FRAC : integer := -11;
+	constant N_FRAC : integer := -15;
 
-	constant N0 : integer := 34;
+	constant N0 : integer := 40;
 	constant N1 : integer := 5;--10;
 	constant N2 : integer := 3;--6;
 	type fir0_array_t is array (0 to N0-1) of sfixed(0 downto N_FRAC);
@@ -26,76 +26,82 @@ architecture rtl of interpolation is
 
 	-- FIR 0 Coeffitients
 	constant fir0_phase0 : fir0_array_t := (
-		to_sfixed( 0.000488,  0, N_FRAC),
-		to_sfixed(-0.000977,  0, N_FRAC),
-		to_sfixed( 0.001465,  0, N_FRAC),
-		to_sfixed(-0.002441,  0, N_FRAC),
-		to_sfixed( 0.004395,  0, N_FRAC),
-		to_sfixed(-0.006348,  0, N_FRAC),
-		to_sfixed( 0.008789,  0, N_FRAC),
-		to_sfixed(-0.012207,  0, N_FRAC),
-		to_sfixed( 0.017090,  0, N_FRAC),
-		to_sfixed(-0.022949,  0, N_FRAC),
-		to_sfixed( 0.031250,  0, N_FRAC),
-		to_sfixed(-0.041992,  0, N_FRAC),
-		to_sfixed( 0.057129,  0, N_FRAC),
-		to_sfixed(-0.080078,  0, N_FRAC),
-		to_sfixed( 0.119141,  0, N_FRAC),
-		to_sfixed(-0.207031,  0, N_FRAC),
-		to_sfixed( 0.634766,  0, N_FRAC),
-		to_sfixed( 0.634766,  0, N_FRAC),
-		to_sfixed(-0.207031,  0, N_FRAC),
-		to_sfixed( 0.119141,  0, N_FRAC),
-		to_sfixed(-0.080078,  0, N_FRAC),
-		to_sfixed( 0.057129,  0, N_FRAC),
-		to_sfixed(-0.041992,  0, N_FRAC),
-		to_sfixed( 0.031250,  0, N_FRAC),
-		to_sfixed(-0.022949,  0, N_FRAC),
-		to_sfixed( 0.017090,  0, N_FRAC),
-		to_sfixed(-0.012207,  0, N_FRAC),
-		to_sfixed( 0.008789,  0, N_FRAC),
-		to_sfixed(-0.006348,  0, N_FRAC),
-		to_sfixed( 0.004395,  0, N_FRAC),
-		to_sfixed(-0.002441,  0, N_FRAC),
-		to_sfixed( 0.001465,  0, N_FRAC),
-		to_sfixed(-0.000977,  0, N_FRAC),
-		to_sfixed( 0.000488,  0, N_FRAC)
+		to_sfixed(-0.000488, 0, N_FRAC),
+		to_sfixed( 0.000977, 0, N_FRAC),
+		to_sfixed(-0.002930, 0, N_FRAC),
+		to_sfixed( 0.005371, 0, N_FRAC),
+		to_sfixed(-0.008789, 0, N_FRAC),
+		to_sfixed( 0.014648, 0, N_FRAC),
+		to_sfixed(-0.022949, 0, N_FRAC),
+		to_sfixed( 0.035156, 0, N_FRAC),
+		to_sfixed(-0.051270, 0, N_FRAC),
+		to_sfixed( 0.072754, 0, N_FRAC),
+		to_sfixed(-0.101074, 0, N_FRAC),
+		to_sfixed( 0.138184, 0, N_FRAC),
+		to_sfixed(-0.187012, 0, N_FRAC),
+		to_sfixed( 0.251465, 0, N_FRAC),
+		to_sfixed(-0.337402, 0, N_FRAC),
+		to_sfixed( 0.458496, 0, N_FRAC),
+		to_sfixed(-0.641113, 0, N_FRAC),
+		to_sfixed( 0.955078, 0, N_FRAC),
+		to_sfixed(-1.658691, 0, N_FRAC),
+		to_sfixed( 5.080078, 0, N_FRAC),
+		to_sfixed( 5.080078, 0, N_FRAC),
+		to_sfixed(-1.658691, 0, N_FRAC),
+		to_sfixed( 0.955078, 0, N_FRAC),
+		to_sfixed(-0.641113, 0, N_FRAC),
+		to_sfixed( 0.458496, 0, N_FRAC),
+		to_sfixed(-0.337402, 0, N_FRAC),
+		to_sfixed( 0.251465, 0, N_FRAC),
+		to_sfixed(-0.187012, 0, N_FRAC),
+		to_sfixed( 0.138184, 0, N_FRAC),
+		to_sfixed(-0.101074, 0, N_FRAC),
+		to_sfixed( 0.072754, 0, N_FRAC),
+		to_sfixed(-0.051270, 0, N_FRAC),
+		to_sfixed( 0.035156, 0, N_FRAC),
+		to_sfixed(-0.022949, 0, N_FRAC),
+		to_sfixed( 0.014648, 0, N_FRAC),
+		to_sfixed(-0.008789, 0, N_FRAC),
+		to_sfixed( 0.005371, 0, N_FRAC),
+		to_sfixed(-0.002930, 0, N_FRAC),
+		to_sfixed( 0.000977, 0, N_FRAC),
+		to_sfixed(-0.000488, 0, N_FRAC)
 	);
 	
-	constant fir0_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, N_FRAC);
+	constant fir0_phase1 : sfixed(0 downto N_FRAC) := to_sfixed(0.999512, 0, N_FRAC);
 
 	-- FIR1 Coeffitients
-	constant fir1_phase0 : fir1_array_t := (
-		to_sfixed( 0.001465, 0, -11),
-		to_sfixed(-0.011230, 0, -11),
-		to_sfixed( 0.046387, 0, -11),
-		to_sfixed(-0.149414, 0, -11),
-		to_sfixed( 0.612305, 0, -11)
+	-- constant fir1_phase0 : fir1_array_t := (
+		-- to_sfixed( 0.001465, 0, -11),
+		-- to_sfixed(-0.011230, 0, -11),
+		-- to_sfixed( 0.046387, 0, -11),
+		-- to_sfixed(-0.149414, 0, -11),
+		-- to_sfixed( 0.612305, 0, -11)
 		-- to_sfixed( 0.612305, 0, -11),
 		-- to_sfixed(-0.149414, 0, -11),
 		-- to_sfixed( 0.046387, 0, -11),
 		-- to_sfixed(-0.011230, 0, -11),
 		-- to_sfixed( 0.001465, 0, -11)
-	);
+	--);
 	
-	constant fir1_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
+	-- constant fir1_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
 	
 	-- FIR2 Coeffitients
-	constant fir2_phase0 : fir2_array_t := (
-		to_sfixed( 0.013184, 0, -11),
-		to_sfixed(-0.102539, 0, -11),
-		to_sfixed( 0.588867, 0, -11)
+	-- constant fir2_phase0 : fir2_array_t := (
+		-- to_sfixed( 0.013184, 0, -11),
+		-- to_sfixed(-0.102539, 0, -11),
+		-- to_sfixed( 0.588867, 0, -11)
 		-- to_sfixed( 0.588867, 0, -11),
 		-- to_sfixed(-0.102539, 0, -11),
 		-- to_sfixed( 0.013184, 0, -11)
-	);
+	--);
 	
-	constant fir2_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
+	-- constant fir2_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
 	
-	type mul0_array_t is array (0 to N0-1) of sfixed(3 downto -20);
-	type add0_array_t is array (0 to N0-1) of sfixed(3 downto -20);
-	type shift0_array_t is array (0 to N0-1) of sfixed(3 downto -20);
-	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(3 downto -20); 
+	type mul0_array_t is array (0 to N0-1) of sfixed(2 downto -25);
+	type add0_array_t is array (0 to N0-1) of sfixed(2 downto -25);
+	type shift0_array_t is array (0 to N0-1) of sfixed(2 downto -25);
+	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(2 downto -25); 
 
 	
 	signal mul0 	: mul0_array_t;
@@ -103,12 +109,12 @@ architecture rtl of interpolation is
 	signal shift0 	: shift0_array_t;
 	signal shift0_2 : shift0_array_t_2;
 	
-	signal x_sfixed 	: sfixed(0 downto N_FRAC) := (others => '0');
+	signal x_sfixed 	: sfixed(0 downto -11) := (others => '0');
 
-	signal x0_phase0, 		x0_phase1 	: sfixed(3 downto -20);
-	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(3 downto -20);
+	signal x0_phase0, 		x0_phase1 	: sfixed(2 downto -25);
+	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(2 downto -25);
 	
-	signal xout0 		: sfixed(3 downto -20) := (others => '0');
+	signal xout0 		: sfixed(2 downto -25) := (others => '0');
 	
 
 begin
