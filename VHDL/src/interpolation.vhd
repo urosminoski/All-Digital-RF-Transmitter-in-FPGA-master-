@@ -15,52 +15,54 @@ end entity;
 
 architecture rtl of interpolation is
 
+	constant N_FRAC : integer := -11;
+
 	constant N0 : integer := 34;
 	constant N1 : integer := 5;--10;
 	constant N2 : integer := 3;--6;
-	type fir0_array_t is array (0 to N0-1) of sfixed(0 downto -11);
-	type fir1_array_t is array (0 to N1-1) of sfixed(0 downto -11);
-	type fir2_array_t is array (0 to N2-1) of sfixed(0 downto -11);
+	type fir0_array_t is array (0 to N0-1) of sfixed(0 downto N_FRAC);
+	type fir1_array_t is array (0 to N1-1) of sfixed(0 downto N_FRAC);
+	type fir2_array_t is array (0 to N2-1) of sfixed(0 downto N_FRAC);
 
 	-- FIR 0 Coeffitients
 	constant fir0_phase0 : fir0_array_t := (
-		to_sfixed( 0.000488,  0, -11),
-		to_sfixed(-0.000977,  0, -11),
-		to_sfixed( 0.001465,  0, -11),
-		to_sfixed(-0.002441,  0, -11),
-		to_sfixed( 0.004395,  0, -11),
-		to_sfixed(-0.006348,  0, -11),
-		to_sfixed( 0.008789,  0, -11),
-		to_sfixed(-0.012207,  0, -11),
-		to_sfixed( 0.017090,  0, -11),
-		to_sfixed(-0.022949,  0, -11),
-		to_sfixed( 0.031250,  0, -11),
-		to_sfixed(-0.041992,  0, -11),
-		to_sfixed( 0.057129,  0, -11),
-		to_sfixed(-0.080078,  0, -11),
-		to_sfixed( 0.119141,  0, -11),
-		to_sfixed(-0.207031,  0, -11),
-		to_sfixed( 0.634766,  0, -11),
-		to_sfixed( 0.634766,  0, -11),
-		to_sfixed(-0.207031,  0, -11),
-		to_sfixed( 0.119141,  0, -11),
-		to_sfixed(-0.080078,  0, -11),
-		to_sfixed( 0.057129,  0, -11),
-		to_sfixed(-0.041992,  0, -11),
-		to_sfixed( 0.031250,  0, -11),
-		to_sfixed(-0.022949,  0, -11),
-		to_sfixed( 0.017090,  0, -11),
-		to_sfixed(-0.012207,  0, -11),
-		to_sfixed( 0.008789,  0, -11),
-		to_sfixed(-0.006348,  0, -11),
-		to_sfixed( 0.004395,  0, -11),
-		to_sfixed(-0.002441,  0, -11),
-		to_sfixed( 0.001465,  0, -11),
-		to_sfixed(-0.000977,  0, -11),
-		to_sfixed( 0.000488,  0, -11)
+		to_sfixed( 0.000488,  0, N_FRAC),
+		to_sfixed(-0.000977,  0, N_FRAC),
+		to_sfixed( 0.001465,  0, N_FRAC),
+		to_sfixed(-0.002441,  0, N_FRAC),
+		to_sfixed( 0.004395,  0, N_FRAC),
+		to_sfixed(-0.006348,  0, N_FRAC),
+		to_sfixed( 0.008789,  0, N_FRAC),
+		to_sfixed(-0.012207,  0, N_FRAC),
+		to_sfixed( 0.017090,  0, N_FRAC),
+		to_sfixed(-0.022949,  0, N_FRAC),
+		to_sfixed( 0.031250,  0, N_FRAC),
+		to_sfixed(-0.041992,  0, N_FRAC),
+		to_sfixed( 0.057129,  0, N_FRAC),
+		to_sfixed(-0.080078,  0, N_FRAC),
+		to_sfixed( 0.119141,  0, N_FRAC),
+		to_sfixed(-0.207031,  0, N_FRAC),
+		to_sfixed( 0.634766,  0, N_FRAC),
+		to_sfixed( 0.634766,  0, N_FRAC),
+		to_sfixed(-0.207031,  0, N_FRAC),
+		to_sfixed( 0.119141,  0, N_FRAC),
+		to_sfixed(-0.080078,  0, N_FRAC),
+		to_sfixed( 0.057129,  0, N_FRAC),
+		to_sfixed(-0.041992,  0, N_FRAC),
+		to_sfixed( 0.031250,  0, N_FRAC),
+		to_sfixed(-0.022949,  0, N_FRAC),
+		to_sfixed( 0.017090,  0, N_FRAC),
+		to_sfixed(-0.012207,  0, N_FRAC),
+		to_sfixed( 0.008789,  0, N_FRAC),
+		to_sfixed(-0.006348,  0, N_FRAC),
+		to_sfixed( 0.004395,  0, N_FRAC),
+		to_sfixed(-0.002441,  0, N_FRAC),
+		to_sfixed( 0.001465,  0, N_FRAC),
+		to_sfixed(-0.000977,  0, N_FRAC),
+		to_sfixed( 0.000488,  0, N_FRAC)
 	);
 	
-	constant fir0_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
+	constant fir0_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, N_FRAC);
 
 	-- FIR1 Coeffitients
 	constant fir1_phase0 : fir1_array_t := (
@@ -90,10 +92,10 @@ architecture rtl of interpolation is
 	
 	constant fir2_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
 	
-	type mul0_array_t is array (0 to N0-1) of sfixed(2 downto -21);
-	type add0_array_t is array (0 to N0-1) of sfixed(2 downto -21);
-	type shift0_array_t is array (0 to N0-1) of sfixed(2 downto -21);
-	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(2 downto -21); 
+	type mul0_array_t is array (0 to N0-1) of sfixed(3 downto -20);
+	type add0_array_t is array (0 to N0-1) of sfixed(3 downto -20);
+	type shift0_array_t is array (0 to N0-1) of sfixed(3 downto -20);
+	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(3 downto -20); 
 
 	
 	signal mul0 	: mul0_array_t;
@@ -101,12 +103,12 @@ architecture rtl of interpolation is
 	signal shift0 	: shift0_array_t;
 	signal shift0_2 : shift0_array_t_2;
 	
-	signal x_sfixed 	: sfixed(0 downto -11) := (others => '0');
+	signal x_sfixed 	: sfixed(0 downto N_FRAC) := (others => '0');
 
-	signal x0_phase0, 		x0_phase1 	: sfixed(2 downto -21);
-	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(2 downto -21);
+	signal x0_phase0, 		x0_phase1 	: sfixed(3 downto -20);
+	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(3 downto -20);
 	
-	signal xout0 		: sfixed(2 downto -21) := (others => '0');
+	signal xout0 		: sfixed(3 downto -20) := (others => '0');
 	
 
 begin
