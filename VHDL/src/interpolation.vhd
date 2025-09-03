@@ -8,8 +8,8 @@ entity interpolation is
 	port(
 		clk0, clk1, clk2 	: in std_logic;
 		rst 				: in  std_logic;
-		x      				: in  std_logic_vector(11 downto 0);
-		y      				: out std_logic_vector(27 downto 0)
+		x      				: in  std_logic_vector(15 downto 0);
+		y      				: out std_logic_vector(31 downto 0)
 	);
 end entity;
 
@@ -101,10 +101,13 @@ architecture rtl of interpolation is
 	
 	-- constant fir2_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
 	
-	type mul0_array_t is array (0 to N0-1) of sfixed(2 downto -25);
-	type add0_array_t is array (0 to N0-1) of sfixed(2 downto -25);
-	type shift0_array_t is array (0 to N0-1) of sfixed(2 downto -25);
-	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(2 downto -25); 
+	constant N_INT 		: integer := 4;
+	constant N_FRAC_2 	: integer := -27;
+	
+	type mul0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
+	type add0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
+	type shift0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
+	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(N_INT downto N_FRAC_2); 
 
 	
 	signal mul0 	: mul0_array_t;
@@ -112,12 +115,12 @@ architecture rtl of interpolation is
 	signal shift0 	: shift0_array_t;
 	signal shift0_2 : shift0_array_t_2;
 	
-	signal x_sfixed 	: sfixed(0 downto -11) := (others => '0');
+	signal x_sfixed 	: sfixed(0 downto -15) := (others => '0');
 
-	signal x0_phase0, 		x0_phase1 	: sfixed(2 downto -25);
-	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(2 downto -25);
+	signal x0_phase0, 		x0_phase1 	: sfixed(N_INT downto N_FRAC_2);
+	signal ph0_reg_clk1, 	ph1_reg_clk1 : sfixed(N_INT downto N_FRAC_2);
 	
-	signal xout0 		: sfixed(2 downto -25) := (others => '0');
+	signal xout0 		: sfixed(N_INT downto N_FRAC_2) := (others => '0');
 	
 
 begin
