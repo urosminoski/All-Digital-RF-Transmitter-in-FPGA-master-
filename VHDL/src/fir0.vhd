@@ -73,6 +73,7 @@ architecture rtl of fir0 is
 	);
 	
 	constant fir_ph1 : fir_array_t := (
+		to_sfixed(0, 0, N_FRAC),
 		to_sfixed(-0.000000125470, 0, N_FRAC),
 		to_sfixed( 0.000000200697, 0, N_FRAC),
 		to_sfixed(-0.000000503721, 0, N_FRAC),
@@ -113,8 +114,7 @@ architecture rtl of fir0 is
 		to_sfixed( 0.000000828311, 0, N_FRAC),
 		to_sfixed(-0.000000503721, 0, N_FRAC),
 		to_sfixed( 0.000000200697, 0, N_FRAC),
-		to_sfixed(-0.000000125470, 0, N_FRAC),
-		to_sfixed(0, 0, N_FRAC)
+		to_sfixed(-0.000000125470, 0, N_FRAC)
 	);
 	
 	type mul_array_t is array (0 to N-1) of sfixed(N_INT downto N_FRAC_2);
