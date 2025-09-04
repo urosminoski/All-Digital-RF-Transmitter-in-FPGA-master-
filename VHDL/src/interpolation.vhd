@@ -215,7 +215,7 @@ begin
 				x0_phase1 <= (others => '0');
 			else
 				x0_phase0 <= acc;--add0(N0-1);
-				x0_phase1 <= shift0_2(N0/2-1);
+				x0_phase1 <= shift0_2(N0/2);
 			end if;
 		end if;
 	end process;
