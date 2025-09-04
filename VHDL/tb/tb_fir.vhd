@@ -14,8 +14,8 @@ architecture tb of tb_fir is
 	constant C_CLK_FREQ   : integer := 150_000_000;
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 	
-	constant WIDTH_X : integer := 12;
-	constant WIDTH_Y : integer := 28;
+	constant WIDTH_X : integer := 16;
+	constant WIDTH_Y : integer := 32;
 
 	signal clk0, clk1, clk2   	: std_logic := '0';
 	signal rst       			: std_logic := '1';
@@ -52,7 +52,7 @@ begin
 	read_files : process(clk0)
 		variable L : line;
 		variable r : real;
-		variable s : sfixed(0 downto -11);
+		variable s : sfixed(0 downto -WIDTH_X+1);
 	begin
 		if rising_edge(clk0) then
 			if rst = '1' then
