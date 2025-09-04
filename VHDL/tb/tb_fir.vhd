@@ -14,8 +14,8 @@ architecture tb of tb_fir is
 	constant C_CLK_FREQ   : integer := 150_000_000;
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 	
-	constant WIDTH_X : integer := 16;
-	constant WIDTH_Y : integer := 32;
+	constant WIDTH_X : integer := 12;
+	constant WIDTH_Y : integer := 16;
 
 	signal clk0, clk1, clk2   	: std_logic := '0';
 	signal rst       			: std_logic := '1';
