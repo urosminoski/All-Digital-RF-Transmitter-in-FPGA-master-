@@ -20,7 +20,7 @@ end entity;
 architecture rtl of fir0 is
 
 	constant N_FRAC 	: integer := -(WIDTH_Y-WIDTH_X-1);
-	constant N_INT 		: integer := 1;
+	constant N_INT 		: integer := 0;
 	constant N_FRAC_2 	: integer := -(WIDTH_Y-1-N_INT);
 
 	constant N : integer := 42;
