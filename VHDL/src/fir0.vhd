@@ -226,10 +226,10 @@ begin
 		  toggle := '0';
 		else
 		  if toggle = '0' then
-			y_clk1 <= ph1_reg_clk1;
+			y_clk1 <= ph0_reg_clk1;
 			toggle := '1';
 		  else
-			y_clk1 <= ph0_reg_clk1;
+			y_clk1 <= ph1_reg_clk1;
 			toggle := '0';
 		  end if;
 		end if;
