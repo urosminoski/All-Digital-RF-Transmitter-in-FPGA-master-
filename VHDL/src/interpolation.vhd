@@ -107,7 +107,7 @@ architecture rtl of interpolation is
 	type mul0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
 	type add0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
 	type shift0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
-	type shift0_array_t_2 is array (0 to N0/2) of sfixed(N_INT downto N_FRAC_2); 
+	type shift0_array_t_2 is array (0 to N0/2-1) of sfixed(N_INT downto N_FRAC_2); 
 
 	
 	signal mul0 	: mul0_array_t;
@@ -200,7 +200,7 @@ begin
 				shift0_2 <= (others => (others => '0'));
 			else
 				shift0_2(0) <= resize(x_sfixed*fir0_phase1, shift0_2(0)'high, shift0_2(0)'low);
-				for i in 1 to N0/2 loop
+				for i in 1 to N0/2-1 loop
 					shift0_2(i) <= shift0_2(i-1);
 				end loop;
 			end if;
@@ -215,7 +215,7 @@ begin
 				x0_phase1 <= (others => '0');
 			else
 				x0_phase0 <= acc;--add0(N0-1);
-				x0_phase1 <= shift0_2(N0/2);
+				x0_phase1 <= shift0_2(N0/2-1);
 			end if;
 		end if;
 	end process;
