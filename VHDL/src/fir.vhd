@@ -9,13 +9,13 @@ entity fir is
 		clk0, clk1, clk2 	: in std_logic;
 		rst 				: in  std_logic;
 		x      				: in  std_logic_vector(11 downto 0);
-		y      				: out std_logic_vector(23 downto 0)
+		y      				: out std_logic_vector(27 downto 0)
 	);
 end entity;
 
 architecture rtl of fir is
 
-	constant N_FRAC : integer := -11;
+	constant N_FRAC : integer := -15;
 
 	constant N0 : integer := 83;
 	type fir0_array_t is array (0 to N0-1) of sfixed(0 downto N_FRAC);
@@ -136,8 +136,8 @@ architecture rtl of fir is
 	
 	-- constant fir2_phase1 : sfixed(0 downto -11) := to_sfixed(0.999512, 0, -11);
 	
-	constant N_INT 		: integer := 1;
-	constant N_FRAC_2 	: integer := -22;
+	constant N_INT 		: integer := 0;
+	constant N_FRAC_2 	: integer := -27;
 	
 	type mul0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
 	type add0_array_t is array (0 to N0-1) of sfixed(N_INT downto N_FRAC_2);
