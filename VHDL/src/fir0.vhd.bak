@@ -190,8 +190,8 @@ begin
 
 	acc_ph1 <= resize(shift_ph1(0) + mul_ph1(0), acc_ph1'high, acc_ph1'low); -- add_out(0);
 	
-	y0 <= to_slv(acc_ph0);
-	y1 <= to_slv(acc_ph1);
+	y0 <= to_slv(acc_ph0)
+	y1 <= to_slv(acc_ph1)
 	
 	-- process(clk0)
 	-- begin
