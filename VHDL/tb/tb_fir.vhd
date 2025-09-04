@@ -20,14 +20,15 @@ architecture tb of tb_fir is
 	signal clk0, clk1, clk2   	: std_logic := '0';
 	signal rst       			: std_logic := '1';
 	signal x         			: std_logic_vector(WIDTH_X-1 downto 0) := (others => '0');
-	signal y0, y1         		: std_logic_vector(WIDTH_Y-1 downto 0) := (others => '0');
+	signal y, y0, y1         	: std_logic_vector(WIDTH_Y-1 downto 0) := (others => '0');
 	-- signal x : sfixed(3 downto -8);
 	-- signal y : sfixed(3 downto 0);
 
 	-- Lokalni “handshake” u TB:
 	signal out_ready : std_logic := '0';
 
-	file input_file  		: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xin_test.txt";
+	file input_file  		: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xin_test.txt";
+	file output_file  		: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xout_test.txt";
 	file output_file_0  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xout0_test.txt";
 	file output_file_1  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xout1_test.txt";
 
@@ -43,6 +44,7 @@ begin
 			clk2 => clk2,
 			rst => rst,
 			x   => x,
+			y 	=> y,
 			y0   => y0,
 			y1   => y1
 		);
@@ -87,11 +89,14 @@ begin
 
 
 	write_files : process(clk0)
-		variable L_0, L_1 : line;
+		variable L, L_0, L_1 : line;
 	begin
 		if falling_edge(clk0) then
 			if out_ready = '1' then
 				-- upis I izlaza
+				write(L, to_integer(signed(y)));
+				writeline(output_file, L);
+				
 				write(L_1, to_integer(signed(y0)));
 				writeline(output_file_0, L_1);
 				

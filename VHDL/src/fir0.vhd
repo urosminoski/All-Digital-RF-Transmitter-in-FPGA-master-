@@ -13,7 +13,7 @@ entity fir0 is
 		clk0, clk1, clk2 	: in std_logic;
 		rst 				: in  std_logic;
 		x      				: in  std_logic_vector(WIDTH_X-1 downto 0);
-		y0, y1      		: out std_logic_vector(WIDTH_Y-1 downto 0)
+		y, y0, y1      		: out std_logic_vector(WIDTH_Y-1 downto 0)
 	);
 end entity;
 
@@ -127,10 +127,15 @@ architecture rtl of fir0 is
 	signal add_ph0, 	add_ph1 	: add_array_t;
 	signal shift_ph0, 	shift_ph1 	: shift_array_t;
 	signal acc_ph0, 	acc_ph1 	: sfixed(N_INT downto N_FRAC_2);
-	signal y_ph0, 		y_ph1 		: sfixed(N_INT downto N_FRAC_2);
+	-- signal y_ph0, 		y_ph1 		: sfixed(N_INT downto N_FRAC_2);
 	
 	signal ph0_reg_clk1, ph1_reg_clk1	: sfixed(N_INT downto N_FRAC_2);
 	signal y_clk1 						: sfixed(N_INT downto N_FRAC_2);
+	
+	signal xen 	: std_logic := '0';
+	signal ph	: std_logic := '0';
+	
+	signal y_ph0, y_ph1 : std_logic_vector(WIDTH_Y-1 downto 0);
 	
 
 begin
@@ -141,10 +146,25 @@ begin
 			if rst = '1' then
 				x_sfixed <= (others => '0');
 			else
-				x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
+				if xen = '1' then
+					x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
+				end if;
 			end if;
 		end if;
 	end process;
+	
+	process(clk0)
+	begin
+		if rising_edge(clk0) then
+			if rst = '1' then
+				ph <= '0';
+			else
+				ph <= not ph;
+			end if;
+		end if;
+	end process;
+	
+	xen <= '1' when (ph = '0') else '0';
 	
 	-- Phase 0
 	gen_mul_ph0: for i in 0 to N-1 generate
@@ -158,10 +178,12 @@ begin
 			if rst = '1' then
 				shift_ph0 <= (others => (others => '0'));
 			else
-				for i in 0 to N-3 loop
-					shift_ph0(i) <= resize(shift_ph0(i+1) + mul_ph0(i+1), shift_ph0(i)'high, shift_ph0(i)'low); --add_out(i+1); 
-				end loop;
-				shift_ph0(N-2) <= mul_ph0(N-1); --add_out(C_NUM_TAMPS-1)
+				if xen = '1' then
+					for i in 0 to N-3 loop
+						shift_ph0(i) <= resize(shift_ph0(i+1) + mul_ph0(i+1), shift_ph0(i)'high, shift_ph0(i)'low); --add_out(i+1); 
+					end loop;
+					shift_ph0(N-2) <= mul_ph0(N-1); --add_out(C_NUM_TAMPS-1)
+				end if;
 			end if;
 		end if;
 	end process;
@@ -180,18 +202,54 @@ begin
 			if rst = '1' then
 				shift_ph1 <= (others => (others => '0'));
 			else
-				for i in 0 to N-3 loop
-					shift_ph1(i) <= resize(shift_ph1(i+1) + mul_ph1(i+1), shift_ph1(i)'high, shift_ph1(i)'low); --add_out(i+1); 
-				end loop;
-				shift_ph1(N-2) <= mul_ph1(N-1); --add_out(C_NUM_TAMPS-1)
+				if xen = '1' then
+					for i in 0 to N-3 loop
+						shift_ph1(i) <= resize(shift_ph1(i+1) + mul_ph1(i+1), shift_ph1(i)'high, shift_ph1(i)'low); --add_out(i+1); 
+					end loop;
+					shift_ph1(N-2) <= mul_ph1(N-1); --add_out(C_NUM_TAMPS-1)
+				end if;
 			end if;
 		end if;
 	end process;
 
 	acc_ph1 <= resize(shift_ph1(0) + mul_ph1(0), acc_ph1'high, acc_ph1'low); -- add_out(0);
 	
-	y0 <= to_slv(acc_ph0);
-	y1 <= to_slv(acc_ph1);
+	process(clk0)
+	begin
+		if rising_edge(clk0) then
+			if rst = '1' then
+				y_ph0 <= (others => '0');
+				y_ph1 <= (others => '0');
+			else
+				if xen = '1' then
+					y_ph0 <= to_slv(acc_ph0);
+					y_ph1 <= to_slv(acc_ph1);
+				end if;
+			end if;
+		end if;
+	end process;
+	
+	process(clk0)
+	begin
+		if rising_edge(clk0) then
+			if rst = '1' then
+				y 	<= (others => '0');
+				y0 	<= (others => '0');
+				y1 	<= (others => '0');
+			else
+				if xen = '1' then
+					y0 <= y_ph0;
+					y1 <= y_ph1;
+				end if;
+				
+				if ph = '0' then
+					y <= y_ph0;
+				else
+					y <= y_ph1;
+				end if;
+			end if;
+		end if;
+	end process;
 	
 	-- process(clk0)
 	-- begin
