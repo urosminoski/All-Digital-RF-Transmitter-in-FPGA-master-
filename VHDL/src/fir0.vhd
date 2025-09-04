@@ -242,7 +242,7 @@ begin
 					y1 <= y_ph1;
 				end if;
 				
-				if ph = '0' then
+				if ph = '1' then
 					y <= y_ph0;
 				else
 					y <= y_ph1;
