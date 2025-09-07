@@ -93,7 +93,7 @@ begin
 		variable L : line;
 	begin
 		if falling_edge(clk) then
-			if out_ready = '1' and (tb_cnt = "000" or tb_cnt = "100") then
+			if out_ready = '1' and (tb_cnt = "000" or tb_cnt = "100" or tb_cnt = "010" or tb_cnt = "110") then
 				-- upis I izlaza
 				write(L, to_integer(signed(xout)));
 				writeline(output_file, L);

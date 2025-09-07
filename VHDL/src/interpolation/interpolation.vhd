@@ -143,6 +143,6 @@ begin
 			vout       	=> v2
 		);
 		
-	xout <= x0;
+	xout <= x1;
 
 end architecture;

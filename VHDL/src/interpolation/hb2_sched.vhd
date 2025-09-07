@@ -59,6 +59,8 @@ architecture rtl of hb2_sched is
 
 	signal fire0       : std_logic;
 	signal fire1       : std_logic;
+	
+	signal tmp1, tmp2 : unsigned(2 downto 0);
 
 	function add_mod8(a : unsigned(2 downto 0); b : natural) return unsigned is
 		variable tmp : natural := to_integer(a) + b;
@@ -102,7 +104,7 @@ begin
 				seed_cnt <= (others => '0');
 			elsif seed='1' then
 				xin_sf   <= to_sfixed(xin, xin_sf'high, xin_sf'low);
-				seed_cnt <= frame_u;
+				seed_cnt <= add_mod8(frame_u, 1);
 			end if;
 		end if;
 	end process;
@@ -163,7 +165,10 @@ begin
 			end if;
 		end if;
 	end process;
-
+	
+	tmp1 <= add_mod8(seed_cnt, OFF0);
+	tmp2 <= add_mod8(seed_cnt, OFF1);
+	
 	-- fire = seed+OFF (mod 8) i izbacivanje
 	fire0 <= '1' when frame_u = add_mod8(seed_cnt, OFF0) else '0';
 	fire1 <= '1' when frame_u = add_mod8(seed_cnt, OFF1) else '0';
