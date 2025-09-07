@@ -14,9 +14,9 @@ architecture tb of tb_interpolation is
 	constant C_CLK_FREQ   : integer := 150_000_000;
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 	
-	constant XIN_WIDTH	: integer := 12;
+	constant XIN_WIDTH	: integer := 15;
 	constant COEF_L		: integer := 15;
-	constant INT 		: integer := 5;
+	constant INT 		: integer := 2;
 	constant FRAC 		: integer := XIN_WIDTH + COEF_L;
 
 	signal clk   		: std_logic := '0';
