@@ -44,7 +44,8 @@ begin
 			clk 	=> clk,
 			rst 	=> rst,
 			xin   	=> xin,
-			xout   	=> xout
+			xout   	=> xout,
+			vout 	=> vout
 		);
 
 	clk <= not clk after C_CLK_PERIOD/2;
