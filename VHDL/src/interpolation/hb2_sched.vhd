@@ -12,6 +12,7 @@ entity hb2_sched is
 		COEF_L		: integer := 15;
 		INT			: integer := 1;
 		FRAC		: integer := 26;
+		XWIDTH		: integer := 12;
 		NUM_TAPS   	: integer := 42;  -- ef. dužina u ovoj instanci (padujemo nulama ako treba)
 		OFF0       	: integer := 0;   -- seed+OFF0 -> ph0 (even)
 		OFF1       	: integer := 4    -- seed+OFF1 -> ph1 (odd)
@@ -21,8 +22,8 @@ entity hb2_sched is
 		rst        : in  std_logic;
 		seed       : in  std_logic;                  -- 1 clk: novi ulaz za stejdž
 		frame_cnt  : in  std_logic_vector(2 downto 0); -- 0..7 @ 8*fs
-		xin        : in  std_logic_vector((INT+FRAC) downto 0);
-		xout       : out std_logic_vector((INT+FRAC) downto 0);
+		xin        : in  std_logic_vector(XWIDTH-1 downto 0);
+		xout       : out std_logic_vector(XWIDTH-1 downto 0);
 		vout       : out std_logic                   -- 1 clk kada je xout valid
 	);
 end entity;
@@ -39,7 +40,7 @@ architecture rtl of hb2_sched is
 	signal frame_u     : unsigned(2 downto 0);
 	signal seed_cnt    : unsigned(2 downto 0) := (others => '0');
 
-	signal xin_sf      : sfixed(0 downto -(INT+FRAC)) := (others => '0');
+	signal xin_sf      : sfixed(0 downto -(XWIDTH-1)) := (others => '0');
 
 	signal coef_ph0    : coef_vec_t;
 	signal coef_ph1    : coef_vec_t;
@@ -53,8 +54,8 @@ architecture rtl of hb2_sched is
 	signal acc_ph0     : acc_t;
 	signal acc_ph1     : acc_t;
 
-	signal y_ph0_buf   : std_logic_vector((INT+FRAC) downto 0) := (others => '0');
-	signal y_ph1_buf   : std_logic_vector((INT+FRAC) downto 0) := (others => '0');
+	signal y_ph0_buf   : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal y_ph1_buf   : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 
 	signal fire0       : std_logic;
 	signal fire1       : std_logic;
@@ -157,8 +158,8 @@ begin
 				y_ph0_buf <= (others => '0');
 				y_ph1_buf <= (others => '0');
 			elsif seed='1' then
-				y_ph0_buf <= to_slv(acc_ph0);
-				y_ph1_buf <= to_slv(acc_ph1);
+				y_ph0_buf <= to_slv(resize(acc_ph0, 0, -(XWIDTH-1)));
+				y_ph1_buf <= to_slv(resize(acc_ph1, 0, -(XWIDTH-1)));
 			end if;
 		end if;
 	end process;

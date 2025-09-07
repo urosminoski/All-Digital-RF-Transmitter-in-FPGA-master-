@@ -14,15 +14,15 @@ architecture tb of tb_interpolation is
 	constant C_CLK_FREQ   : integer := 150_000_000;
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 	
-	constant XIN_WIDTH	: integer := 15;
+	constant XWIDTH		: integer := 15;
 	constant COEF_L		: integer := 15;
 	constant INT 		: integer := 2;
-	constant FRAC 		: integer := XIN_WIDTH + COEF_L;
+	constant FRAC 		: integer := XWIDTH + COEF_L;
 
 	signal clk   		: std_logic := '0';
 	signal rst      	: std_logic := '1';
-	signal xin        	: std_logic_vector(XIN_WIDTH-1 downto 0) := (others => '0');
-	signal xout       	: std_logic_vector((INT+FRAC) downto 0) := (others => '0');
+	signal xin        	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xout       	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 	
 	signal tb_cnt 		: unsigned(2 downto 0) := (others => '0');
 
@@ -35,7 +35,7 @@ begin
 	uut: entity work.osr8
 		generic map (
 			COEF_L		=> COEF_L,
-			XIN_WIDTH	=> XIN_WIDTH,
+			XWIDTH		=> XWIDTH,
 			INT  		=> INT,
 			FRAC 		=> FRAC
 		)
@@ -64,7 +64,7 @@ begin
 	read_files : process(clk)
 		variable L : line;
 		variable r : real;
-		variable s : sfixed(0 downto -(XIN_WIDTH-1));
+		variable s : sfixed(0 downto -(XWIDTH-1));
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
