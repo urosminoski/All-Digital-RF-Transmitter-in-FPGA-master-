@@ -13,59 +13,71 @@ end entity;
 architecture tb of tb_interpolation is
 	constant C_CLK_FREQ   : integer := 150_000_000;
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
+	
+	constant XIN_WIDTH	: integer := 12;
+	constant COEF_L		: integer := 15;
+	constant INT 		: integer := 5;
+	constant FRAC 		: integer := XIN_WIDTH + COEF_L;
 
-	signal clk0, clk1, clk2   	: std_logic := '0';
-	signal rst       			: std_logic := '1';
-	signal x         			: std_logic_vector(11 downto 0) := (others => '0');
-	signal y         			: std_logic_vector(27 downto 0) := (others => '0');
-	-- signal x : sfixed(3 downto -8);
-	-- signal y : sfixed(3 downto 0);
+	signal clk   		: std_logic := '0';
+	signal rst      	: std_logic := '1';
+	signal xin        	: std_logic_vector(XIN_WIDTH-1 downto 0) := (others => '0');
+	signal xout       	: std_logic_vector((INT+FRAC) downto 0) := (others => '0');
+	
+	signal tb_cnt 		: unsigned(2 downto 0) := (others => '0');
 
-	-- Lokalni “handshake” u TB:
 	signal out_ready : std_logic := '0';
 
 	file input_file  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xin_test.txt";
 	file output_file  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xout_test.txt";
 
 begin
-	uut: entity work.interpolation
+	uut: entity work.osr8
+		generic map (
+			COEF_L		=> COEF_L,
+			XIN_WIDTH	=> XIN_WIDTH,
+			INT  		=> INT,
+			FRAC 		=> FRAC
+		)
 		port map (
-			clk0 => clk0,
-			clk1 => clk1,
-			clk2 => clk2,
-			rst => rst,
-			x   => x,
-			y   => y
+			clk 	=> clk,
+			rst 	=> rst,
+			xin   	=> xin,
+			xout   	=> xout
 		);
 
-	clk0 <= not clk0 after C_CLK_PERIOD/2;
-	clk1 <= not clk1 after C_CLK_PERIOD/4;
+	clk <= not clk after C_CLK_PERIOD/2;
+	
 	rst <= '0' after 6*C_CLK_PERIOD;
 	
-	read_files : process(clk0)
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst='1' then
+				tb_cnt <= (others => '0');
+			else
+				tb_cnt <= tb_cnt + 1;
+			end if;
+		end if;
+	end process;
+	
+	read_files : process(clk)
 		variable L : line;
 		variable r : real;
-		variable s : sfixed(0 downto -11);
+		variable s : sfixed(0 downto -(XIN_WIDTH-1));
 	begin
-		if rising_edge(clk0) then
+		if rising_edge(clk) then
 			if rst = '1' then
-				x        <= (others => '0');
-				out_ready <= '0';
-			else
+				xin        	<= (others => '0');
+				out_ready 	<= '0';
+			elsif tb_cnt = "000" then
 				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
 				if (not endfile(input_file))then
 					-- I kanal
 					readline(input_file, L);
 					read(L, r);
 					s := to_sfixed(r, s'high, s'low);
-
-					-- Izlazi (ako su xi/xq tipa std_logic_vector)
-					x <= to_slv(s);
-
-					-- Ako su xi/xq sfixed tipa, umesto prethodne dve linije uradi:
-					-- xi <= s_i; 
-					-- xq <= s_q;
-
+					xin <= to_slv(s);
 					out_ready <= '1';
 				else
 					out_ready <= '0';
@@ -77,13 +89,13 @@ begin
 	end process;
 
 
-	write_files : process(clk1)
+	write_files : process(clk)
 		variable L : line;
 	begin
-		if falling_edge(clk1) then
+		if falling_edge(clk) then
 			if out_ready = '1' then
 				-- upis I izlaza
-				write(L, to_integer(signed(y)));
+				write(L, to_integer(signed(xout)));
 				writeline(output_file, L);
 			end if;
 		end if;

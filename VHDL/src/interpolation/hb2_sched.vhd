@@ -8,32 +8,29 @@ use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
 
 entity hb2_sched is
 	generic(
-		STAGE_ID   : integer := 0;   -- 0,1,2
-		XIN_WIDTH  : integer := 12;
-		XOUT_WIDTH : integer := 28;
-		NUM_TAPS   : integer := 42;  -- ef. dužina u ovoj instanci (padujemo nulama ako treba)
-		OFF0       : integer := 0;   -- seed+OFF0 -> ph0 (even)
-		OFF1       : integer := 4    -- seed+OFF1 -> ph1 (odd)
+		STAGE_ID   	: integer := 0;   -- 0,1,2
+		COEF_L		: integer := 15;
+		INT			: integer := 1;
+		FRAC		: integer := 26;
+		NUM_TAPS   	: integer := 42;  -- ef. dužina u ovoj instanci (padujemo nulama ako treba)
+		OFF0       	: integer := 0;   -- seed+OFF0 -> ph0 (even)
+		OFF1       	: integer := 4    -- seed+OFF1 -> ph1 (odd)
 	);
 	port(
 		clk        : in  std_logic;
 		rst        : in  std_logic;
 		seed       : in  std_logic;                  -- 1 clk: novi ulaz za stejdž
 		frame_cnt  : in  std_logic_vector(2 downto 0); -- 0..7 @ 8*fs
-		xin        : in  std_logic_vector(XIN_WIDTH-1 downto 0);
-		xout       : out std_logic_vector(XOUT_WIDTH-1 downto 0);
+		xin        : in  std_logic_vector((INT+FRAC) downto 0);
+		xout       : out std_logic_vector((INT+FRAC) downto 0);
 		vout       : out std_logic                   -- 1 clk kada je xout valid
 	);
 end entity;
 
 architecture rtl of hb2_sched is
-	-- format
-	constant COEF_L  : integer := -15;                              -- frac koefova
-	constant ACC_INT : integer := 0;
-	constant ACC_L   : integer := -(XOUT_WIDTH - 1 - ACC_INT);
 
-	subtype coef_t is sfixed(0 downto COEF_L);
-	subtype acc_t  is sfixed(ACC_INT downto ACC_L);
+	subtype coef_t is sfixed(0 downto -COEF_L);
+	subtype acc_t  is sfixed(INT downto -FRAC);
 
 	type coef_vec_t  is array (0 to NUM_TAPS-1) of coef_t;
 	type mul_vec_t   is array (0 to NUM_TAPS-1) of acc_t;
@@ -42,7 +39,7 @@ architecture rtl of hb2_sched is
 	signal frame_u     : unsigned(2 downto 0);
 	signal seed_cnt    : unsigned(2 downto 0) := (others => '0');
 
-	signal xin_sf      : sfixed(0 downto -(XIN_WIDTH-1)) := (others => '0');
+	signal xin_sf      : sfixed(0 downto -(INT+FRAC)) := (others => '0');
 
 	signal coef_ph0    : coef_vec_t;
 	signal coef_ph1    : coef_vec_t;
@@ -56,8 +53,8 @@ architecture rtl of hb2_sched is
 	signal acc_ph0     : acc_t;
 	signal acc_ph1     : acc_t;
 
-	signal y_ph0_buf   : std_logic_vector(XOUT_WIDTH-1 downto 0) := (others => '0');
-	signal y_ph1_buf   : std_logic_vector(XOUT_WIDTH-1 downto 0) := (others => '0');
+	signal y_ph0_buf   : std_logic_vector((INT+FRAC) downto 0) := (others => '0');
+	signal y_ph1_buf   : std_logic_vector((INT+FRAC) downto 0) := (others => '0');
 
 	signal fire0       : std_logic;
 	signal fire1       : std_logic;
@@ -74,24 +71,24 @@ begin
 	gen_s0: if STAGE_ID = 0 generate
 		gen_s0_i: for i in 0 to NUM_TAPS-1 generate
 		begin
-			coef_ph0(i) <= to_sfixed(FIR0_PH0_R(i), 0, COEF_L);
-			coef_ph1(i) <= to_sfixed(FIR0_PH1_R(i), 0, COEF_L);
+			coef_ph0(i) <= to_sfixed(FIR0_PH0_R(i), 0, -COEF_L);
+			coef_ph1(i) <= to_sfixed(FIR0_PH1_R(i), 0, -COEF_L);
 		end generate;
 	end generate;
 
 	gen_s1: if STAGE_ID = 1 generate
 		gen_s1_i: for i in 0 to NUM_TAPS-1 generate
 		begin
-			coef_ph0(i) <= to_sfixed(FIR1_PH0_R(i), 0, COEF_L);
-			coef_ph1(i) <= to_sfixed(FIR1_PH1_R(i), 0, COEF_L);
+			coef_ph0(i) <= to_sfixed(FIR1_PH0_R(i), 0, -COEF_L);
+			coef_ph1(i) <= to_sfixed(FIR1_PH1_R(i), 0, -COEF_L);
 		end generate;
 	end generate;
 
 	gen_s2: if STAGE_ID = 2 generate
 		gen_s2_i: for i in 0 to NUM_TAPS-1 generate
 		begin
-			coef_ph0(i) <= to_sfixed(FIR2_PH0_R(i), 0, COEF_L);
-			coef_ph1(i) <= to_sfixed(FIR2_PH1_R(i), 0, COEF_L);
+			coef_ph0(i) <= to_sfixed(FIR2_PH0_R(i), 0, -COEF_L);
+			coef_ph1(i) <= to_sfixed(FIR2_PH1_R(i), 0, -COEF_L);
 		end generate;
 	end generate;
 
