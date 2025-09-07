@@ -174,7 +174,7 @@ begin
 	fire1 <= '1' when frame_u = add_mod8(seed_cnt, OFF1) else '0';
 
 
-	gen_out0: if STAGE_ID = 0 or STAGE_ID = 2 generate
+	gen_out0: if STAGE_ID = 0 generate
 		process(clk)
 		begin
 			if rising_edge(clk) then
@@ -195,7 +195,7 @@ begin
 		end process;
 	end generate;
 	
-	gen_out1: if STAGE_ID = 1 generate
+	gen_out1: if STAGE_ID = 1 or STAGE_ID = 2 generate
 		process(clk)
 		begin
 			if rising_edge(clk) then
