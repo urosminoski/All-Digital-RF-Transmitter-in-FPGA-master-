@@ -176,10 +176,10 @@ begin
 			else
 				vout <= '0';
 				if fire0='1' then
-					xout <= y_ph0_buf;  -- ph0
+					xout <= y_ph1_buf;  -- ph0
 					vout <= '1';
 				elsif fire1='1' then
-					xout <= y_ph1_buf;  -- ph1
+					xout <= y_ph0_buf;  -- ph1
 					vout <= '1';
 				end if;
 			end if;
