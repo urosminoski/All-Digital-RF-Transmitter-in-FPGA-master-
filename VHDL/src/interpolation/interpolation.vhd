@@ -17,7 +17,8 @@ entity osr8 is
 		clk   	: in  std_logic;
 		rst   	: in  std_logic;
 		xin  	: in  std_logic_vector(XWIDTH-1 downto 0);
-		xout	: out std_logic_vector(XWIDTH-1 downto 0)
+		xout	: out std_logic_vector(XWIDTH-1 downto 0);
+		vout 	: out std_logic
 	);
 end entity;
 
@@ -144,5 +145,6 @@ begin
 		);
 		
 	xout <= x1;
+	vout <= v1;
 
 end architecture;

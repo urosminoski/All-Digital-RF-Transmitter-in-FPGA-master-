@@ -23,6 +23,7 @@ architecture tb of tb_interpolation is
 	signal rst      	: std_logic := '1';
 	signal xin        	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 	signal xout       	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal vout 		: std_logic := '0';
 	
 	signal tb_cnt 		: unsigned(2 downto 0) := (others => '0');
 
@@ -93,7 +94,7 @@ begin
 		variable L : line;
 	begin
 		if falling_edge(clk) then
-			if out_ready = '1' and (tb_cnt = "000" or tb_cnt = "100" or tb_cnt = "010" or tb_cnt = "110") then
+			if out_ready = '1' and vout = '1' then
 				-- upis I izlaza
 				write(L, to_integer(signed(xout)));
 				writeline(output_file, L);
