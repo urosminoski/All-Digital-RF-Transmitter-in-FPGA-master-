@@ -73,7 +73,7 @@ begin
 	read_files : process(clk)
 		variable L_i, L_q : line;
 		variable r_i, r_q : real;
-		variable s_i, s_q : sfixed(3 downto -8);
+		variable s_i, s_q : sfixed(0 downto -(XWIDTH-1));
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
