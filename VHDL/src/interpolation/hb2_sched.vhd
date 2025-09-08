@@ -166,8 +166,8 @@ begin
 		end if;
 	end process;
 	
-	tmp1 <= add_mod8(seed_cnt, OFF0);
-	tmp2 <= add_mod8(seed_cnt, OFF1);
+	-- tmp1 <= add_mod8(seed_cnt, OFF0);
+	-- tmp2 <= add_mod8(seed_cnt, OFF1);
 	
 	-- fire = seed+OFF (mod 8) i izbacivanje
 	fire0 <= '1' when frame_u = add_mod8(seed_cnt, OFF0) else '0';
