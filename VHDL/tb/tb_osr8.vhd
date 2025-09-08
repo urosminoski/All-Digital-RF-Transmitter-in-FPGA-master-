@@ -28,7 +28,8 @@ architecture tb of tb_osr8 is
 	signal vout_i 		: std_logic := '0';
 	signal vout_q 		: std_logic := '0';
 	
-	signal out_ready : std_logic := '0';
+	signal tb_cnt 		: unsigned(2 downto 0) := (others => '0');
+	signal out_ready 	: std_logic := '0';
 
 	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xin_i_test.txt";
 	file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\interpolation_test\xin_q_test.txt";
@@ -70,6 +71,17 @@ begin
 	
 	rst <= '0' after 6*C_CLK_PERIOD;
 	
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst='1' then
+				tb_cnt <= (others => '0');
+			else
+				tb_cnt <= tb_cnt + 1;
+			end if;
+		end if;
+	end process;
+	
 	read_files : process(clk)
 		variable L_i, L_q : line;
 		variable r_i, r_q : real;
@@ -80,7 +92,7 @@ begin
 				xin_i   	<= (others => '0');
 				xin_q   	<= (others => '0');
 				out_ready 	<= '0';
-			else
+			elsif tb_cnt = "000" then
 				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
 				if (not endfile(input_file_i)) and (not endfile(input_file_q)) then
 					-- I kanal
