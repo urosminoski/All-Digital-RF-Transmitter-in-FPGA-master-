@@ -115,7 +115,7 @@ begin
 	write_files : process(clk)
 		variable L_i, L_q : line;
 	begin
-		if falling_edge(clk) then
+		if rising_edge(clk) then
 			if out_ready = '1' then
 				-- upis I izlaza
 				write(L_i, to_integer(signed(xout_i)));
