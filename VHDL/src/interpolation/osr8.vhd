@@ -37,15 +37,15 @@ architecture rtl of osr8 is
 	constant NUM_TAPS1 : integer := FIR1_N;
 	constant NUM_TAPS2 : integer := FIR2_N;
 	
-	constant XWIDTH_HB2 : integer := INT+FRAC;
+	constant XWIDTH_HB2 : integer := INT+FRAC+1;
 
 	signal frame_cnt : std_logic_vector(2 downto 0) := (others => '0');
 	
-	signal x0, x1, x2 	: std_logic_vector(XWIDTH-1 downto 0);
+	signal x0, x1, x2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
 	signal v0, v1, v2 	: std_logic;
 	signal seed 		: std_logic;
 	
-	signal xin_hb2 	: std_logic_vector(INT+FRAC downto 0);
+	signal xin_hb2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
 
 begin
 
@@ -70,8 +70,8 @@ begin
 	
 	xin_hb2 <= to_slv(
 		resize(
-			to_sfixed(xin, 0, -(XWIDTH-1)),  	-- interpretiraj ulaz kao Q(0.(W-1))
-			INT, -FRAC                          -- proširi na Q(INT.FRAC) (round/trunc po defaultu)
+			to_sfixed(xin, 0, -(XWIDTH-1)),  		-- interpretiraj ulaz kao Q(0.(W-1))
+			INT, -FRAC                          	-- proširi na Q(INT.FRAC) (round/trunc po defaultu)
 		)
 	);
 	
@@ -92,7 +92,7 @@ begin
 			rst        	=> rst,
 			seed       	=> seed,
 			frame_cnt  	=> frame_cnt,
-			xin        	=> xin,
+			xin        	=> xin_hb2,
 			xout       	=> x0,
 			vout       	=> v0
 		);
@@ -144,8 +144,8 @@ begin
 	vout <= v2;
 	xout <= to_slv(
 		resize(
-			to_sfixed(xin, INT, -FRAC),
-			0, XWIDTH
+			to_sfixed(x2, INT, -FRAC),
+			0, -(XWIDTH-1)
 		)
 	);
 
