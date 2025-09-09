@@ -13,7 +13,8 @@ entity delay is
 		XWIDTH		: integer := 12;
 		INT  		: integer := 1;
 		FRAC 		: integer := 26;
-		NUM_TAPS   	: integer := 7
+		NUM_TAPS   	: integer := 7;
+		DELTA		: real := 0.5
 	);
 	port(
 		clk, rst 	: in  std_logic;
@@ -41,7 +42,7 @@ architecture rtl of delay is
 	
 	signal xout_d : sfixed(INT downto -FRAC);
 	
-	signal f	: sfixed(0 downto -(INT+FRAC)) := to_sfixed(1/8/8/32, 0, -(INT+FRAC));
+	signal f	: sfixed(0 downto -(INT+FRAC)) := to_sfixed(DELTA, 0, -(INT+FRAC));
 
 begin
 

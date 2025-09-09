@@ -20,6 +20,8 @@ architecture tb of tb_delay is
 	constant INT 		: integer := 0;
 	constant FRAC 		: integer := XWIDTH + COEF_L;
 	constant NUM_TAPS	: integer := 7;
+	constant DELTA_i 	: real := -0.00048828125;
+	constant DELTA_q 	: real := 0.00048828125;
 
 	signal clk   		: std_logic := '0';
 	signal rst      	: std_logic := '1';
@@ -34,7 +36,7 @@ architecture tb of tb_delay is
 
 	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_test.txt";
 	-- file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_q_test.txt";
-	file output_file_i  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_test.txt";
+	file output_file_i  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_i_test.txt";
 	-- file output_file_q  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_q_test.txt";
 
 begin
@@ -45,19 +47,34 @@ begin
 			XWIDTH		=> XWIDTH,
 			INT  		=> INT,
 			FRAC 		=> FRAC,
-			NUM_TAPS	=> NUM_TAPS
+			NUM_TAPS	=> NUM_TAPS,
+			DELTA		=> DELTA_i
 		)
 		port map (
 			clk 	=> clk,
 			rst 	=> rst,
 			en 		=> en,
 			xin   	=> xin_i,
-			-- xin_q   => xin_q,
 			xout	=> xout_i
-			-- xout_q	=> xout_q
 		);
-
-	en <= '1';
+		
+	-- uut_q: entity work.delay
+		-- generic map (
+			-- KERNEL_ID	=> KERNEL_ID,
+			-- COEF_L		=> COEF_L,
+			-- XWIDTH		=> XWIDTH,
+			-- INT  		=> INT,
+			-- FRAC 		=> FRAC,
+			-- NUM_TAPS	=> NUM_TAPS,
+			-- DELTA		=> DELTA_q
+		-- )
+		-- port map (
+			-- clk 	=> clk,
+			-- rst 	=> rst,
+			-- en 		=> en,
+			-- xin   	=> xin_q,
+			-- xout	=> xout_q
+		-- );
 	
 	clk <= not clk after C_CLK_PERIOD/2;
 	
@@ -84,6 +101,7 @@ begin
 				xin_i   	<= (others => '0');
 				xin_q   	<= (others => '0');
 				out_ready 	<= '0';
+				en 			<= '0';
 			elsif tb_cnt = "000" then
 				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
 				if (not endfile(input_file_i)) then--and (not endfile(input_file_q)) then
@@ -101,12 +119,17 @@ begin
 					xin_i <= to_slv(s_i);
 					-- xin_q <= to_slv(s_q);
 
-					out_ready <= '1';
+					out_ready	<= '1';
+					en 			<= '1';
 				else
-					out_ready <= '0';
+					out_ready 	<= '0';
+					en 			<= '0';
 					report "Kraj jednog od fajlova - simulacija se zaustavlja." severity note;
 					std.env.stop;  -- VHDL-2008
 				end if;
+			else
+				out_ready 	<= '0';
+				en 			<= '0';
 			end if;
 		end if;
 	end process;
