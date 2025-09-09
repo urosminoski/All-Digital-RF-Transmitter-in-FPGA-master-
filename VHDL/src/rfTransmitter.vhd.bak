@@ -94,7 +94,7 @@ begin
 			rst		=> rst, 
 			en		=> delay_en, 		
 			xin		=> xin_q,
-			xout	=> xout_q_delay      
+			xout	=> xout_q_delay,       
 		);
 
 	ds_factor <= to_sfixed(30, ds_factor'high, ds_factor'low);
@@ -109,7 +109,7 @@ begin
 		port map (
 			clk 	=> clk,
 			rst 	=> rst,
-			xin   	=> xout_i_delay,
+			xin   	=> xin_i,
 			xout   	=> xout_i_osr8,
 			vout 	=> vout_i
 		);
@@ -124,7 +124,7 @@ begin
 		port map (
 			clk 	=> clk,
 			rst 	=> rst,
-			xin   	=> xout_q_delay,
+			xin   	=> xin_q,
 			xout   	=> xout_q_osr8,
 			vout 	=> vout_q
 		);
