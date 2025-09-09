@@ -25,8 +25,8 @@ end entity;
 
 architecture rtl of rfTransmitter is
 
-	constant DELTA_I : real := -0.00048828125;
-	constant DELTA_Q : real := 0.00048828125;
+	constant DELTA_I : real := -0.125;
+	constant DELTA_Q : real := 0.125;
 
 	signal ds_factor	: sfixed(4 downto -(XWIDTH-5));
 	signal xi, xq 		: sfixed(3 downto -(XWIDTH-4));
