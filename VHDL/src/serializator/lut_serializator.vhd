@@ -100,9 +100,11 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			xout <= row_reg(to_integer(col));
+			bit_reg <= row_reg(to_integer(col));
 		end if;
 	end process;
+	
+	xout <= bit_reg;
 		
 end architecture;
 
