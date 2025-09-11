@@ -1,5 +1,3 @@
-
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -65,7 +63,7 @@ architecture rtl of lut_serializer is
 	end function;
 
 	signal running  : std_logic := '0';
-	signal col      : unsigned(N-1 downto 0) := (others => '0');
+	signal col      : unsigned(31 downto 0) := (others => '0');  -- šire, pa ograničiti na N
 	signal row_idx  : unsigned(XWIDTH-1 downto 0) := (others => '0');
 	signal row_reg  : std_logic_vector(N-1 downto 0) := (others => '0');
 	signal bit_reg  : std_logic := '0';
@@ -73,38 +71,46 @@ architecture rtl of lut_serializer is
 begin
 
 	process(clk)
-		variable row_idx_v : unsigned(XWIDTH-1 downto 0) := (others => '0');
+		variable running_v	: std_logic := '0';
+		variable k 			: integer := 0;
+		variable row_idx_v 	: unsigned(XWIDTH-1 downto 0) := (others => '0');
+		variable row_reg_v 	: std_logic_vector(N-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
-				row_idx_v 	:= (others => '0');
-				row_reg 	<= (others => '0');
-				col 		<= (others => '0');
+			
 			else
-				if enable = '1' then
-					row_idx_v 	:= map_row_index(xin);
-					row_reg 	<= get_row(to_integer(row_idx_v));
-					col 		<= (others => '0');
+				if running_v = '0' then
+					if enable = '1' then
+						row_idx_v 	:= map_row_index(xin);
+						row_reg_v 	:= get_row(to_integer(row_idx_v));
+						col 		<= (others => '0');
+						running_v	:= '1';
+					end if;
+					
 				else
-					if col = N-1 then
-						col <= (others => '0');
+					-- running: izbaci jedan bit po kloku
+					k := to_integer(col);
+					
+					bit_reg <= row_reg(k);
+				
+				
+				
+					-- Brojac kolona
+					if to_integer(col) = N-2 then
+						sym_tick 	<= '1';	-- kraj frame-a
+						col 		<= (others => '0');
+						running_v 	:= '0';
 					else
 						col <= col + 1;
 					end if;
 				end if;
 			end if;
 		end if;
+		xout 	<= bit_reg;
 		row_idx <= row_idx_v;
-	end process;
-	
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			xout <= row_reg(to_integer(col));
-		end if;
+		row_reg <= row_reg_v;
+		running <= running_v;
 	end process;
 		
 end architecture;
-
-
-
