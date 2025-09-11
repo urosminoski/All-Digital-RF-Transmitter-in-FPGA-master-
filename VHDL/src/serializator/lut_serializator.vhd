@@ -71,7 +71,9 @@ architecture rtl of lut_serializer is
 begin
 
 	process(clk)
-		variable k : integer := 0;
+		variable k 			: integer := 0;
+		variable row_idx_v 	: unsigned(XWIDTH-1 downto 0) := (others => '0');
+		variable row_reg_v 	: std_logic_vector(N-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
@@ -79,8 +81,8 @@ begin
 			else
 				if running = '0' then
 					if enable = '1' then
-						row_idx <= map_row_index(xin);
-						row_reg <= get_row(to_integer(row_idx));
+						row_idx_v := map_row_index(xin);
+						row_reg_v := get_row(to_integer(row_idx_v));
 						col 	<= (others => '0');
 						running	<= '1';
 					end if;
@@ -102,7 +104,9 @@ begin
 				end if;
 			end if;
 		end if;
-		xout <= bit_reg;
+		xout 	<= bit_reg;
+		row_idx <= row_idx_v;
+		row_reg <= row_reg_v;
 	end process;
 		
 end architecture;
