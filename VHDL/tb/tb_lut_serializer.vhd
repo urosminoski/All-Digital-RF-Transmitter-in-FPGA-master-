@@ -105,11 +105,9 @@ begin
 		variable L : line;
 	begin
 		if rising_edge(clk) then
-			if out_ready = '1' then
-				-- upis I izlaza
-				write(L, xout);
-				writeline(output_file, L);
-			end if;
+			-- upis I izlaza
+			write(L, xout);
+			writeline(output_file, L);
 		end if;
 	end process;
 
