@@ -90,9 +90,9 @@ VU3ZQbQ4B@IJeSzig_[HOc2
 !s100 d6oh<mRJ]n3OU8QjISlbG0
 R2
 33
-Z11 !s110 1757606205
+Z11 !s110 1757606479
 !i10b 1
-Z12 !s108 1757606205.000000
+Z12 !s108 1757606479.000000
 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_pckg.vhd|
 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_pckg.vhd|
 !i113 1
@@ -116,11 +116,11 @@ VK[1IkYTAD5ZUV7^^:TzOY3
 !s100 ?Lm;l^CiTY<^R6g<F_]o81
 R2
 33
-R11
+!s110 1757606478
 !i10b 1
-R12
-Z20 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd|
-Z21 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd|
+Z20 !s108 1757606478.000000
+Z21 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd|
+Z22 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd|
 !i113 1
 R13
 R5
@@ -132,7 +132,7 @@ R6
 R7
 R9
 R8
-Z22 DEx4 work 14 lut_serializer 0 22 K[1IkYTAD5ZUV7^^:TzOY3
+Z23 DEx4 work 14 lut_serializer 0 22 K[1IkYTAD5ZUV7^^:TzOY3
 l71
 L24
 VbR5F@@>@^N[XFXIDdhN]e3
@@ -141,14 +141,14 @@ R2
 33
 R11
 !i10b 1
-R12
 R20
 R21
+R22
 !i113 1
 R13
 R5
 Etb_lut_serializer
-Z23 w1757606198
+Z24 w1757606468
 R16
 R17
 R6
@@ -156,8 +156,8 @@ R7
 R9
 R8
 R0
-Z24 8C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd
-Z25 FC:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd
+Z25 8C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd
+Z26 FC:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd
 l0
 L10
 V2agK97_dgdcndMBQ>l1D_1
@@ -167,33 +167,33 @@ R2
 R11
 !i10b 1
 R12
-Z26 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd|
-Z27 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd|
+Z27 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd|
+Z28 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd|
 !i113 1
 R13
 R5
 Atb
-Z28 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
+Z29 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
 R15
-R22
+R23
 R16
 R17
 R6
 R7
 R9
 R8
-Z29 DEx4 work 17 tb_lut_serializer 0 22 2agK97_dgdcndMBQ>l1D_1
+Z30 DEx4 work 17 tb_lut_serializer 0 22 2agK97_dgdcndMBQ>l1D_1
 l35
 L13
-Z30 VT=mUE]RXTUXzZ>;Kc4DTM2
-Z31 !s100 K30<TVMlg5HhgzN1>^CVg0
+VTD7YjcgiSPHZY@DUDhEE^0
+!s100 3DIm9ih?bITTgSY4<HnPG0
 R2
 33
 R11
 !i10b 1
 R12
-R26
 R27
+R28
 !i113 1
 R13
 R5

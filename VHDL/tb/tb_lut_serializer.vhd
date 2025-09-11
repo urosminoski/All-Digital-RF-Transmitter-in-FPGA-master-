@@ -15,7 +15,7 @@ architecture tb of tb_lut_serializer is
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 	
 	constant LUT_ID		: integer := 3;
-	constant XWIDTH		: integer := 12;
+	constant XWIDTH		: integer := 4;
 	
 	constant N : integer := 32;
 
