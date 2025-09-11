@@ -52,8 +52,8 @@ architecture rtl of lut_serializer is
 	end function;
 
 	-- mapiranje: d in [-(2^(XWIDTH-1)) .. +(2^(XWIDTH-1)-1)]
-	-- 	 -> u = d + 2^(XWIDTH-1)   (0..2^XWIDTH-1)
-	-- 	 -> flip da 0 mapira na max (+), a max mapira na min (-)
+		 -- -> u = d + 2^(XWIDTH-1)   (0..2^XWIDTH-1)
+		 -- -> flip da 0 mapira na max (+), a max mapira na min (-)
 	function map_row_index(d : std_logic_vector(XWIDTH-1 downto 0)) return unsigned is
 		constant BIAS : signed(XWIDTH-1 downto 0) := to_signed(2**(XWIDTH-1), XWIDTH);
 		variable u    : unsigned(XWIDTH-1 downto 0);
@@ -114,3 +114,96 @@ begin
 	end process;
 		
 end architecture;
+
+-- architecture rtl of lut_serializer is
+	-- type state_t is (IDLE, LOAD, SHIFT);
+	-- signal st      : state_t := IDLE;
+
+	-- function lut_len(id : integer) return natural is
+	-- begin
+		-- case id is
+			-- when 1 => return LUT1_LEN;
+			-- when 2 => return LUT2_LEN;
+			-- when 3 => return LUT3_LEN;
+			-- when 4 => return LUT4_LEN;
+			-- when 5 => return LUT5_LEN;
+			-- when others => return LUT1_LEN;
+		-- end case;
+	-- end function;
+
+	-- constant N : natural := lut_len(LUT_ID);
+
+	-- function get_row(idx : integer) return std_logic_vector is
+	-- begin
+		-- case LUT_ID is
+			-- when 1 => return LUT1_ROM(idx);
+			-- when 2 => return LUT2_ROM(idx);
+			-- when 3 => return LUT3_ROM(idx);
+			-- when 4 => return LUT4_ROM(idx);
+			-- when 5 => return LUT5_ROM(idx);
+			-- when others => return LUT1_ROM(idx);
+		-- end case;
+	-- end function;
+
+	-- function map_row_index(d : std_logic_vector(XWIDTH-1 downto 0)) return unsigned is
+		-- constant BIAS : signed(XWIDTH-1 downto 0) := to_signed(2**(XWIDTH-1), XWIDTH);
+		-- variable u    : unsigned(XWIDTH-1 downto 0);
+	-- begin
+		-- u := unsigned(signed(d) + BIAS);
+		-- return (to_unsigned(2**XWIDTH - 1, XWIDTH) - u);
+	-- end function;
+
+	-- signal row_idx  : unsigned(XWIDTH-1 downto 0) := (others => '0');
+	-- signal row_reg  : std_logic_vector(N-1 downto 0) := (others => '0');
+	-- signal col      : natural range 0 to N-1 := 0;
+
+	-- signal bit_reg  : std_logic := '0';
+-- begin
+	-- process(clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- st       <= IDLE;
+				-- col      <= 0;
+				-- row_idx  <= (others => '0');
+				-- row_reg  <= (others => '0');
+				-- bit_reg  <= '0';
+				-- sym_tick <= '0';
+
+			-- else
+				-- sym_tick <= '0';  -- default, pulse samo na kraju
+
+				-- case st is
+					-- when IDLE =>
+						-- if enable = '1' then
+							1. ciklus (LOAD): pripremi sve, još ne izbacuj bit
+							-- row_idx <= map_row_index(xin);
+							-- row_reg <= get_row(to_integer(map_row_index(xin)));
+							-- col     <= 0;
+							-- st      <= LOAD;
+						-- end if;
+
+					-- when LOAD =>
+						2. ciklus (SHIFT započinje): sada je row_reg registrovan => stabilan
+						-- bit_reg <= row_reg(0);
+						-- col     <= 1;        -- sledeći će biti indeks 1
+						-- st      <= SHIFT;
+
+					-- when SHIFT =>
+						-- bit_reg <= row_reg(col);
+
+						-- if col = N-1 then
+							upravo smo izbacili poslednji bit
+							-- sym_tick <= '1';
+							-- st       <= IDLE;  -- stani i čekaj sledeći enable
+							-- col      <= 0;
+						-- else
+							-- col <= col + 1;
+						-- end if;
+				-- end case;
+			-- end if;
+
+			-- xout <= bit_reg;
+		-- end if;
+	-- end process;
+-- end architecture;
