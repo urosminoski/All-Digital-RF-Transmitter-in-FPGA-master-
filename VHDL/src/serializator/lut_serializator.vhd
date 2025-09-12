@@ -18,8 +18,7 @@ entity lut_serializer is
 		rst      : in  std_logic;
 		enable   : in  std_logic;
 		xin      : in  std_logic_vector(XWIDTH-1 downto 0);
-		xout     : out std_logic;
-		sym_tick : out std_logic
+		xout     : out std_logic
 	);
 end entity;
 

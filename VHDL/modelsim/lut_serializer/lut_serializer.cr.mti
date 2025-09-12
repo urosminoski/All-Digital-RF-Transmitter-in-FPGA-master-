@@ -1,4 +1,11 @@
-C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd
+C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_pckg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_pckg.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling package lut_pkg
+
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_lut_serializer.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -14,12 +21,5 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Loading package lut_pkg
 -- Loading entity lut_serializer
 -- Loading package ENV
-
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_pckg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_pckg.vhd
-Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
--- Loading package STANDARD
--- Loading package TEXTIO
--- Loading package std_logic_1164
--- Compiling package lut_pkg
 
 } {} {}}

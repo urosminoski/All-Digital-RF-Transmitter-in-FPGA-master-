@@ -14,17 +14,22 @@ entity rfTransmitter is
 		FRAC 		: integer := 26
 	);
 	port(
-		clk   	: in  std_logic;
+		clk1   	: in  std_logic;
+		clk2  	: in  std_logic;
 		rst   	: in  std_logic;
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
-		xout_i	: out std_logic_vector(3 downto 0);
-		xout_q	: out std_logic_vector(3 downto 0)
+		-- xout_i	: out std_logic_vector(3 downto 0);
+		-- xout_q	: out std_logic_vector(3 downto 0)
+		xout_i	: out std_logic;
+		xout_q	: out std_logic
 	);
 end entity;
 
 architecture rtl of rfTransmitter is
 
+	constant LUT_ID : integer := 3;
+	
 	constant DELTA_I : real := -0.125;
 	constant DELTA_Q : real := 0.125;
 
@@ -41,12 +46,16 @@ architecture rtl of rfTransmitter is
 	
 	signal cnt 		: unsigned(2 downto 0) := (others => '0');
 	signal delay_en : std_logic := '0';
+	
+	signal xout_i_ds_clk2, xout_q_ds_clk2 	: std_logic_vector(3 downto 0) := (others => '0');
+	signal xout_i_lut_clk2, xout_q_lut_clk2	: std_logic := '0';
+	signal enable_i_clk2, enable_q_clk2		: std_logic := '0';
 
 begin
 
-	process(clk)
+	process(clk1)
 	begin
-		if rising_edge(clk) then
+		if rising_edge(clk1) then
 			if rst = '1' then
 				cnt <= (others => '0');
 			else
@@ -72,7 +81,7 @@ begin
 			DELTA		=> DELTA_I
 		)
 		port map (
-			clk		=> clk,
+			clk		=> clk1,
 			rst		=> rst, 
 			en		=> delay_en, 		
 			xin		=> xin_i,
@@ -90,7 +99,7 @@ begin
 			DELTA		=> DELTA_Q
 		)
 		port map (
-			clk		=> clk,
+			clk		=> clk1,
 			rst		=> rst, 
 			en		=> delay_en, 		
 			xin		=> xin_q,
@@ -107,9 +116,9 @@ begin
 			FRAC 		=> FRAC
 		)
 		port map (
-			clk 	=> clk,
+			clk 	=> clk1,
 			rst 	=> rst,
-			xin   	=> xout_i_delay,
+			xin   	=> xin_i, --xout_i_delay,
 			xout   	=> xout_i_osr8,
 			vout 	=> vout_i
 		);
@@ -122,9 +131,9 @@ begin
 			FRAC 		=> FRAC
 		)
 		port map (
-			clk 	=> clk,
+			clk 	=> clk1,
 			rst 	=> rst,
-			xin   	=> xout_q_delay,
+			xin   	=> xin_q, --xout_q_delay,
 			xout   	=> xout_q_osr8,
 			vout 	=> vout_q
 		);
@@ -137,7 +146,7 @@ begin
 	
 	deltaSigma_i: entity work.deltaSigma
 		port map (
-			clk		=> clk,
+			clk		=> clk1,
 			rst 	=> rst,
 			x 		=> xin_i_ds,
 			y		=> xout_i_ds
@@ -145,13 +154,69 @@ begin
 		
 	deltaSigma_q: entity work.deltaSigma
 		port map (
-			clk		=> clk,
+			clk		=> clk1,
 			rst 	=> rst,
 			x 		=> xin_q_ds,
 			y		=> xout_q_ds
 		);
+		
+		
+	cdc1_i : entity work.cdc_slowclk_to_fast
+		generic map (
+			XWIDTH => 4
+		)
+		port map (
+			clk_slow    => clk1,
+			rst_slow    => rst,
+			xin_slow    => xout_i_ds,
+			clk_fast    => clk2,
+			rst_fast    => rst,
+			xin_fast    => xout_i_ds_clk2,
+			enable_fast => enable_i_clk2
+		);
+		
+	cdc1_q : entity work.cdc_slowclk_to_fast
+		generic map (
+			XWIDTH => 4
+		)
+		port map (
+			clk_slow    => clk1,
+			rst_slow    => rst,
+			xin_slow    => xout_q_ds,
+			clk_fast    => clk2,
+			rst_fast    => rst,
+			xin_fast    => xout_q_ds_clk2,
+			enable_fast => enable_q_clk2
+		);
+		
+	
+	lut_ser_i : entity work.lut_serializer
+		generic map (
+			LUT_ID  => LUT_ID,
+			XWIDTH  => 4
+		)
+		port map (
+			clk      => clk2,
+			rst      => rst,
+			enable   => enable_i_clk2,
+			xin      => xout_i_ds_clk2,
+			xout     => xout_i_lut_clk2		
+		);
+		
+	lut_ser_q : entity work.lut_serializer
+		generic map (
+			LUT_ID  => LUT_ID,
+			XWIDTH  => 4
+		)
+		port map (
+			clk      => clk2,
+			rst      => rst,
+			enable   => enable_q_clk2,
+			xin      => xout_q_ds_clk2,
+			xout     => xout_q_lut_clk2		
+		);
 
-	xout_i <= xout_i_ds;
-	xout_q <= xout_q_ds;
+	xout_i <= xout_i_lut_clk2;
+	xout_q <= xout_q_lut_clk2;
 
 end architecture;
