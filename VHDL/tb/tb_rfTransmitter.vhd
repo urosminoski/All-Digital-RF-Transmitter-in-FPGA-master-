@@ -11,11 +11,14 @@ entity tb_rfTransmitter is
 end entity;
 
 architecture tb of tb_rfTransmitter is
-	constant C_CLK_FREQ   	: integer := 150_000_000;
-	constant C_CLK0_PERIOD 	: time    := 1 sec / C_CLK_FREQ;
-	constant C_CLK1_PERIOD 	: time    := C_CLK0_PERIOD/8;
-	constant C_CLK2_PERIOD 	: time    := C_CLK1_PERIOD/32;
-	constant C_CLK3_PERIOD 	: time    := C_CLK2_PERIOD/4;
+	constant C_CLK0_FREQ  	: integer := 100_000;
+	constant C_CLK1_FREQ  	: integer := 8*C_CLK0_FREQ;
+	constant C_CLK2_FREQ   	: integer := 32*C_CLK1_FREQ;
+	constant C_CLK3_FREQ   	: integer := 4*C_CLK2_FREQ;
+	constant C_CLK0_PERIOD 	: time    := 1 sec / C_CLK0_FREQ;
+	constant C_CLK1_PERIOD 	: time    := 1 sec / C_CLK1_FREQ;
+	constant C_CLK2_PERIOD 	: time    := 1 sec / C_CLK2_FREQ;
+	constant C_CLK3_PERIOD 	: time    := 1 sec / C_CLK3_FREQ;
 	
 	constant XWIDTH		: integer := 12;
 	constant COEF_L		: integer := 15;
