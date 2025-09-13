@@ -165,7 +165,7 @@ begin
 	write_stage1 : process(clk1)
 		variable L_i, L_q : line;
 	begin
-		if rising_edge(clk1) then
+		if falling_edge(clk1) then
 			if rst = '0' then
 				-- upis I izlaza
 				write(L_i, to_integer(signed(xout_i_stage1)));
@@ -181,7 +181,7 @@ begin
 	write_stage2 : process(clk2)
 		variable L_i, L_q : line;
 	begin
-		if rising_edge(clk2) then
+		if falling_edge(clk2) then
 			if rst = '0' then
 				-- upis I izlaza
 				write(L_i, xout_i_stage2);

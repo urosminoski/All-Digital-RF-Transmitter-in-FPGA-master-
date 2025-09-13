@@ -54,11 +54,9 @@ begin
 			if rst = '1' then
 				xin_i_stage1_s <= (others => '0');
 				xin_q_stage1_s <= (others => '0');
-			else
-				if stage1_strobe = '1' then
-					xin_i_stage1_s <= xin_i;
-					xin_q_stage1_s <= xin_q;
-				end if;
+			elsif stage1_strobe = '1' then
+				xin_i_stage1_s <= xin_i;
+				xin_q_stage1_s <= xin_q;
 			end if;
 		end if;
 	end process;
@@ -106,11 +104,9 @@ begin
 			if rst = '1' then
 				xin_i_stage2_s <= (others => '0');
 				xin_q_stage2_s <= (others => '0');
-			else
-				if stage1_strobe = '1' then
-					xin_i_stage2_s <= xout_i_stage1_s;
-					xin_q_stage2_s <= xout_q_stage1_s;
-				end if;
+			elsif stage2_strobe = '1' then
+				xin_i_stage2_s <= xout_i_stage1_s;
+				xin_q_stage2_s <= xout_q_stage1_s;
 			end if;
 		end if;
 	end process;
