@@ -63,7 +63,6 @@ architecture rtl of lut_serializer is
 		return (to_unsigned(2**XWIDTH - 1, XWIDTH) - u);   -- flip
 	end function;
 
-	signal running  : std_logic := '0';
 	signal col      : unsigned(N-1 downto 0) := (others => '0');
 	signal row_idx  : unsigned(XWIDTH-1 downto 0) := (others => '0');
 	signal row_reg  : std_logic_vector(N-1 downto 0) := (others => '0');
