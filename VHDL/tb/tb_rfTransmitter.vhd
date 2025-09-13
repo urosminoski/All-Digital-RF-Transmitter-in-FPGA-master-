@@ -25,10 +25,10 @@ architecture tb of tb_rfTransmitter is
 	signal rst      	: std_logic := '1';
 	signal xin_i        : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 	signal xin_q        : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	-- signal xout_i       : std_logic_vector(3 downto 0) := (others => '0');
-	-- signal xout_q       : std_logic_vector(3 downto 0) := (others => '0');
-	signal xout_i		: std_logic := '0';
-	signal xout_q		: std_logic := '0';
+	signal xout_i       : std_logic_vector(3 downto 0) := (others => '0');
+	signal xout_q       : std_logic_vector(3 downto 0) := (others => '0');
+	-- signal xout_i		: std_logic := '0';
+	-- signal xout_q		: std_logic := '0';
 	
 	constant Ncnt 		: integer := 8*32;
 	signal tb_cnt 		: integer := 0;
@@ -121,13 +121,13 @@ begin
 		if rising_edge(clk) then
 			if rst = '0' then
 				-- upis I izlaza
-				-- write(L_i, to_integer(signed(xout_i)));
-				write(L_i, xout_i);
+				write(L_i, to_integer(signed(xout_i)));
+				-- write(L_i, xout_i);
 				writeline(output_file_i, L_i);
 
 				-- upis Q izlaza
-				-- write(L_q, to_integer(signed(xout_q)));
-				write(L_q, xout_q);
+				write(L_q, to_integer(signed(xout_q)));
+				-- write(L_q, xout_q);
 				writeline(output_file_q, L_q);
 			end if;
 		end if;

@@ -19,10 +19,10 @@ entity rfTransmitter is
 		rst   	: in  std_logic;
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
-		-- xout_i	: out std_logic_vector(3 downto 0);
-		-- xout_q	: out std_logic_vector(3 downto 0)
-		xout_i	: out std_logic;
-		xout_q	: out std_logic
+		xout_i	: out std_logic_vector(3 downto 0);
+		xout_q	: out std_logic_vector(3 downto 0)
+		-- xout_i	: out std_logic;
+		-- xout_q	: out std_logic
 	);
 end entity;
 
@@ -243,7 +243,7 @@ begin
 			xout     => xout_q_lut
 		);
 
-	xout_i <= xout_i_lut;
-	xout_q <= xout_q_lut;
+	xout_i <= xout_i_ds;
+	xout_q <= xout_q_ds;
 
 end architecture;
