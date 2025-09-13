@@ -15,6 +15,7 @@ entity osr8 is
 	);
 	port(
 		clk   	: in  std_logic;
+		en 		: in  std_logic;
 		rst   	: in  std_logic;
 		xin  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xout	: out std_logic_vector(XWIDTH-1 downto 0);
@@ -55,7 +56,7 @@ begin
 		if rising_edge(clk) then
 			if rst = '1' then
 				cnt := (others => '0');
-			else
+			elsif en = '1' then
 				if cnt = "111" then
 					cnt := (others => '0');
 				else

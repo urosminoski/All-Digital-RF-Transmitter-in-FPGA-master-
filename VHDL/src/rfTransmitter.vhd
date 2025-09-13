@@ -14,8 +14,8 @@ entity rfTransmitter is
 		FRAC 		: integer := 26
 	);
 	port(
-		clk1   	: in  std_logic;
-		clk2  	: in  std_logic;
+		clk   	: in  std_logic;
+		-- clk2  	: in  std_logic;
 		rst   	: in  std_logic;
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
@@ -48,63 +48,86 @@ architecture rtl of rfTransmitter is
 	signal delay_en : std_logic := '0';
 	
 	signal xout_i_ds_clk2, xout_q_ds_clk2 	: std_logic_vector(3 downto 0) := (others => '0');
-	signal xout_i_lut_clk2, xout_q_lut_clk2	: std_logic := '0';
+	signal xout_i_lut, xout_q_lut	: std_logic := '0';
 	signal enable_i_clk2, enable_q_clk2		: std_logic := '0';
+	
+	signal cnt2 : integer := 0;
+	constant N 	: integer := 32;
+	
+	signal en : std_logic := '0';
 
 begin
 
-	process(clk1)
+	process(clk)
 	begin
-		if rising_edge(clk1) then
+		if rising_edge(clk) then
 			if rst = '1' then
-				cnt <= (others => '0');
+				cnt2 	<= 0;
+				en 		<= '0';
 			else
-				if cnt = "111" then
-					cnt <= (others => '0');
+				if cnt2 = N-1 then
+					cnt2 	<= 0;
+					en 		<= '1';
 				else
-					cnt <= cnt + 1;
+					cnt2 	<= 1 + cnt2;
+					en 		<= '0';
 				end if;
 			end if;
 		end if;
 	end process;
-	
-	delay_en <= '1' when (cnt = "000") else '0';
 
-	delay_i: entity work.delay
-		generic map (
-			KERNEL_ID   => 7,
-			COEF_L		=> COEF_L,
-			XWIDTH		=> XWIDTH,
-			INT  		=> INT,
-			FRAC 		=> FRAC,
-			NUM_TAPS   	=> 7,
-			DELTA		=> DELTA_I
-		)
-		port map (
-			clk		=> clk1,
-			rst		=> rst, 
-			en		=> delay_en, 		
-			xin		=> xin_i,
-			xout	=> xout_i_delay      
-		);
+	-- process(clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- cnt <= (others => '0');
+			-- else
+				-- if cnt = "111" then
+					-- cnt <= (others => '0');
+				-- else
+					-- cnt <= cnt + 1;
+				-- end if;
+			-- end if;
+		-- end if;
+	-- end process;
+	
+	-- delay_en <= '1' when (cnt = "000") else '0';
+
+	-- delay_i: entity work.delay
+		-- generic map (
+			-- KERNEL_ID   => 7,
+			-- COEF_L		=> COEF_L,
+			-- XWIDTH		=> XWIDTH,
+			-- INT  		=> INT,
+			-- FRAC 		=> FRAC,
+			-- NUM_TAPS   	=> 7,
+			-- DELTA		=> DELTA_I
+		-- )
+		-- port map (
+			-- clk		=> clk,
+			-- rst		=> rst, 
+			-- en		=> delay_en, 		
+			-- xin		=> xin_i,
+			-- xout	=> xout_i_delay      
+		-- );
 		
-	delay_q: entity work.delay
-		generic map (
-			KERNEL_ID   => 7,
-			COEF_L		=> COEF_L,
-			XWIDTH		=> XWIDTH,
-			INT  		=> INT,
-			FRAC 		=> FRAC,
-			NUM_TAPS   	=> 7,
-			DELTA		=> DELTA_Q
-		)
-		port map (
-			clk		=> clk1,
-			rst		=> rst, 
-			en		=> delay_en, 		
-			xin		=> xin_q,
-			xout	=> xout_q_delay      
-		);
+	-- delay_q: entity work.delay
+		-- generic map (
+			-- KERNEL_ID   => 7,
+			-- COEF_L		=> COEF_L,
+			-- XWIDTH		=> XWIDTH,
+			-- INT  		=> INT,
+			-- FRAC 		=> FRAC,
+			-- NUM_TAPS   	=> 7,
+			-- DELTA		=> DELTA_Q
+		-- )
+		-- port map (
+			-- clk		=> clk,
+			-- rst		=> rst, 
+			-- en		=> delay_en, 		
+			-- xin		=> xin_q,
+			-- xout	=> xout_q_delay      
+		-- );
 
 	ds_factor <= to_sfixed(30, ds_factor'high, ds_factor'low);
 
@@ -116,8 +139,9 @@ begin
 			FRAC 		=> FRAC
 		)
 		port map (
-			clk 	=> clk1,
+			clk 	=> clk,
 			rst 	=> rst,
+			en 		=> en,
 			xin   	=> xin_i, --xout_i_delay,
 			xout   	=> xout_i_osr8,
 			vout 	=> vout_i
@@ -131,8 +155,9 @@ begin
 			FRAC 		=> FRAC
 		)
 		port map (
-			clk 	=> clk1,
+			clk 	=> clk,
 			rst 	=> rst,
+			en 		=> en,
 			xin   	=> xin_q, --xout_q_delay,
 			xout   	=> xout_q_osr8,
 			vout 	=> vout_q
@@ -146,48 +171,50 @@ begin
 	
 	deltaSigma_i: entity work.deltaSigma
 		port map (
-			clk		=> clk1,
+			clk		=> clk,
 			rst 	=> rst,
+			en 		=> en,
 			x 		=> xin_i_ds,
 			y		=> xout_i_ds
 		);
 		
 	deltaSigma_q: entity work.deltaSigma
 		port map (
-			clk		=> clk1,
+			clk		=> clk,
 			rst 	=> rst,
+			en 		=> en,
 			x 		=> xin_q_ds,
 			y		=> xout_q_ds
 		);
 		
 		
-	cdc1_i : entity work.cdc_slowclk_to_fast
-		generic map (
-			XWIDTH => 4
-		)
-		port map (
-			clk_slow    => clk1,
-			rst_slow    => rst,
-			xin_slow    => xout_i_ds,
-			clk_fast    => clk2,
-			rst_fast    => rst,
-			xin_fast    => xout_i_ds_clk2,
-			enable_fast => enable_i_clk2
-		);
+	-- cdc1_i : entity work.cdc_slowclk_to_fast
+		-- generic map (
+			-- XWIDTH => 4
+		-- )
+		-- port map (
+			-- clk_slow    => clk,
+			-- rst_slow    => rst,
+			-- xin_slow    => xout_i_ds,
+			-- clk_fast    => clk2,
+			-- rst_fast    => rst,
+			-- xin_fast    => xout_i_ds_clk2,
+			-- enable_fast => enable_i_clk2
+		-- );
 		
-	cdc1_q : entity work.cdc_slowclk_to_fast
-		generic map (
-			XWIDTH => 4
-		)
-		port map (
-			clk_slow    => clk1,
-			rst_slow    => rst,
-			xin_slow    => xout_q_ds,
-			clk_fast    => clk2,
-			rst_fast    => rst,
-			xin_fast    => xout_q_ds_clk2,
-			enable_fast => enable_q_clk2
-		);
+	-- cdc1_q : entity work.cdc_slowclk_to_fast
+		-- generic map (
+			-- XWIDTH => 4
+		-- )
+		-- port map (
+			-- clk_slow    => clk,
+			-- rst_slow    => rst,
+			-- xin_slow    => xout_q_ds,
+			-- clk_fast    => clk2,
+			-- rst_fast    => rst,
+			-- xin_fast    => xout_q_ds_clk2,
+			-- enable_fast => enable_q_clk2
+		-- );
 		
 	
 	lut_ser_i : entity work.lut_serializer
@@ -196,11 +223,11 @@ begin
 			XWIDTH  => 4
 		)
 		port map (
-			clk      => clk2,
+			clk      => clk,
 			rst      => rst,
-			enable   => enable_i_clk2,
-			xin      => xout_i_ds_clk2,
-			xout     => xout_i_lut_clk2		
+			enable   => vout_i,
+			xin      => xout_i_ds,
+			xout     => xout_i_lut	
 		);
 		
 	lut_ser_q : entity work.lut_serializer
@@ -209,14 +236,14 @@ begin
 			XWIDTH  => 4
 		)
 		port map (
-			clk      => clk2,
+			clk      => clk,
 			rst      => rst,
-			enable   => enable_q_clk2,
-			xin      => xout_q_ds_clk2,
-			xout     => xout_q_lut_clk2		
+			enable   => vout_q,
+			xin      => xout_q_ds,
+			xout     => xout_q_lut
 		);
 
-	xout_i <= xout_i_lut_clk2;
-	xout_q <= xout_q_lut_clk2;
+	xout_i <= xout_i_lut;
+	xout_q <= xout_q_lut;
 
 end architecture;
