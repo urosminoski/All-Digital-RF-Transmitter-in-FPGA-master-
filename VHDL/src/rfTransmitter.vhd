@@ -43,6 +43,7 @@ begin
 
 	cdc01 : entity work.cdc
 		port map (
+			rst 		=> rst,
 			clk_slow	=> clk0,
 		    clk_fast	=> clk1,
 			strobe		=> stage1_strobe
@@ -93,6 +94,7 @@ begin
 		
 	cdc12 : entity work.cdc
 		port map (
+			rst 		=> rst,
 			clk_slow	=> clk1,
 		    clk_fast	=> clk2,
 			strobe		=> stage2_strobe

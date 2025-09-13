@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity cdc is
 	port (
+		rst 		: in  std_logic;
 		clk_slow	: in  std_logic;
 		clk_fast	: in  std_logic;
 		strobe		: out std_logic
@@ -27,11 +28,15 @@ begin
 	sync_fast : process(clk_fast)
 	begin
 		if rising_edge(clk_fast) then
-			ff1 	<= toggle;
-			ff2 	<= ff1;
-			ff2_d	<= ff2;
-			
-			strobe <= ff2 xor ff2_d;
+			if rst = '1' then
+				strobe <= '0';
+			else
+				ff1 	<= toggle;
+				ff2 	<= ff1;
+				ff2_d	<= ff2;
+				
+				strobe <= ff2 xor ff2_d;
+			end if;
 		end if;
 	end process;
 
