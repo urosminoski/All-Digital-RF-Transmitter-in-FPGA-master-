@@ -8,7 +8,6 @@ entity deltaSigma is
 	port(
 		clk	: in  std_logic;
 		rst : in  std_logic;
-		en 	: in  std_logic;
 		x 	: in  std_logic_vector(11 downto 0);
 		y 	: out std_logic_vector(3 downto 0)
 		-- x : in sfixed(3 downto -8);
@@ -57,24 +56,22 @@ begin
 			x_sfixed <= to_sfixed(0, x_sfixed);
 			y_sfixed <= to_sfixed(0, y_sfixed);
 		elsif rising_edge(clk) then
-			if en = '1' then
-				x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
-				y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
-				-- y_i      := resize(x + y_iir, y_i'high, y_i'low);
-				v        := resize(y_i, v'high, v'low);
-				-- if v(v'right) = '0' then
-					-- v := resize(v + to_sfixed(1, v), v'high, v'low);
-				-- end if;
+			x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
+			y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
+			-- y_i      := resize(x + y_iir, y_i'high, y_i'low);
+			v        := resize(y_i, v'high, v'low);
+			-- if v(v'right) = '0' then
+				-- v := resize(v + to_sfixed(1, v), v'high, v'low);
+			-- end if;
 
-				e   := resize(y_i - v, 						e'high, e'low);
-				x0  := resize(b00*e + a01*x0d,            	x0'high, x0'low);
-				w1  := resize(e + a11*w1d - a12*w1dd,     	w1'high, w1'low);
-				x1  := resize(b10*w1 - b11*w1d,           	x1'high, x1'low);
-				w2  := resize(e + a21*w2d - a22*w2dd,     	w2'high, w2'low);
-				x2  := resize(b21*w2d - b20*w2,           	x2'high, x2'low);
-				y_iir := resize(x0 + x1 + x2,             	y_iir'high, y_iir'low);
-				x0d := x0;  w1dd := w1d;  w1d := w1;  w2dd := w2d;  w2d := w2;
-			end if;
+			e   := resize(y_i - v, 						e'high, e'low);
+			x0  := resize(b00*e + a01*x0d,            	x0'high, x0'low);
+			w1  := resize(e + a11*w1d - a12*w1dd,     	w1'high, w1'low);
+			x1  := resize(b10*w1 - b11*w1d,           	x1'high, x1'low);
+			w2  := resize(e + a21*w2d - a22*w2dd,     	w2'high, w2'low);
+			x2  := resize(b21*w2d - b20*w2,           	x2'high, x2'low);
+			y_iir := resize(x0 + x1 + x2,             	y_iir'high, y_iir'low);
+			x0d := x0;  w1dd := w1d;  w1d := w1;  w2dd := w2d;  w2d := w2;
 		end if;
 		y_sfixed <= v;
 		-- y <= v;

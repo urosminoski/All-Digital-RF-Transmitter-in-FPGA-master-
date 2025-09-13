@@ -1,0 +1,169 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.fixed_float_types.all;
+use ieee.fixed_pkg.all;
+
+use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
+
+entity stage1 is
+	generic(
+		COEF_L		: integer := 15;
+		XWIDTH		: integer := 12;
+		INT  		: integer := 1;
+		FRAC 		: integer := 26
+	);
+	port(
+		clk   	: in  std_logic;
+		rst   	: in  std_logic;
+		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
+		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
+		xout_i	: out std_logic_vector(3 downto 0);
+		xout_q	: out std_logic_vector(3 downto 0)
+	);
+end entity;
+
+architecture rtl of stage1 is
+
+	constant LUT_ID : integer := 3;
+	
+	constant DELTA_I : real := -0.125;
+	constant DELTA_Q : real := 0.125;
+
+	signal ds_factor	: sfixed(4 downto -(XWIDTH-5));
+	signal xi, xq 		: sfixed(3 downto -(XWIDTH-4));
+	
+	signal xout_i_delay, xout_q_delay : std_logic_vector(XWIDTH-1 downto 0);
+	
+	signal xout_i_osr8, xout_q_osr8 : std_logic_vector(XWIDTH-1 downto 0);
+	signal vout_i, vout_q 	: std_logic := '0';
+	
+	signal xin_i_ds, xin_q_ds 	: std_logic_vector(XWIDTH-1 downto 0);
+	signal xout_i_ds, xout_q_ds	: std_logic_vector(3 downto 0);
+	
+	signal cnt 		: unsigned(2 downto 0) := (others => '0');
+	signal delay_en : std_logic := '0';
+
+begin
+
+	-- process(clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- cnt <= (others => '0');
+			-- else
+				-- if cnt = "111" then
+					-- cnt <= (others => '0');
+				-- else
+					-- cnt <= cnt + 1;
+				-- end if;
+			-- end if;
+		-- end if;
+	-- end process;
+	
+	-- delay_en <= '1' when (cnt = "000") else '0';
+
+	-- delay_i: entity work.delay
+		-- generic map (
+			-- KERNEL_ID   => 7,
+			-- COEF_L		=> COEF_L,
+			-- XWIDTH		=> XWIDTH,
+			-- INT  		=> INT,
+			-- FRAC 		=> FRAC,
+			-- NUM_TAPS   	=> 7,
+			-- DELTA		=> DELTA_I
+		-- )
+		-- port map (
+			-- clk		=> clk,
+			-- rst		=> rst, 
+			-- en		=> delay_en, 		
+			-- xin		=> xin_i,
+			-- xout	=> xout_i_delay      
+		-- );
+		
+	-- delay_q: entity work.delay
+		-- generic map (
+			-- KERNEL_ID   => 7,
+			-- COEF_L		=> COEF_L,
+			-- XWIDTH		=> XWIDTH,
+			-- INT  		=> INT,
+			-- FRAC 		=> FRAC,
+			-- NUM_TAPS   	=> 7,
+			-- DELTA		=> DELTA_Q
+		-- )
+		-- port map (
+			-- clk		=> clk,
+			-- rst		=> rst, 
+			-- en		=> delay_en, 		
+			-- xin		=> xin_q,
+			-- xout	=> xout_q_delay      
+		-- );
+
+	ds_factor <= to_sfixed(30, ds_factor'high, ds_factor'low);
+
+	osr8_i: entity work.osr8
+		generic map (
+			COEF_L		=> COEF_L,
+			XWIDTH		=> XWIDTH,
+			INT  		=> INT,
+			FRAC 		=> FRAC
+		)
+		port map (
+			clk 	=> clk,
+			rst 	=> rst,
+			xin   	=> xin_i, --xout_i_delay,
+			xout   	=> xout_i_osr8,
+			vout 	=> vout_i
+		);
+		
+	osr8_q: entity work.osr8
+		generic map (
+			COEF_L		=> COEF_L,
+			XWIDTH		=> XWIDTH,
+			INT  		=> INT,
+			FRAC 		=> FRAC
+		)
+		port map (
+			clk 	=> clk,
+			rst 	=> rst,
+			xin   	=> xin_q, --xout_q_delay,
+			xout   	=> xout_q_osr8,
+			vout 	=> vout_q
+		);
+		
+	xi <= resize(to_sfixed(xout_i_osr8, 0, -(XWIDTH-1)) * ds_factor, xi'high, xi'low);
+	xq <= resize(to_sfixed(xout_q_osr8, 0, -(XWIDTH-1)) * ds_factor, xq'high, xq'low);
+	
+	xin_i_ds <= to_slv(xi);
+	xin_q_ds <= to_slv(xq);
+	
+	deltaSigma_i: entity work.deltaSigma
+		port map (
+			clk		=> clk,
+			rst 	=> rst,
+			x 		=> xin_i_ds,
+			y		=> xout_i_ds
+		);
+		
+	deltaSigma_q: entity work.deltaSigma
+		port map (
+			clk		=> clk,
+			rst 	=> rst,
+			x 		=> xin_q_ds,
+			y		=> xout_q_ds
+		);
+
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				xout_i 	<= (others => '0');
+				xout_q 	<= (others => '0');
+			else	
+				xout_i 	<= xout_i_ds;
+				xout_q 	<= xout_q_ds;
+			end if;
+		end if;
+	end process;
+
+end architecture;
