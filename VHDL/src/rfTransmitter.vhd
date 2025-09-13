@@ -34,8 +34,9 @@ architecture rtl of rfTransmitter is
 	signal xout_q_stage1_reg 	: std_logic_vector(3 downto 0) := (others => '0');
 	signal toggle12				: std_logic := '0';
 	
-	signal xout_i_stage2 	: std_logic := '0';
-	signal xout_q_stage2 	: std_logic := '0';
+	signal xin_i_stage2, xin_q_stage2 		: std_logic_vector(3 downto 0) := (others => '0');
+	signal xout_i_stage2, xout_q_stage2 	: std_logic := '0';
+	signal ff1, ff2, ff2_d	: std_logic := '0';
 	signal stage2_strobe 	: std_logic := '0';
 
 begin
@@ -66,13 +67,24 @@ begin
 	end process;
 	
 	sync12_fast : process(clk2)
-		variable ff1, ff2 : std_logic := '0';
 	begin
 		if rising_edge(clk2) then
-			ff1 := toggle12;
-			ff2 := ff1;
+			ff1 <= toggle12;
+			ff2 <= ff1;
 		end if;
-		stage2_strobe <= ff2;
+	end process;
+	
+	stage2_strobe_gen : process(clk2)
+	begin
+		if rising_edge(clk2) then
+			ff2_d 			<= ff2;
+			stage2_strobe 	<= ff2 xor ff2_d;
+			
+			if stage2_strobe = '1' then
+				xin_i_stage2 <= xout_i_stage1_reg;
+				xin_q_stage2 <= xout_q_stage1_reg;
+			end if;
+		end if;
 	end process;
 		
 	stage2_gen : entity work.stage2
@@ -84,8 +96,8 @@ begin
 			clk   	=> clk2,
 			rst   	=> rst,
 			strobe 	=> stage2_strobe,
-			xin_i  	=> xout_i_stage1_reg,
-			xin_q  	=> xout_q_stage1_reg,
+			xin_i  	=> xin_i_stage2,
+			xin_q  	=> xin_q_stage2,
 			xout_i	=> xout_i_stage2,
 			xout_q	=> xout_q_stage2
 		);
