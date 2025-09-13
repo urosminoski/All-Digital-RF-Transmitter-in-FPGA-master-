@@ -16,6 +16,7 @@ entity stage1 is
 	port(
 		clk   	: in  std_logic;
 		rst   	: in  std_logic;
+		strobe	: in  std_logic;
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xout_i	: out std_logic_vector(3 downto 0);
@@ -111,6 +112,7 @@ begin
 		port map (
 			clk 	=> clk,
 			rst 	=> rst,
+			strobe 	=> strobe,
 			xin   	=> xin_i, --xout_i_delay,
 			xout   	=> xout_i_osr8,
 			vout 	=> vout_i
@@ -126,6 +128,7 @@ begin
 		port map (
 			clk 	=> clk,
 			rst 	=> rst,
+			strobe 	=> strobe,
 			xin   	=> xin_q, --xout_q_delay,
 			xout   	=> xout_q_osr8,
 			vout 	=> vout_q

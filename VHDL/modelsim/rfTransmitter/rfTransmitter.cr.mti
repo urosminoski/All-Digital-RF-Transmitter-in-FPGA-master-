@@ -1,4 +1,28 @@
-C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd
+C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd {0 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package fixed_float_types
+-- Loading package instance fixed_pkg
+-- Loading package fixed_generic_pkg
+-- Loading package MATH_REAL
+-- Loading package body fixed_generic_pkg
+-- Compiling entity tb_rfTransmitter
+-- Compiling architecture tb of tb_rfTransmitter
+-- Loading package fir_coeffs_pkg
+-- Loading entity rfTransmitter
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(139): near "Ä": Identifier may not contain non-graphic character.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(139): near "paralelno": (vcom-1576) expecting == or '+' or '-' or '&'.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(139): near "doÄ": Identifier may not contain non-graphic character.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(146): near "kanal": (vcom-1576) expecting == or '+' or '-' or '&'.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(151): near "su": (vcom-1576) expecting ')'.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(156): near "else": (vcom-1576) expecting END.
+-- Loading package ENV
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(161): near "if": (vcom-1576) expecting PROCESS.
+
+} {16.0 22.0 23.0 24.0} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -88,23 +112,6 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Loading package delay_kernel_pkg
 -- Compiling entity delay
 -- Compiling architecture rtl of delay
-
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage1.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage1.vhd
-Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
--- Loading package STANDARD
--- Loading package TEXTIO
--- Loading package std_logic_1164
--- Loading package NUMERIC_STD
--- Loading package fixed_float_types
--- Loading package instance fixed_pkg
--- Loading package fixed_generic_pkg
--- Loading package MATH_REAL
--- Loading package body fixed_generic_pkg
--- Loading package fir_coeffs_pkg
--- Compiling entity stage1
--- Compiling architecture rtl of stage1
--- Loading entity osr8
--- Loading entity deltaSigma
 
 } {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/fir_coeffs_pkg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/fir_coeffs_pkg.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016

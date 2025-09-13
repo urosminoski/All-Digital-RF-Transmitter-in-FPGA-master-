@@ -16,6 +16,7 @@ entity osr8 is
 	port(
 		clk   	: in  std_logic;
 		rst   	: in  std_logic;
+		strobe	: in  std_logic;
 		xin  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xout	: out std_logic_vector(XWIDTH-1 downto 0);
 		vout 	: out std_logic
@@ -56,7 +57,7 @@ begin
 			if rst = '1' then
 				cnt := (others => '0');
 			else
-				if cnt = "111" then
+				if cnt = "111" or strobe = '1' then
 					cnt := (others => '0');
 				else
 					cnt := cnt + 1;
