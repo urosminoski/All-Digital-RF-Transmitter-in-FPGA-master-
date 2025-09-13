@@ -52,31 +52,31 @@ architecture rtl of rfTransmitter is
 	signal enable_i_clk2, enable_q_clk2		: std_logic := '0';
 	
 	signal cnt2 : integer := 0;
-	constant N 	: integer := 32;
+	constant N 	: integer := 2;
 	
 	signal en : std_logic := '0';
 
 begin
 
-	-- process(clk)
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- cnt2 	<= 0;
-				-- en 		<= '0';
-			-- else
-				-- if cnt2 = N-1 then
-					-- cnt2 	<= 0;
-					-- en 		<= '1';
-				-- else
-					-- cnt2 	<= 1 + cnt2;
-					-- en 		<= '0';
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				cnt2 	<= 0;
+				en 		<= '0';
+			else
+				if cnt2 = N-1 then
+					cnt2 	<= 0;
+					en 		<= '1';
+				else
+					cnt2 	<= 1 + cnt2;
+					en 		<= '0';
+				end if;
+			end if;
+		end if;
+	end process;
 	
-	en <= '1';
+	-- en <= '1';
 
 	-- process(clk)
 	-- begin

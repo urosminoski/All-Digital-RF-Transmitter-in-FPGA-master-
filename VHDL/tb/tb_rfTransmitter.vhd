@@ -30,7 +30,7 @@ architecture tb of tb_rfTransmitter is
 	-- signal xout_i		: std_logic := '0';
 	-- signal xout_q		: std_logic := '0';
 	
-	constant Ncnt 		: integer := 8;
+	constant Ncnt 		: integer := 8*2;
 	signal tb_cnt 		: integer := 0;
 	signal out_ready 	: std_logic := '0';
 
