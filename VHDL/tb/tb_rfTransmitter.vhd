@@ -33,21 +33,19 @@ architecture tb of tb_rfTransmitter is
 	signal xout_q_stage1     	: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_i_stage2		: std_logic := '0';
 	signal xout_q_stage2		: std_logic := '0';
-	signal xout_i_stage3		: std_logic := '0';
-	signal xout_q_stage3		: std_logic := '0';
+	signal xout_stage3			: std_logic := '0';
 	
 	constant Ncnt 		: integer := 8;
 	signal tb_cnt 		: integer := 0;
 	signal out_ready 	: std_logic := '0';
 
-	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xin_i_test.txt";
-	file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xin_q_test.txt";
-	file output_file_i_stage1  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_i_stage1.txt";
-	file output_file_q_stage1  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_stage1.txt";
-	file output_file_i_stage2  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_i_stage2.txt";
-	file output_file_q_stage2  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_stage2.txt";
-	file output_file_i_stage3  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_i_stage3.txt";
-	file output_file_q_stage3  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_stage3.txt";
+	file input_file_i  			: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xin_i_test.txt";
+	file input_file_q  			: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xin_q_test.txt";
+	file output_file_i_stage1  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_i_stage1.txt";
+	file output_file_q_stage1  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_stage1.txt";
+	file output_file_i_stage2  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_i_stage2.txt";
+	file output_file_q_stage2  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_stage2.txt";
+	file output_file_stage3  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_stage3.txt";
 
 begin
 	uut_i: entity work.rfTransmitter
@@ -66,12 +64,11 @@ begin
 			rst 	=> rst,
 			xin_i   => xin_i,
 			xin_q   => xin_q,
-			xout_i_stage1 => xout_i_stage1,
-			xout_q_stage1 => xout_q_stage1,
-			xout_i_stage2 => xout_i_stage2,
-			xout_q_stage2 => xout_q_stage2,
-			xout_i_stage3 => xout_i_stage3,
-			xout_q_stage3 => xout_q_stage3
+			xout_i_stage1 	=> xout_i_stage1,
+			xout_q_stage1 	=> xout_q_stage1,
+			xout_i_stage2 	=> xout_i_stage2,
+			xout_q_stage2 	=> xout_q_stage2,
+			xout_stage3 	=> xout_stage3
 		);
 
 	clk0 <= not clk0 after C_CLK0_PERIOD/2;
@@ -201,17 +198,12 @@ begin
 	end process;
 	
 	write_stage3 : process(clk3)
-		variable L_i, L_q : line;
+		variable L : line;
 	begin
 		if falling_edge(clk3) then
 			if rst = '0' then
-				-- upis I izlaza
-				write(L_i, xout_i_stage3);
-				writeline(output_file_i_stage3, L_i);
-
-				-- upis Q izlaza
-				write(L_q, xout_q_stage3);
-				writeline(output_file_q_stage3, L_q);
+				write(L, xout_stage3);
+				writeline(output_file_stage3, L);
 			end if;
 		end if;
 	end process;

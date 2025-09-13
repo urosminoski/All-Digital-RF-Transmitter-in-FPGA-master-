@@ -1,10 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.fixed_float_types.all;
-use ieee.fixed_pkg.all;
-
-use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
 
 entity stage2 is
 	generic(

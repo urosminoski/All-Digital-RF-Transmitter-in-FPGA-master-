@@ -18,6 +18,7 @@ entity rfTransmitter is
 		clk0	: in std_logic;
 		clk1   	: in  std_logic;
 		clk2  	: in  std_logic;
+		clk3  	: in  std_logic;
 		rst   	: in  std_logic;
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
@@ -25,7 +26,8 @@ entity rfTransmitter is
 		xout_i_stage1	: out std_logic_vector(3 downto 0);
 		xout_q_stage1	: out std_logic_vector(3 downto 0);
 		xout_i_stage2	: out std_logic;
-		xout_q_stage2	: out std_logic
+		xout_q_stage2	: out std_logic;
+		xout_stage3		: out std_logic
 	);
 end entity;
 
@@ -38,6 +40,10 @@ architecture rtl of rfTransmitter is
 	signal xin_i_stage2_s, xin_q_stage2_s	: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_i_stage2_s, xout_q_stage2_s : std_logic := '0';
 	signal stage2_strobe 					: std_logic := '0';
+	
+	signal xin_i_stage3_s, xin_q_stage3_s	: std_logic := '0';
+	signal xout_stage3_s					: std_logic := '0';
+	signal stage3_strobe 					: std_logic := '0';
 
 begin
 
@@ -141,5 +147,47 @@ begin
 			end if;
 		end if;
 	end process;
+	
+	cdc23 : entity work.cdc
+		port map (
+			rst 		=> rst,
+			clk_slow	=> clk2,
+		    clk_fast	=> clk3,
+			strobe		=> stage3_strobe
+		);
+		
+	process(clk3)
+	begin
+		if rising_edge(clk3) then
+			if rst = '1' then
+				xin_i_stage3_s <= '0';
+				xin_q_stage3_s <= '0';
+			elsif stage3_strobe = '1' then
+				xin_i_stage3_s <= xout_i_stage2_s;
+				xin_q_stage3_s <= xout_q_stage2_s;
+			end if;
+		end if;
+	end process;
+	
+	stage3_gen : entity work.stage3
+		port map (
+			clk   	=> clk3,
+			rst   	=> rst,
+			strobe	=> stage3_strobe,
+			xin_i  	=> xin_i_stage3_s,
+			xin_q  	=> xin_q_stage3_s,
+			xout_iq	=> xout_stage3_s 
+		);
 
+	process(clk3)
+	begin
+		if rising_edge(clk3) then
+			if rst = '1' then
+				xout_stage3 <= '0';
+			else
+				xout_stage3 <= xout_stage3_s;
+			end if;
+		end if;
+	end process;
+	
 end architecture;
