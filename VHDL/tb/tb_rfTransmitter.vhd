@@ -18,7 +18,7 @@ architecture tb of tb_rfTransmitter is
 	
 	constant XWIDTH		: integer := 12;
 	constant COEF_L		: integer := 15;
-	constant INT 		: integer := 1;
+	constant INT 		: integer := 0;
 	constant FRAC 		: integer := XWIDTH + COEF_L;
 
 	signal clk0   		: std_logic := '0';
@@ -32,7 +32,7 @@ architecture tb of tb_rfTransmitter is
 	signal xout_i_stage2		: std_logic := '0';
 	signal xout_q_stage2		: std_logic := '0';
 	
-	constant Ncnt 		: integer := 8*2;
+	constant Ncnt 		: integer := 8;
 	signal tb_cnt 		: integer := 0;
 	signal out_ready 	: std_logic := '0';
 
@@ -87,55 +87,17 @@ begin
 		end if;
 	end process;
 	
-	-- read_files : process(clk1)
-		-- variable L_i, L_q : line;
-		-- variable r_i, r_q : real;
-		-- variable s_i, s_q : sfixed(0 downto -(XWIDTH-1));
-	-- begin
-		-- if rising_edge(clk1) then
-			-- if rst = '1' then
-				-- xin_i   	<= (others => '0');
-				-- xin_q   	<= (others => '0');
-				-- out_ready 	<= '0';
-			-- elsif tb_cnt = 0 then
-				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
-				-- if (not endfile(input_file_i)) and (not endfile(input_file_q)) then
-					-- I kanal
-					-- readline(input_file_i, L_i);
-					-- read(L_i, r_i);
-					-- s_i := to_sfixed(r_i, s_i'high, s_i'low);
-
-					-- Q kanal
-					-- readline(input_file_q, L_q);
-					-- read(L_q, r_q);
-					-- s_q := to_sfixed(r_q, s_q'high, s_q'low);
-
-					-- Izlazi (ako su xi/xq tipa std_logic_vector)
-					-- xin_i <= to_slv(s_i);
-					-- xin_q <= to_slv(s_q);
-
-					-- out_ready <= '1';
-				-- else
-					-- out_ready <= '0';
-					-- report "Kraj jednog od fajlova - simulacija se zaustavlja." severity note;
-					-- std.env.stop;  -- VHDL-2008
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
-	
-	
-	read_files : process(clk0)
+	read_files : process(clk1)
 		variable L_i, L_q : line;
 		variable r_i, r_q : real;
 		variable s_i, s_q : sfixed(0 downto -(XWIDTH-1));
 	begin
-		if rising_edge(clk0) then
+		if rising_edge(clk1) then
 			if rst = '1' then
 				xin_i   	<= (others => '0');
 				xin_q   	<= (others => '0');
 				out_ready 	<= '0';
-			else
+			elsif tb_cnt = 0 then
 				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
 				if (not endfile(input_file_i)) and (not endfile(input_file_q)) then
 					-- I kanal
@@ -161,6 +123,44 @@ begin
 			end if;
 		end if;
 	end process;
+	
+	
+	-- read_files : process(clk0)
+		-- variable L_i, L_q : line;
+		-- variable r_i, r_q : real;
+		-- variable s_i, s_q : sfixed(0 downto -(XWIDTH-1));
+	-- begin
+		-- if rising_edge(clk0) then
+			-- if rst = '1' then
+				-- xin_i   	<= (others => '0');
+				-- xin_q   	<= (others => '0');
+				-- out_ready 	<= '0';
+			-- else
+				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
+				-- if (not endfile(input_file_i)) and (not endfile(input_file_q)) then
+					-- I kanal
+					-- readline(input_file_i, L_i);
+					-- read(L_i, r_i);
+					-- s_i := to_sfixed(r_i, s_i'high, s_i'low);
+
+					-- Q kanal
+					-- readline(input_file_q, L_q);
+					-- read(L_q, r_q);
+					-- s_q := to_sfixed(r_q, s_q'high, s_q'low);
+
+					-- Izlazi (ako su xi/xq tipa std_logic_vector)
+					-- xin_i <= to_slv(s_i);
+					-- xin_q <= to_slv(s_q);
+
+					-- out_ready <= '1';
+				-- else
+					-- out_ready <= '0';
+					-- report "Kraj jednog od fajlova - simulacija se zaustavlja." severity note;
+					-- std.env.stop;  -- VHDL-2008
+				-- end if;
+			-- end if;
+		-- end if;
+	-- end process;
 	
 	write_stage1 : process(clk1)
 		variable L_i, L_q : line;
