@@ -60,7 +60,7 @@ begin
 			clk0 	=> clk0,
 			clk1 	=> clk1,
 			clk2 	=> clk2,
-			clk3 	=> clk2,
+			clk3 	=> clk3,
 			rst 	=> rst,
 			xin_i   => xin_i,
 			xin_q   => xin_q,
