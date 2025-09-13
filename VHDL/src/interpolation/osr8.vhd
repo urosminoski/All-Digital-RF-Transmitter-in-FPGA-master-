@@ -86,11 +86,9 @@ begin
 					pending 	<= '1';
 				end if;
 				
-				if frame_cnt = "000" then
-					if pending = '1' then
-						xin_lat <= xin_shadow;
-						pending	<= '0';
-					end if;
+				if frame_cnt = "111" and pending = '1' then
+					xin_lat <= xin_shadow;
+					pending	<= '0';
 				end if;
 			end if;
 		end if;
