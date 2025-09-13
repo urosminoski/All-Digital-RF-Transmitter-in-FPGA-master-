@@ -47,6 +47,10 @@ architecture rtl of osr8 is
 	signal seed 		: std_logic;
 	
 	signal xin_hb2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
+	
+	signal xin_shadow : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xin_lat    : std_logic_vector(XWIDTH-1 downto 0) := (others => '0'); -- ovo HB2 "vidi"
+	signal pending    : std_logic := '0';
 
 begin
 
@@ -57,7 +61,7 @@ begin
 			if rst = '1' then
 				cnt := (others => '0');
 			else
-				if cnt = "111" or strobe = '1' then
+				if cnt = "111" then
 					cnt := (others => '0');
 				else
 					cnt := cnt + 1;
@@ -69,10 +73,63 @@ begin
 	
 	seed <= '1' when (frame_cnt = "000") else '0';
 	
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				xin_shadow	<= (others => '0');
+				xin_lat	 	<= (others => '0');
+				pending    	<= '0';
+			else
+				if strobe = '1' then
+					xin_shadow 	<= xin;
+					pending 	<= '1';
+				end if;
+				
+				if frame_cnt = "000" then
+					if pending = '1' then
+						xin_lat <= xin_shadow;
+						pending	<= '0';
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
+	
+	  -- 2) CDC strobe → shadow + pending
+	-- process(clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- xin_shadow	<= (others => '0');
+				-- pending    	<= '0';
+			-- elsif strobe = '1' then
+				-- xin_shadow	<= xin;     -- novi uzorak stigao u clk1
+				-- pending   	<= '1';
+			-- end if;
+		-- end if;
+	-- end process;
+	
+	-- 3) Prirodno poravnanje: menjaš ulaz HB2 SAMO na frame_cnt=0 ako ima pending
+	-- process(clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- xin_lat <= (others => '0');
+			-- elsif frame_cnt = "000" then
+				-- if pending = '1' then
+					-- xin_lat <= xin_shadow;  -- PROMENA ulaza tačno na fazi 0
+					-- pending	<= '0';
+				-- end if;
+			-- ako nema pending, zadržava se stari xin_lat
+			-- end if;
+		-- end if;
+	-- end process;
+	
 	xin_hb2 <= to_slv(
 		resize(
-			to_sfixed(xin, 0, -(XWIDTH-1)),  		-- interpretiraj ulaz kao Q(0.(W-1))
-			INT, -FRAC                          	-- proširi na Q(INT.FRAC) (round/trunc po defaultu)
+			to_sfixed(xin_lat, 0, -(XWIDTH-1)),  	-- interpretiraj ulaz kao Q(0.(W-1))
+			INT, -FRAC                         		-- proširi na Q(INT.FRAC) (round/trunc po defaultu)
 		)
 	);
 	
