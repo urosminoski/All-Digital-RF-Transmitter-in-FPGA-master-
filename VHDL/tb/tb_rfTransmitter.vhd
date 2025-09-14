@@ -132,6 +132,21 @@ begin
 		-- end if;
 	-- end process;
 	
+	process(clk1)
+	begin
+		if rising_edge(clk1) then
+			if rst = '1' then
+				tb_cnt <= 0;
+			else
+				if tb_cnt = 7 then
+					tb_cnt <= 0;
+				else
+					tb_cnt <= tb_cnt + 1;
+				end if;
+			end if;
+		end if;
+	end process;
+	
 	
 	read_files : process(clk1)
 		variable L_i, L_q : line;
