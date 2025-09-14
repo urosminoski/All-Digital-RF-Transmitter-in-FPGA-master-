@@ -17,6 +17,18 @@ architecture tb of tb_rfTransmitter is
 	constant C_CLK2_PERIOD 	: time    := C_CLK1_PERIOD/32;
 	constant C_CLK3_PERIOD 	: time    := C_CLK2_PERIOD/4;
 	
+	signal cnt2 : integer := 0;
+	
+	-- constant C_CLK0_FREQ   	: integer := 150_000;
+	-- constant C_CLK1_FREQ   	: integer := C_CLK0_FREQ*8;
+	-- constant C_CLK2_FREQ   	: integer := C_CLK1_FREQ*32;
+	-- constant C_CLK3_FREQ   	: integer := C_CLK2_FREQ*4;
+	
+	-- constant C_CLK0_PERIOD 	: time    := 1 sec / C_CLK0_FREQ;
+	-- constant C_CLK1_PERIOD 	: time    := 1 sec / C_CLK1_FREQ;
+	-- constant C_CLK2_PERIOD 	: time    := 1 sec / C_CLK2_FREQ;
+	-- constant C_CLK3_PERIOD 	: time    := 1 sec / C_CLK3_FREQ;
+	
 	constant XWIDTH		: integer := 12;
 	constant COEF_L		: integer := 15;
 	constant INT 		: integer := 0;
@@ -73,11 +85,23 @@ begin
 
 	clk0 <= not clk0 after C_CLK0_PERIOD/2;
 	clk1 <= not clk1 after C_CLK1_PERIOD/2;
-	clk2 <= not clk2 after C_CLK2_PERIOD/2;
+	-- clk2 <= not clk2 after C_CLK2_PERIOD/2;
 	clk3 <= not clk3 after C_CLK3_PERIOD/2;
 	
 	
 	rst <= '0' after 6*C_CLK0_PERIOD;
+	
+	process(clk3)
+	begin
+		if rising_edge(clk3) then
+			if cnt2 = 1 then
+				cnt2 <= 0;
+				clk2 <= not clk2;
+			else
+				cnt2 <= cnt2 + 1;
+			end if;
+		end if;
+	end process;
 	
 	process(clk1)
 	begin

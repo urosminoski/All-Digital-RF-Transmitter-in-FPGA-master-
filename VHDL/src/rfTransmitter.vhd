@@ -148,46 +148,46 @@ begin
 		end if;
 	end process;
 	
-	-- cdc23 : entity work.cdc
-		-- port map (
-			-- rst 		=> rst,
-			-- clk_slow	=> clk2,
-		    -- clk_fast	=> clk3,
-			-- strobe		=> stage3_strobe
-		-- );
+	cdc23 : entity work.cdc
+		port map (
+			rst 		=> rst,
+			clk_slow	=> clk2,
+		    clk_fast	=> clk3,
+			strobe		=> stage3_strobe
+		);
 		
-	-- process(clk3)
-	-- begin
-		-- if rising_edge(clk3) then
-			-- if rst = '1' then
-				-- xin_i_stage3_s <= '0';
-				-- xin_q_stage3_s <= '0';
-			-- elsif stage3_strobe = '1' then
-				-- xin_i_stage3_s <= xout_i_stage2_s;
-				-- xin_q_stage3_s <= xout_q_stage2_s;
-			-- end if;
-		-- end if;
-	-- end process;
+	process(clk3)
+	begin
+		if rising_edge(clk3) then
+			if rst = '1' then
+				xin_i_stage3_s <= '0';
+				xin_q_stage3_s <= '0';
+			elsif stage3_strobe = '1' then
+				xin_i_stage3_s <= xout_i_stage2_s;
+				xin_q_stage3_s <= xout_q_stage2_s;
+			end if;
+		end if;
+	end process;
 	
-	-- stage3_gen : entity work.stage3
-		-- port map (
-			-- clk   	=> clk3,
-			-- rst   	=> rst,
-			-- strobe	=> stage3_strobe,
-			-- xin_i  	=> xin_i_stage3_s,
-			-- xin_q  	=> xin_q_stage3_s,
-			-- xout_iq	=> xout_stage3_s 
-		-- );
+	stage3_gen : entity work.stage3
+		port map (
+			clk   	=> clk3,
+			rst   	=> rst,
+			strobe	=> stage3_strobe,
+			xin_i  	=> xin_i_stage3_s,
+			xin_q  	=> xin_q_stage3_s,
+			xout_iq	=> xout_stage3_s 
+		);
 
-	-- process(clk3)
-	-- begin
-		-- if rising_edge(clk3) then
-			-- if rst = '1' then
-				-- xout_stage3 <= '0';
-			-- else
-				-- xout_stage3 <= xout_stage3_s;
-			-- end if;
-		-- end if;
-	-- end process;
+	process(clk3)
+	begin
+		if rising_edge(clk3) then
+			if rst = '1' then
+				xout_stage3 <= '0';
+			else
+				xout_stage3 <= xout_stage3_s;
+			end if;
+		end if;
+	end process;
 	
 end architecture;
