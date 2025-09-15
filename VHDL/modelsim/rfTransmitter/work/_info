@@ -22,9 +22,9 @@ V^EC?j509X?3`gh=O?@DRz2
 !s100 Ye]kWi5NSzMV?z4B6zIoh1
 Z7 OV;C;10.5b;63
 33
-Z8 !s110 1757971476
+Z8 !s110 1757971564
 !i10b 1
-Z9 !s108 1757971476.000000
+Z9 !s108 1757971564.000000
 Z10 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/cdc.vhd|
 Z11 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/cdc.vhd|
 !i113 1
@@ -108,9 +108,9 @@ V_BTPS=aaMLlJmDO?^H0JR3
 !s100 5[QY14gMmN:TTo`:6Zj>a2
 R7
 33
-Z29 !s110 1757971475
+Z29 !s110 1757971563
 !i10b 1
-Z30 !s108 1757971475.000000
+Z30 !s108 1757971563.000000
 Z31 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay.vhd|
 Z32 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay.vhd|
 !i113 1
@@ -488,7 +488,7 @@ R7
 33
 R8
 !i10b 1
-R9
+R30
 Z67 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd|
 Z68 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd|
 !i113 1
@@ -515,7 +515,7 @@ R7
 33
 R8
 !i10b 1
-R9
+R30
 R67
 R68
 !i113 1
@@ -539,9 +539,9 @@ V=DRjzON[R9ogz_czal_e71
 !s100 m;9_O;HIF9iB3D53Xi6lT1
 R7
 33
-Z76 !s110 1757971477
+Z76 !s110 1757971565
 !i10b 1
-Z77 !s108 1757971477.000000
+Z77 !s108 1757971565.000000
 Z78 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage0.vhd|
 Z79 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage0.vhd|
 !i113 1
@@ -765,7 +765,7 @@ R99
 R12
 R13
 Etb_rftransmitter
-Z104 w1757971469
+Z104 w1757971552
 R24
 R25
 R26
@@ -802,8 +802,8 @@ R4
 DEx4 work 16 tb_rftransmitter 0 22 X2CAYCV5WUnoO]nNSO73e2
 l73
 L13
-V8z4UY`GKz9jh2Kk6_03QK0
-!s100 Gz745iW[[iHIfJR^4W1@h3
+V8Xf3U9XzLLzJT_9S4UzSB3
+!s100 [24N;^4oN9Ti8EeNm34iB2
 R7
 33
 R8
@@ -833,7 +833,7 @@ R7
 33
 R76
 !i10b 1
-R77
+R9
 Z112 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_stage3.vhd|
 Z113 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_stage3.vhd|
 !i113 1
@@ -857,7 +857,7 @@ R7
 33
 R76
 !i10b 1
-R77
+R9
 R112
 R113
 !i113 1
