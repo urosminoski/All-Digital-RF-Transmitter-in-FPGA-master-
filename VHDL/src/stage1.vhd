@@ -143,7 +143,7 @@ begin
 	-- xout_q_osr8_test	<= xout_q_osr8;
 	
 	factor1 <= to_sfixed(7.5, factor1'high, factor1'low);
-	factor2 <= to_sfixed(4, factor2'high, factor2'low);
+	factor2 <= to_sfixed(2, factor2'high, factor2'low);
 		
 	-- xi_1 <= resize(to_sfixed(xout_i_osr8, 0, -(XWIDTH-1)) * factor1, xi_1'high, xi_1'low);
 	-- xq_1 <= resize(to_sfixed(xout_q_osr8, 0, -(XWIDTH-1)) * factor1, xq_1'high, xq_1'low);
