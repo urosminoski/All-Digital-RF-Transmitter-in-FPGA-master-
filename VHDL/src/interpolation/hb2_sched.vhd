@@ -149,8 +149,8 @@ begin
 		end if;
 	end process;
 
-	acc_ph0 <= resize(sft_ph0(0) + mul_ph0(0), acc_ph0'high, acc_ph0'low);
-	acc_ph1 <= resize(sft_ph1(0) + mul_ph1(0), acc_ph1'high, acc_ph1'low);
+	acc_ph0 <= resize(2*(sft_ph0(0) + mul_ph0(0)), acc_ph0'high, acc_ph0'low);
+	acc_ph1 <= resize(2*(sft_ph1(0) + mul_ph1(0)), acc_ph1'high, acc_ph1'low);
 
 	-- snimi oba rezultata (ph0/ph1) na seed
 	process(clk)
