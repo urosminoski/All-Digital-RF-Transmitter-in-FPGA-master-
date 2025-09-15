@@ -34,9 +34,9 @@ architecture tb of tb_rfTransmitter is
 	-- constant C_CLK2_PERIOD 	: time    := 1 sec / C_CLK2_FREQ;
 	-- constant C_CLK3_PERIOD 	: time    := 1 sec / C_CLK3_FREQ;
 	
-	constant XWIDTH		: integer := 12;
+	constant XWIDTH		: integer := 15;
 	constant COEF_L		: integer := 15;
-	constant INT 		: integer := 1;
+	constant INT 		: integer := 2;
 	constant FRAC 		: integer := XWIDTH + COEF_L - INT;
 
 	signal clk0   		: std_logic := '1';
