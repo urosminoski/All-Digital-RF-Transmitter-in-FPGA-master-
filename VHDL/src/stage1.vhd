@@ -171,6 +171,9 @@ begin
 			xout	=> xout_q_delay      
 		);
 		
+	-- xi <= resize(to_sfixed(xout_i_osr8, 0, -(XWIDTH-1)) * ds_factor, xi'high, xi'low);
+	-- xq <= resize(to_sfixed(xout_q_osr8, 0, -(XWIDTH-1)) * ds_factor, xq'high, xq'low);
+	
 	xi <= resize(to_sfixed(xout_i_delay, 0, -(XWIDTH-1)) * ds_factor, xi'high, xi'low);
 	xq <= resize(to_sfixed(xout_q_delay, 0, -(XWIDTH-1)) * ds_factor, xq'high, xq'low);
 	

@@ -33,9 +33,6 @@ end entity;
 
 architecture rtl of rfTransmitter is
 
-	constant KERNEL_ID						: integer := 7;
-	signal xout_i_delay, xout_q_delay 		: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-
 	signal xin_i_stage1_s, xin_q_stage1_s 	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 	signal xout_i_stage1_s, xout_q_stage1_s : std_logic_vector(3 downto 0) := (others => '0');
 	signal stage1_strobe 					: std_logic := '0';
@@ -50,30 +47,13 @@ architecture rtl of rfTransmitter is
 
 begin
 
-	-- stage0_gen : entity work.stage0
-		-- generic map (
-			-- KERNEL_ID	=> KERNEL_ID,
-			-- COEF_L		=> COEF_L,
-			-- XWIDTH		=> XWIDTH,
-			-- INT  		=> INT,
-			-- FRAC 		=> FRAC
-		-- )
-		-- port map (
-			-- clk   	=> clk0,
-			-- rst   	=> rst,
-			-- xin_i  	=> xin_i,
-			-- xin_q  	=> xin_q,
-			-- xout_i	=> xout_i_delay,
-			-- xout_q	=> xout_q_delay
-		-- );
-
-	-- cdc01 : entity work.cdc
-		-- port map (
-			-- rst 		=> rst,
-			-- clk_slow	=> clk0,
-		    -- clk_fast	=> clk1,
-			-- strobe		=> stage1_strobe
-		-- );
+	cdc01 : entity work.cdc
+		port map (
+			rst 		=> rst,
+			clk_slow	=> clk0,
+		    clk_fast	=> clk1,
+			strobe		=> stage1_strobe
+		);
 	
 	process(clk1)
 	begin
