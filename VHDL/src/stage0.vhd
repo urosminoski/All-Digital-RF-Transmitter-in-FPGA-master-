@@ -26,7 +26,7 @@ end entity;
 
 architecture rtl of stage0 is
 	
-	constant DELTA 		: real := 0.00048828125;
+	constant DELTA 		: real := 0.00390625;
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
 	

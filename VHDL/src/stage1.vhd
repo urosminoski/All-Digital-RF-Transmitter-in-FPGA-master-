@@ -28,8 +28,9 @@ architecture rtl of stage1 is
 
 	constant LUT_ID : integer := 3;
 	
-	constant DELTA_I : real := -0.125;
-	constant DELTA_Q : real := 0.125;
+	constant DELTA 		: real := 0.00390625;
+	constant DELTA_I 	: real := -DELTA;
+	constant DELTA_Q 	: real := DELTA;
 
 	signal ds_factor	: sfixed(4 downto -(XWIDTH-5));
 	signal xi, xq 		: sfixed(3 downto -(XWIDTH-4));
@@ -134,8 +135,44 @@ begin
 			vout 	=> vout_q
 		);
 		
-	xi <= resize(to_sfixed(xout_i_osr8, 0, -(XWIDTH-1)) * ds_factor, xi'high, xi'low);
-	xq <= resize(to_sfixed(xout_q_osr8, 0, -(XWIDTH-1)) * ds_factor, xq'high, xq'low);
+	delay_i: entity work.delay
+		generic map (
+			KERNEL_ID   => 7,
+			COEF_L		=> COEF_L,
+			XWIDTH		=> XWIDTH,
+			INT  		=> INT,
+			FRAC 		=> FRAC,
+			NUM_TAPS   	=> 7,
+			DELTA		=> DELTA_I
+		)
+		port map (
+			clk		=> clk,
+			rst		=> rst, 
+			en		=> '1', 		
+			xin		=> xout_i_osr8,
+			xout	=> xout_i_delay      
+		);
+		
+	delay_q: entity work.delay
+		generic map (
+			KERNEL_ID   => 7,
+			COEF_L		=> COEF_L,
+			XWIDTH		=> XWIDTH,
+			INT  		=> INT,
+			FRAC 		=> FRAC,
+			NUM_TAPS   	=> 7,
+			DELTA		=> DELTA_Q
+		)
+		port map (
+			clk		=> clk,
+			rst		=> rst, 
+			en		=> '1', 		
+			xin		=> xout_q_osr8,
+			xout	=> xout_q_delay      
+		);
+		
+	xi <= resize(to_sfixed(xout_i_delay, 0, -(XWIDTH-1)) * ds_factor, xi'high, xi'low);
+	xq <= resize(to_sfixed(xout_q_delay, 0, -(XWIDTH-1)) * ds_factor, xq'high, xq'low);
 	
 	xin_i_ds <= to_slv(xi);
 	xin_q_ds <= to_slv(xq);
