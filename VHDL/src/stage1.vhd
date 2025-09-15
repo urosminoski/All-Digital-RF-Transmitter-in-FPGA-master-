@@ -48,7 +48,7 @@ architecture rtl of stage1 is
 	signal xout_i_osr8, xout_q_osr8 : std_logic_vector(XWIDTH-1 downto 0);
 	signal vout_i, vout_q 	: std_logic := '0';
 	
-	signal xin_i_ds, xin_q_ds 	: std_logic_vector(XWIDTH-1 downto 0);
+	signal xin_i_ds, xin_q_ds 	: std_logic_vector(11 downto 0);
 	signal xout_i_ds, xout_q_ds	: std_logic_vector(3 downto 0);
 	
 	signal cnt 		: unsigned(2 downto 0) := (others => '0');
@@ -203,8 +203,8 @@ begin
 	xi_2 <= resize(to_sfixed(xout_i_osr8, INT, -(XWIDTH-1-INT)) * factor, xi_2'high, xi_2'low);
 	xq_2 <= resize(to_sfixed(xout_q_osr8, INT, -(XWIDTH-1-INT)) * factor, xq_2'high, xq_2'low);
 	
-	xi_2_ds <= resize(xi_2, 3, -8);
-	xq_2_ds <= resize(xq_2, 3, -8);
+	xi_2_ds <= resize(xi_2, xi_2_ds'high, xi_2_ds'low);
+	xq_2_ds <= resize(xq_2, xq_2_ds'high, xq_2_ds'low);
 	
 	xin_i_delay <= to_slv(xi_2);
 	xin_q_delay <= to_slv(xq_2);
@@ -250,7 +250,7 @@ begin
 	-- xin_q_ds <= to_slv(xq_2);
 	
 	xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
-	xin_q_ds <= to_slv(xi_2_ds);--xin_q_delay;--xout_q_delay;
+	xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
 	
 	deltaSigma_i: entity work.deltaSigma
 		port map (
