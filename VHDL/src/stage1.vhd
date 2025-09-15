@@ -198,7 +198,7 @@ begin
 	-- xi_2 <= resize(xi_1 * factor2, xi_2'high, xi_2'low);
 	-- xq_2 <= resize(xq_1 * factor2, xq_2'high, xq_2'low);
 	
-	factor <= to_sfixed(30, factor'high, factor'low);
+	factor <= to_sfixed(50, factor'high, factor'low);
 	 
 	xi_2 <= resize(to_sfixed(xout_i_osr8, INT, -(XWIDTH-1-INT)) * factor, xi_2'high, xi_2'low);
 	xq_2 <= resize(to_sfixed(xout_q_osr8, INT, -(XWIDTH-1-INT)) * factor, xq_2'high, xq_2'low);
