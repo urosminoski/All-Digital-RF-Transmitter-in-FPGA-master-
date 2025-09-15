@@ -19,6 +19,10 @@ entity stage1 is
 		strobe	: in  std_logic;
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
+		
+		xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		
 		xout_i	: out std_logic_vector(3 downto 0);
 		xout_q	: out std_logic_vector(3 downto 0)
 	);
@@ -170,6 +174,9 @@ begin
 			-- xin		=> xout_q_osr8,
 			-- xout	=> xout_q_delay      
 		-- );
+		
+	xout_i_osr8_test <= xout_i_osr8;
+	xout_q_osr8_test <= xout_q_osr8;
 		
 	xi <= resize(to_sfixed(xout_i_osr8, 0, -(XWIDTH-1)) * ds_factor, xi'high, xi'low);
 	xq <= resize(to_sfixed(xout_q_osr8, 0, -(XWIDTH-1)) * ds_factor, xq'high, xq'low);

@@ -52,6 +52,9 @@ architecture tb of tb_rfTransmitter is
 	signal xout_q_stage2		: std_logic := '0';
 	signal xout_stage3			: std_logic := '0';
 	
+	signal xout_i_osr8_test : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8_test : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+		   
 	constant Ncnt 		: integer := 8;
 	signal tb_cnt 		: integer := 0;
 	signal out_ready 	: std_logic := '0';
@@ -64,6 +67,9 @@ architecture tb of tb_rfTransmitter is
 	file output_file_q_stage2  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_stage2.txt";
 	file output_file_stage3  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_stage3.txt";
 
+	file output_file_i_osr8_test  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_i_sor8_test.txt";
+	file output_file_q_osr8_test  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\rfTransmitter_test\xout_q_sor8_test.txt";
+	
 begin
 	uut_i: entity work.rfTransmitter
 		generic map (
@@ -84,6 +90,10 @@ begin
 			xout_i_stage1 	=> xout_i_stage1,
 			xout_q_stage1 	=> xout_q_stage1,
 			xout_i_stage2 	=> xout_i_stage2,
+			
+			xout_i_osr8_test => xout_i_osr8_test,
+			xout_q_osr8_test => xout_q_osr8_test,
+			
 			xout_q_stage2 	=> xout_q_stage2,
 			xout_stage3 	=> xout_stage3
 		);
@@ -181,6 +191,7 @@ begin
 	
 	write_stage1 : process(clk1)
 		variable L_i, L_q : line;
+		variable L_i_test, L_q_test : line;
 	begin
 		if falling_edge(clk1) then
 			if rst = '0' then
@@ -191,6 +202,12 @@ begin
 				-- upis Q izlaza
 				write(L_q, to_integer(signed(xout_q_stage1)));
 				writeline(output_file_q_stage1, L_q);
+				
+				-- Test
+				write(L_i_test, to_integer(signed(xout_i_osr8_test)));
+				writeline(output_file_i_osr8_test, L_i_test);
+				write(L_q_test, to_integer(signed(xout_q_osr8_test)));
+				writeline(output_file_q_osr8_test, L_q_test);
 			end if;
 		end if;
 	end process;
