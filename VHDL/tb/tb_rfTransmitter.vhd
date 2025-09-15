@@ -91,8 +91,8 @@ begin
 			xout_q_stage1 	=> xout_q_stage1,
 			xout_i_stage2 	=> xout_i_stage2,
 			
-			-- xout_i_osr8_test => xout_i_osr8_test,
-			-- xout_q_osr8_test => xout_q_osr8_test,
+			xout_i_osr8_test => xout_i_osr8_test,
+			xout_q_osr8_test => xout_q_osr8_test,
 			
 			xout_q_stage2 	=> xout_q_stage2,
 			xout_stage3 	=> xout_stage3

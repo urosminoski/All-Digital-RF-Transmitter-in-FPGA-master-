@@ -20,8 +20,8 @@ entity stage1 is
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		
-		-- xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
-		-- xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
 		
 		xout_i	: out std_logic_vector(3 downto 0);
 		xout_q	: out std_logic_vector(3 downto 0)
@@ -140,8 +140,8 @@ begin
 			vout 	=> vout_q
 		);
 		
-	-- xout_i_osr8_test	<= xout_i_osr8;
-	-- xout_q_osr8_test	<= xout_q_osr8;
+	xout_i_osr8_test	<= xout_i_osr8;
+	xout_q_osr8_test	<= xout_q_osr8;
 	
 	-- factor1 <= to_sfixed(7.5, factor1'high, factor1'low);
 	-- factor2 <= to_sfixed(2, factor2'high, factor2'low);

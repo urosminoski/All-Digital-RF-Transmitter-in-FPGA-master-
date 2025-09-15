@@ -23,8 +23,8 @@ entity rfTransmitter is
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		
-		-- xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
-		-- xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
 		
 		xout_i_stage1	: out std_logic_vector(3 downto 0);
 		xout_q_stage1	: out std_logic_vector(3 downto 0);
@@ -86,8 +86,8 @@ begin
 			xin_i  	=> xin_i_stage1_s,
 			xin_q  	=> xin_q_stage1_s,
 			
-			-- xout_i_osr8_test	=> xout_i_osr8_test,
-			-- xout_q_osr8_test	=> xout_q_osr8_test,
+			xout_i_osr8_test	=> xout_i_osr8_test,
+			xout_q_osr8_test	=> xout_q_osr8_test,
 			
 			xout_i	=> xout_i_stage1_s,
 			xout_q	=> xout_q_stage1_s
