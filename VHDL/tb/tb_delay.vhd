@@ -15,8 +15,8 @@ architecture tb of tb_delay is
 	constant C_CLK_PERIOD : time    := 1 sec / C_CLK_FREQ;
 	
 	constant KERNEL_ID	: integer := 7;
-	constant XWIDTH		: integer := 12;
-	constant COEF_L		: integer := 17;
+	constant XWIDTH		: integer := 13;
+	constant COEF_L		: integer := 15;
 	constant INT 		: integer := 0;
 	constant FRAC 		: integer := XWIDTH + COEF_L;
 	constant NUM_TAPS	: integer := 7;

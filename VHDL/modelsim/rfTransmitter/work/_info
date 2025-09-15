@@ -715,7 +715,7 @@ R95
 R12
 R13
 Etb_delay
-Z96 w1757956696
+Z96 w1757956762
 R24
 R25
 R26
@@ -731,9 +731,9 @@ V<j7iE0eE7^05@ldj?DDMi2
 !s100 iUWihFch0@bEb6?a^X9A72
 R7
 33
-Z99 !s110 1757956708
+Z99 !s110 1757956773
 !i10b 1
-Z100 !s108 1757956708.000000
+Z100 !s108 1757956773.000000
 Z101 !s90 -reportprogress|300|-work|work|-2008|-explicit|-stats=none|C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_delay.vhd|
 Z102 !s107 C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_delay.vhd|
 !i113 1
@@ -752,8 +752,8 @@ R4
 Z104 DEx4 work 8 tb_delay 0 22 <j7iE0eE7^05@ldj?DDMi2
 l44
 L13
-VW9>BD74:efdgDej`;Ola13
-!s100 ]?:0SRQlhB<2UDYe`MRh^0
+VV_1UU07a`gdWo9M=0<`KT0
+!s100 cCDAJ3>_X=dP6Yb4hMh3G3
 R7
 33
 R99
