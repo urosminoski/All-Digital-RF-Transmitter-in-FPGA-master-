@@ -138,10 +138,10 @@ begin
 	delay_i: entity work.delay
 		generic map (
 			KERNEL_ID   => 7,
-			COEF_L		=> COEF_L,
-			XWIDTH		=> XWIDTH,
-			INT  		=> INT,
-			FRAC 		=> FRAC,
+			COEF_L		=> 17,
+			XWIDTH		=> 12,
+			INT  		=> 0,
+			FRAC 		=> 29,
 			NUM_TAPS   	=> 7,
 			DELTA		=> DELTA_I
 		)
@@ -156,10 +156,10 @@ begin
 	delay_q: entity work.delay
 		generic map (
 			KERNEL_ID   => 7,
-			COEF_L		=> COEF_L,
-			XWIDTH		=> XWIDTH,
-			INT  		=> INT,
-			FRAC 		=> FRAC,
+			COEF_L		=> 17,
+			XWIDTH		=> 12,
+			INT  		=> 0,
+			FRAC 		=> 29,
 			NUM_TAPS   	=> 7,
 			DELTA		=> DELTA_Q
 		)
