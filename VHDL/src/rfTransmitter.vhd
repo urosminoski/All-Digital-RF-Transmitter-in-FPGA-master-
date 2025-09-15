@@ -47,26 +47,26 @@ architecture rtl of rfTransmitter is
 
 begin
 
-	-- cdc01 : entity work.cdc
-		-- port map (
-			-- rst 		=> rst,
-			-- clk_slow	=> clk0,
-		    -- clk_fast	=> clk1,
-			-- strobe		=> stage1_strobe
-		-- );
+	cdc01 : entity work.cdc
+		port map (
+			rst 		=> rst,
+			clk_slow	=> clk0,
+		    clk_fast	=> clk1,
+			strobe		=> stage1_strobe
+		);
 	
-	-- process(clk1)
-	-- begin
-		-- if rising_edge(clk1) then
-			-- if rst = '1' then
-				-- xin_i_stage1_s <= (others => '0');
-				-- xin_q_stage1_s <= (others => '0');
-			-- elsif stage1_strobe = '1' then
-				-- xin_i_stage1_s <= xin_i;
-				-- xin_q_stage1_s <= xin_q;
-			-- end if;
-		-- end if;
-	-- end process;
+	process(clk1)
+	begin
+		if rising_edge(clk1) then
+			if rst = '1' then
+				xin_i_stage1_s <= (others => '0');
+				xin_q_stage1_s <= (others => '0');
+			elsif stage1_strobe = '1' then
+				xin_i_stage1_s <= xin_i;
+				xin_q_stage1_s <= xin_q;
+			end if;
+		end if;
+	end process;
 	
 
 	stage1_gen : entity work.stage1
@@ -80,8 +80,8 @@ begin
 			clk   	=> clk1,
 			rst   	=> rst,
 			strobe 	=> stage1_strobe,
-			xin_i  	=> xin_i,--xin_i_stage1_s,
-			xin_q  	=> xin_q,--xin_q_stage1_s,
+			xin_i  	=> xin_i_stage1_s,
+			xin_q  	=> xin_q_stage1_s,
 			xout_i	=> xout_i_stage1_s,
 			xout_q	=> xout_q_stage1_s
 		);
