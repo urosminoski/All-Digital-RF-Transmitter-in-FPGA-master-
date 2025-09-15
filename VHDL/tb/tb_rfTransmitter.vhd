@@ -36,7 +36,7 @@ architecture tb of tb_rfTransmitter is
 	
 	constant XWIDTH		: integer := 16;
 	constant COEF_L		: integer := 15;
-	constant INT 		: integer := 0;
+	constant INT 		: integer := 1;
 	constant FRAC 		: integer := XWIDTH + COEF_L - INT;
 
 	signal clk0   		: std_logic := '1';
