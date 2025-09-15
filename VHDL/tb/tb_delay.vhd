@@ -60,23 +60,23 @@ begin
 			xout	=> xout_i
 		);
 		
-	-- uut_q: entity work.delay
-		-- generic map (
-			-- KERNEL_ID	=> KERNEL_ID,
-			-- COEF_L		=> COEF_L,
-			-- XWIDTH		=> XWIDTH,
-			-- INT  		=> INT,
-			-- FRAC 		=> FRAC,
-			-- NUM_TAPS	=> NUM_TAPS,
-			-- DELTA		=> DELTA_q
-		-- )
-		-- port map (
-			-- clk 	=> clk,
-			-- rst 	=> rst,
-			-- en 		=> en,
-			-- xin   	=> xin_q,
-			-- xout	=> xout_q
-		-- );
+	uut_q: entity work.delay
+		generic map (
+			KERNEL_ID	=> KERNEL_ID,
+			COEF_L		=> COEF_L,
+			XWIDTH		=> XWIDTH,
+			INT  		=> INT,
+			FRAC 		=> FRAC,
+			NUM_TAPS	=> NUM_TAPS,
+			DELTA		=> DELTA_q
+		)
+		port map (
+			clk 	=> clk,
+			rst 	=> rst,
+			en 		=> '1',
+			xin   	=> xin_q,
+			xout	=> xout_q
+		);
 	
 	clk <= not clk after C_CLK_PERIOD/2;
 	
