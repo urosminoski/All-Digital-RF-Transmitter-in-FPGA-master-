@@ -20,8 +20,8 @@ entity stage1 is
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		
-		xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
-		xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		-- xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		-- xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
 		
 		xout_i	: out std_logic_vector(3 downto 0);
 		xout_q	: out std_logic_vector(3 downto 0)
