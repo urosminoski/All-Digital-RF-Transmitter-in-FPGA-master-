@@ -40,7 +40,7 @@ architecture rtl of hb2_sched is
 	signal frame_u     : unsigned(2 downto 0);
 	signal seed_cnt    : unsigned(2 downto 0) := (others => '0');
 
-	signal xin_sf      : sfixed(2 downto -(XWIDTH-3)) := (others => '0');
+	signal xin_sf      : sfixed(INT downto -(XWIDTH-INT-1)) := (others => '0');
 
 	signal coef_ph0    : coef_vec_t;
 	signal coef_ph1    : coef_vec_t;
