@@ -20,8 +20,10 @@ architecture tb of tb_delay is
 	constant INT 		: integer := 0;
 	constant FRAC 		: integer := XWIDTH + COEF_L;
 	constant NUM_TAPS	: integer := 7;
-	constant DELTA_i 	: real := -0.00048828125;
-	constant DELTA_q 	: real := 0.00048828125;
+	
+	constant DELTA 		: real := 0.00390625;
+	constant DELTA_I 	: real := -DELTA;
+	constant DELTA_Q 	: real := DELTA;
 
 	signal clk   		: std_logic := '0';
 	signal rst      	: std_logic := '1';
@@ -36,7 +38,7 @@ architecture tb of tb_delay is
 
 	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_test.txt";
 	-- file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_q_test.txt";
-	file output_file_i  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_i_test.txt";
+	file output_file_i  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_test.txt";
 	-- file output_file_q  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_q_test.txt";
 
 begin
@@ -53,7 +55,7 @@ begin
 		port map (
 			clk 	=> clk,
 			rst 	=> rst,
-			en 		=> en,
+			en 		=> '1',
 			xin   	=> xin_i,
 			xout	=> xout_i
 		);
@@ -101,35 +103,25 @@ begin
 				xin_i   	<= (others => '0');
 				xin_q   	<= (others => '0');
 				out_ready 	<= '0';
-				en 			<= '0';
-			elsif tb_cnt = "000" then
-				-- Čitamo paralelno: zaustavi kad ijedan fajl dođe do kraja
-				if (not endfile(input_file_i)) then--and (not endfile(input_file_q)) then
-					-- I kanal
+			else
+				if (not endfile(input_file_i)) then --and (not endfile(input_file_q)) then
 					readline(input_file_i, L_i);
 					read(L_i, r_i);
 					s_i := to_sfixed(r_i, s_i'high, s_i'low);
 
-					-- Q kanal
 					-- readline(input_file_q, L_q);
 					-- read(L_q, r_q);
 					-- s_q := to_sfixed(r_q, s_q'high, s_q'low);
 
-					-- Izlazi (ako su xi/xq tipa std_logic_vector)
 					xin_i <= to_slv(s_i);
 					-- xin_q <= to_slv(s_q);
 
-					out_ready	<= '1';
-					en 			<= '1';
+					out_ready <= '1';
 				else
-					out_ready 	<= '0';
-					en 			<= '0';
+					out_ready <= '0';
 					report "Kraj jednog od fajlova - simulacija se zaustavlja." severity note;
 					std.env.stop;  -- VHDL-2008
 				end if;
-			else
-				out_ready 	<= '0';
-				en 			<= '0';
 			end if;
 		end if;
 	end process;
