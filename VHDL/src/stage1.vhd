@@ -199,8 +199,8 @@ begin
 	
 	factor <= to_sfixed(30, factor'high, factor'low);
 	 
-	xi_2 <= resize(to_sfixed(xout_i_delay, 0, -(XWIDTH-1)) * factor, xi_2'high, xi_2'low);
-	xq_2 <= resize(to_sfixed(xout_i_delay, 0, -(XWIDTH-1)) * factor, xq_2'high, xq_2'low);
+	xi_2 <= resize(to_sfixed(xout_i_osr8, 0, -(XWIDTH-1)) * factor, xi_2'high, xi_2'low);
+	xq_2 <= resize(to_sfixed(xout_q_osr8, 0, -(XWIDTH-1)) * factor, xq_2'high, xq_2'low);
 	
 	xin_i_delay <= to_slv(xi_2);
 	xin_q_delay <= to_slv(xq_2);
