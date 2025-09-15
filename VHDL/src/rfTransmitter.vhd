@@ -23,8 +23,8 @@ entity rfTransmitter is
 		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
 		
-		xout_i_osr8_test : out std_logic_vector(XWIDTH-1 downto 0);
-		xout_q_osr8_test : out std_logic_vector(XWIDTH-1 downto 0);
+		xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
 		
 		xout_i_stage1	: out std_logic_vector(3 downto 0);
 		xout_q_stage1	: out std_logic_vector(3 downto 0);
@@ -35,8 +35,6 @@ entity rfTransmitter is
 end entity;
 
 architecture rtl of rfTransmitter is
-
-	constant KERNEL_ID : integer := 7;
 
 	signal xin_i_stage1_s, xin_q_stage1_s 	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 	signal xout_i_stage1_s, xout_q_stage1_s : std_logic_vector(3 downto 0) := (others => '0');
@@ -51,23 +49,6 @@ architecture rtl of rfTransmitter is
 	signal stage3_strobe 					: std_logic := '0';
 
 begin
-
-	-- stage0_gen : entity work.stage0
-		-- generic map (
-			-- KERNEL_ID	=> KERNEL_ID,
-			-- COEF_L		=> 17,
-			-- XWIDTH		=> XWIDTH,
-			-- INT  		=> 0,
-			-- FRAC 		=> 17+XWIDTH
-		-- )
-		-- port map (
-			-- clk   	=> clk0,
-			-- rst   	=> rst,
-			-- xin_i  	=> xin_i,
-			-- xin_q  	=> xin_q,
-			-- xout_i	=> xout_i_stage1_s,
-			-- xout_q	=> xout_q_stage1_s
-		-- );
 
 	cdc01 : entity work.cdc
 		port map (
@@ -105,8 +86,8 @@ begin
 			xin_i  	=> xin_i_stage1_s,
 			xin_q  	=> xin_q_stage1_s,
 			
-			xout_i_osr8_test => xout_i_osr8_test,
-			xout_q_osr8_test => xout_q_osr8_test,
+			xout_i_osr8_test	=> xout_i_osr8_test,
+			xout_q_osr8_test	=> xout_q_osr8_test,
 			
 			xout_i	=> xout_i_stage1_s,
 			xout_q	=> xout_q_stage1_s
