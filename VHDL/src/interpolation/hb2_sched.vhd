@@ -31,7 +31,7 @@ end entity;
 architecture rtl of hb2_sched is
 
 	subtype coef_t is sfixed(0 downto -COEF_L);
-	subtype acc_t  is sfixed(INT downto -FRAC);
+	subtype acc_t  is sfixed(INT+4 downto -FRAC);
 
 	type coef_vec_t  is array (0 to NUM_TAPS-1) of coef_t;
 	type mul_vec_t   is array (0 to NUM_TAPS-1) of acc_t;
