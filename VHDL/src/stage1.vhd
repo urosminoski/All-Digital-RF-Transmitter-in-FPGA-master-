@@ -245,8 +245,8 @@ begin
 	-- xin_i_ds <= to_slv(xi_2);
 	-- xin_q_ds <= to_slv(xq_2);
 	
-	xin_i_ds <= xout_i_delay;
-	xin_q_ds <= xout_q_delay;
+	xin_i_ds <= xin_i_delay;--xout_i_delay;
+	xin_q_ds <= xin_q_delay;--xout_q_delay;
 	
 	deltaSigma_i: entity work.deltaSigma
 		port map (
