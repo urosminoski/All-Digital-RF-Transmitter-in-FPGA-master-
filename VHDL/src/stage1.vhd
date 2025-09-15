@@ -28,7 +28,7 @@ architecture rtl of stage1 is
 
 	constant LUT_ID : integer := 3;
 	
-	constant DELTA 		: real := 0.00390625;
+	constant DELTA 		: real := 0.5;
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
 
