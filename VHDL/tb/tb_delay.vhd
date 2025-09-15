@@ -36,10 +36,10 @@ architecture tb of tb_delay is
 	signal tb_cnt 		: unsigned(2 downto 0) := (others => '0');
 	signal out_ready 	: std_logic := '0';
 
-	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_test.txt";
-	-- file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_q_test.txt";
-	file output_file_i  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_test.txt";
-	-- file output_file_q  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_q_test.txt";
+	file input_file_i  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_i_test.txt";
+	file input_file_q  	: text open read_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_q_test.txt";
+	file output_file_i  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_i_test.txt";
+	file output_file_q  : text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_q_test.txt";
 
 begin
 	uut_i: entity work.delay
@@ -109,12 +109,12 @@ begin
 					read(L_i, r_i);
 					s_i := to_sfixed(r_i, s_i'high, s_i'low);
 
-					-- readline(input_file_q, L_q);
-					-- read(L_q, r_q);
-					-- s_q := to_sfixed(r_q, s_q'high, s_q'low);
+					readline(input_file_q, L_q);
+					read(L_q, r_q);
+					s_q := to_sfixed(r_q, s_q'high, s_q'low);
 
 					xin_i <= to_slv(s_i);
-					-- xin_q <= to_slv(s_q);
+					xin_q <= to_slv(s_q);
 
 					out_ready <= '1';
 				else
@@ -131,13 +131,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if out_ready = '1' then
-				-- upis I izlaza
 				write(L_i, to_integer(signed(xout_i)));
 				writeline(output_file_i, L_i);
 
-				-- upis Q izlaza
-				-- write(L_q, to_integer(signed(xout_q)));
-				-- writeline(output_file_q, L_q);
+				write(L_q, to_integer(signed(xout_q)));
+				writeline(output_file_q, L_q);
 			end if;
 		end if;
 	end process;
