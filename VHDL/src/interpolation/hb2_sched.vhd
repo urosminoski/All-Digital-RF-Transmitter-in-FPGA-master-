@@ -149,8 +149,8 @@ begin
 		end if;
 	end process;
 
-	acc_ph0 <= resize(sft_ph0(0) + mul_ph0(0), acc_ph0'high, acc_ph0'low);
-	acc_ph1 <= resize(sft_ph1(0) + mul_ph1(0), acc_ph1'high, acc_ph1'low);
+	acc_ph0 <= resize(2*(sft_ph0(0) + mul_ph0(0)), acc_ph0'high, acc_ph0'low);
+	acc_ph1 <= resize(2*(sft_ph1(0) + mul_ph1(0)), acc_ph1'high, acc_ph1'low);
 
 	-- snimi oba rezultata (ph0/ph1) na seed
 	process(clk)
@@ -160,8 +160,8 @@ begin
 				y_ph0_buf <= (others => '0');
 				y_ph1_buf <= (others => '0');
 			elsif seed='1' then
-				y_ph0_buf <= to_slv(resize(acc_ph0, 0, -(XWIDTH-1)));
-				y_ph1_buf <= to_slv(resize(acc_ph1, 0, -(XWIDTH-1)));
+				y_ph0_buf <= to_slv(resize(acc_ph0, INT, -(XWIDTH-1-INT)));
+				y_ph1_buf <= to_slv(resize(acc_ph1, INT, -(XWIDTH-1-INT)));
 			end if;
 		end if;
 	end process;

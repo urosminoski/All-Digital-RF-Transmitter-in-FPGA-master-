@@ -201,7 +201,7 @@ begin
 	xout <= to_slv(
 		resize(
 			to_sfixed(x2, INT, -FRAC),
-			0, -(XWIDTH-1)
+			INT, -(XWIDTH-1-INT)
 		)
 	);
 
