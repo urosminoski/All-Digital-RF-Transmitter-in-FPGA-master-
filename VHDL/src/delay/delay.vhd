@@ -112,7 +112,7 @@ begin
 			if rst = '1' then
 				xout <= (others => '0');
 			elsif en = '1' then
-				xout <= to_slv(resize(xout_d, INT, -(XWIDTH-1-INT)));
+				xout <= to_slv(resize(xout_d, 0, -(XWIDTH-1)));
 			end if;
 		end if;
 	end process;
