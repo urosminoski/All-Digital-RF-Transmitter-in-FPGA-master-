@@ -15,7 +15,8 @@ architecture tb of tb_stage1 is
 	constant C_CLK0_PERIOD 	: time    := 10240 ps;
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
-	constant OSR_WIDTH		: integer := 12;
+	constant XWIDTH			: integer := 12;
+	constant OSR_WIDTH		: integer := 16;
 	constant OSR_COEFF		: integer := 15;
 	constant OSR_INT 		: integer := 0;
 	constant OSR_GUARD_BITS : integer := 4;
@@ -26,8 +27,8 @@ architecture tb of tb_stage1 is
 	signal rst      		: std_logic := '1';
 	signal xin_i        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xin_q        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i_osr8  	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_q_osr8    	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i_osr8  	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8    	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
 	signal xout_i			: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_q			: std_logic_vector(3 downto 0) := (others => '0');
 	
@@ -75,6 +76,7 @@ begin
 	
 	uut_i: entity work.stage1
 		generic map (
+			XWIDTH			=> XWIDTH,
 			OSR_WIDTH		=> OSR_WIDTH,
 			OSR_COEFF		=> OSR_COEFF,
 			OSR_INT  		=> OSR_INT,

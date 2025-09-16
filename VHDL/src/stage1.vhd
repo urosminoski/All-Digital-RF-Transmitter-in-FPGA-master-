@@ -8,6 +8,7 @@ use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
 
 entity stage1 is
 	generic(
+		XWIDTH			: integer := 12;
 		OSR_WIDTH		: integer := 12;
 		OSR_COEFF		: integer := 11;
 		OSR_INT  		: integer := 0;
@@ -19,8 +20,8 @@ entity stage1 is
 		strobe		: in  std_logic;
 		xin_i  		: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_q  		: in  std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_i_osr8	: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_q_osr8	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i_osr8	: out std_logic_vector(XWIDTH-1 downto 0);
+		xout_q_osr8	: out std_logic_vector(XWIDTH-1 downto 0);
 		xout_i		: out std_logic_vector(3 downto 0);
 		xout_q		: out std_logic_vector(3 downto 0)
 	);
@@ -29,7 +30,7 @@ end entity;
 architecture rtl of stage1 is
 
 	constant COEF_L		: integer := 11;
-	constant XWIDTH		: integer := 12;
+	-- constant XWIDTH		: integer := 12;
 	constant INT		: integer := 0;
 	constant FRAC		: integer := 4;
 
@@ -95,8 +96,11 @@ begin
 			vout 	=> vout_q
 		);
 		
-	xout_i_osr8	<= xout_i_osr8_int;
-	xout_q_osr8	<= xout_q_osr8_int;
+	-- xout_i_osr8	<= xout_i_osr8_int;
+	-- xout_q_osr8	<= xout_q_osr8_int;
+	
+	xout_i_osr8	<= to_slv(resize(to_sfixed(xout_i_osr8_int, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
+	xout_q_osr8	<= to_slv(resize(to_sfixed(xout_q_osr8_int, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
 	
 	-------------------------------------------------------------------------------
 	-- Normalization to [-4, 4]
