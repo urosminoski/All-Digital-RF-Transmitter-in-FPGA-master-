@@ -15,19 +15,19 @@ architecture tb of tb_stage1 is
 	constant C_CLK0_PERIOD 	: time    := 10240 ps;
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
-	constant XWIDTH		: integer := 12;
-	constant COEF_L		: integer := 15;
-	constant INT 		: integer := 0;
-	constant FRAC 		: integer := XWIDTH + COEF_L - INT;
+	constant OSR_WIDTH		: integer := 16;
+	constant OSR_COEFF		: integer := 15;
+	constant OSR_INT 		: integer := 0;
+	constant OSR_GUARD_BITS : integer := 4;
 
 	signal clk0   			: std_logic := '1';
 	signal clk1   			: std_logic := '1';
 	signal stage1_strobe   	: std_logic := '1';
 	signal rst      		: std_logic := '1';
-	signal xin_i        	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	signal xin_q        	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	signal xout_i_osr8  	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	signal xout_q_osr8    	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xin_i        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xin_q        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i_osr8  	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8    	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i			: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_q			: std_logic_vector(3 downto 0) := (others => '0');
 	
@@ -75,10 +75,10 @@ begin
 	
 	uut_i: entity work.stage1
 		generic map (
-			COEF_L		=> COEF_L,
-			XWIDTH		=> XWIDTH,
-			INT  		=> INT,
-			FRAC 		=> FRAC
+			OSR_WIDTH		=> OSR_WIDTH,
+			OSR_COEFF		=> OSR_COEFF,
+			OSR_INT  		=> OSR_INT,
+			OSR_GUARD_BITS 	=> OSR_GUARD_BITS
 		)
 		port map (
 			clk 		=> clk1,
@@ -110,7 +110,7 @@ begin
 	read_files : process(clk0)
 		variable L_i, L_q : line;
 		variable r_i, r_q : real;
-		variable s_i, s_q : sfixed(0 downto -(XWIDTH-1));
+		variable s_i, s_q : sfixed(0 downto -(OSR_WIDTH-1));
 	begin
 		if rising_edge(clk0) then
 			if rst = '1' then
