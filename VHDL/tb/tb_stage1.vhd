@@ -16,7 +16,7 @@ architecture tb of tb_stage1 is
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
 	constant XWIDTH		: integer := 12;
-	constant COEF_L		: integer := 11;
+	constant COEF_L		: integer := 15;
 	constant INT 		: integer := 0;
 	constant FRAC 		: integer := XWIDTH + COEF_L - INT;
 
