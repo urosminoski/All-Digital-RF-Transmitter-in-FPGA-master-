@@ -15,7 +15,7 @@ architecture tb of tb_stage1 is
 	constant C_CLK0_PERIOD 	: time    := 10240 ps;
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
-	constant XWIDTH			: integer := 12;
+	constant XWIDTH			: integer := 16;
 	constant OSR_WIDTH		: integer := 16;
 	constant OSR_COEFF		: integer := 15;
 	constant OSR_INT 		: integer := 0;

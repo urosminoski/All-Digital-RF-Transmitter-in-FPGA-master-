@@ -5,10 +5,13 @@ use ieee.fixed_float_types.all;
 use ieee.fixed_pkg.all;
 
 entity deltaSigma is
-	port(
+	generic (
+		XWIDTH	: integer := 12
+	);
+	port (
 		clk	: in  std_logic;
 		rst : in  std_logic;
-		x 	: in  std_logic_vector(11 downto 0);
+		x 	: in  std_logic_vector(XWIDTH-1 downto 0);
 		y 	: out std_logic_vector(3 downto 0)
 		-- x : in sfixed(3 downto -8);
 		-- y : out sfixed(3 downto 0)
@@ -17,18 +20,18 @@ end entity;
 
 architecture rti of deltaSigma is
 	-- Koeficijenti (real → sfixed):
-	constant b00 : sfixed(3 downto -8)  := to_sfixed(7.3765809,  3, -8);
-	constant a01 : sfixed(0 downto -11) := to_sfixed(0.3466036,  0, -11);
-	constant b10 : sfixed(0 downto -11) := to_sfixed(0.424071040,0, -11);
-	constant b11 : sfixed(2 downto -9)  := to_sfixed(2.782608716,2, -9);
-	constant a11 : sfixed(0 downto -11) := to_sfixed(0.66591402, 0, -11);
-	constant a12 : sfixed(0 downto -11) := to_sfixed(0.16260264, 0, -11);
-	constant b20 : sfixed(3 downto -8)  := to_sfixed(4.606822182,3, -8);
-	constant b21 : sfixed(0 downto -11) := to_sfixed(0.023331537,0, -11);
-	constant a21 : sfixed(0 downto -11) := to_sfixed(0.62380242, 0, -11);
-	constant a22 : sfixed(0 downto -11) := to_sfixed(0.4509869,  0, -11);
+	constant b00 : sfixed(3 downto -(XWIDTH-4))	:= to_sfixed(7.3765809,  3, -(XWIDTH-4));
+	constant a01 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.3466036,  0, -(XWIDTH-1));
+	constant b10 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.424071040,0, -(XWIDTH-1));
+	constant b11 : sfixed(2 downto -(XWIDTH-3))	:= to_sfixed(2.782608716,2, -(XWIDTH-3));
+	constant a11 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.66591402, 0, -(XWIDTH-1));
+	constant a12 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.16260264, 0, -(XWIDTH-1));
+	constant b20 : sfixed(3 downto -(XWIDTH-4))	:= to_sfixed(4.606822182,3, -(XWIDTH-4));
+	constant b21 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.023331537,0, -(XWIDTH-1));
+	constant a21 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.62380242, 0, -(XWIDTH-1));
+	constant a22 : sfixed(0 downto -(XWIDTH-1)) := to_sfixed(0.4509869,  0, -(XWIDTH-1));
 
-	signal x_sfixed : sfixed(3 downto -8);
+	signal x_sfixed : sfixed(3 downto -(XWIDTH-4));
 	signal y_sfixed : sfixed(3 downto 0);
   
 	-- signal y_iir, e            : sfixed(3 downto -20);
@@ -40,11 +43,11 @@ architecture rti of deltaSigma is
   
 begin
 	process(clk, rst)
-		variable y_iir, e            : sfixed(3 downto -20);
-		variable y_i                 : sfixed(3 downto -20);
-		variable x0, x0d             : sfixed(3 downto -20);
-		variable x1, w1, w1d, w1dd   : sfixed(3 downto -20);
-		variable x2, w2, w2d, w2dd   : sfixed(3 downto -20);
+		variable y_iir, e            : sfixed(3 downto -(2*XWIDTH-4));
+		variable y_i                 : sfixed(3 downto -(2*XWIDTH-4));
+		variable x0, x0d             : sfixed(3 downto -(2*XWIDTH-4));
+		variable x1, w1, w1d, w1dd   : sfixed(3 downto -(2*XWIDTH-4));
+		variable x2, w2, w2d, w2dd   : sfixed(3 downto -(2*XWIDTH-4));
 		variable v                   : sfixed(3 downto 0);
 	begin
 		if rst = '1' then

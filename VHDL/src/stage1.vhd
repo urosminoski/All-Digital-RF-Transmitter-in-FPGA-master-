@@ -41,10 +41,10 @@ architecture rtl of stage1 is
 	constant DELTA_Q 	: real := DELTA;
 
 	signal factor	: sfixed(4 downto -(XWIDTH-5));
-	signal factor1, factor2	: sfixed(4 downto -(XWIDTH-5));
-	signal xi_1, xq_1 		: sfixed(3 downto -(XWIDTH-4));
-	signal xi_2, xq_2 		: sfixed(3 downto -(XWIDTH-4));
-	signal xi_2_ds, xq_2_ds : sfixed(3 downto -8);
+	signal factor1, factor2	: sfixed(4 downto -1);
+	signal xi_1, xq_1 		: sfixed(3 downto -(OSR_WIDTH-4));
+	signal xi_2, xq_2 		: sfixed(3 downto -(OSR_WIDTH-4));
+	signal xi_2_ds, xq_2_ds : sfixed(3 downto -(OSR_WIDTH-4));
 	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(XWIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(XWIDTH-1 downto 0);
@@ -52,7 +52,7 @@ architecture rtl of stage1 is
 	signal xout_i_osr8_int, xout_q_osr8_int : std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal vout_i, vout_q 	: std_logic := '0';
 	
-	signal xin_i_ds, xin_q_ds 	: std_logic_vector(11 downto 0);
+	signal xin_i_ds, xin_q_ds 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_ds, xout_q_ds	: std_logic_vector(3 downto 0);
 	
 	signal cnt 		: unsigned(2 downto 0) := (others => '0');
@@ -96,11 +96,11 @@ begin
 			vout 	=> vout_q
 		);
 		
-	-- xout_i_osr8	<= xout_i_osr8_int;
-	-- xout_q_osr8	<= xout_q_osr8_int;
+	xout_i_osr8	<= xout_i_osr8_int;
+	xout_q_osr8	<= xout_q_osr8_int;
 	
-	xout_i_osr8	<= to_slv(resize(to_sfixed(xout_i_osr8_int, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
-	xout_q_osr8	<= to_slv(resize(to_sfixed(xout_q_osr8_int, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
+	-- xout_i_osr8	<= to_slv(resize(to_sfixed(xout_i_osr8_int, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
+	-- xout_q_osr8	<= to_slv(resize(to_sfixed(xout_q_osr8_int, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
 	
 	-------------------------------------------------------------------------------
 	-- Normalization to [-4, 4]
@@ -151,39 +151,41 @@ begin
 			-- xout	=> xout_q_delay      
 		-- );
 	
-	-- xi_2_ds <= resize(to_sfixed(xout_i_delay, INT, -(XWIDTH-1-INT)), xi_2_ds'high, xi_2_ds'low);
-	-- xq_2_ds <= resize(to_sfixed(xout_q_delay, INT, -(XWIDTH-1-INT)), xq_2_ds'high, xq_2_ds'low);
+	xi_2_ds <= resize(to_sfixed(xout_i_osr8_int, INT, -(OSR_WIDTH-1-INT)), xi_2_ds'high, xi_2_ds'low);
+	xq_2_ds <= resize(to_sfixed(xout_q_osr8_int, INT, -(OSR_WIDTH-1-INT)), xq_2_ds'high, xq_2_ds'low);
 	
-	-- xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
-	-- xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
+	xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
+	xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
 	
-	-- deltaSigma_i: entity work.deltaSigma
-		-- port map (
-			-- clk		=> clk,
-			-- rst 	=> rst,
-			-- x 		=> xin_i_ds,
-			-- y		=> xout_i_ds
-		-- );
+	deltaSigma_i: entity work.deltaSigma
+		generic map ( XWIDTH => OSR_WIDTH )
+		port map (
+			clk		=> clk,
+			rst 	=> rst,
+			x 		=> xin_i_ds,
+			y		=> xout_i_ds
+		);
 		
-	-- deltaSigma_q: entity work.deltaSigma
-		-- port map (
-			-- clk		=> clk,
-			-- rst 	=> rst,
-			-- x 		=> xin_q_ds,
-			-- y		=> xout_q_ds
-		-- );
+	deltaSigma_q: entity work.deltaSigma
+		generic map ( XWIDTH => OSR_WIDTH )
+		port map (
+			clk		=> clk,
+			rst 	=> rst,
+			x 		=> xin_q_ds,
+			y		=> xout_q_ds
+		);
 
-	-- process(clk)
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- xout_i 	<= (others => '0');
-				-- xout_q 	<= (others => '0');
-			-- else	
-				-- xout_i 	<= xout_i_ds;
-				-- xout_q 	<= xout_q_ds;
-			-- end if;
-		-- end if;
-	-- end process;
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				xout_i 	<= (others => '0');
+				xout_q 	<= (others => '0');
+			else	
+				xout_i 	<= xout_i_ds;
+				xout_q 	<= xout_q_ds;
+			end if;
+		end if;
+	end process;
 
 end architecture;
