@@ -11,7 +11,7 @@ entity osr8 is
 		COEF_L		: integer := 15;
 		XWIDTH		: integer := 12;
 		INT  		: integer := 1;
-		FRAC 		: integer := 26
+		GUARD_BITS	: integer := 4
 	);
 	port(
 		clk   	: in  std_logic;
@@ -24,6 +24,9 @@ entity osr8 is
 end entity;
 
 architecture rtl of osr8 is
+
+	constant INT_IN		: integer := INT + GUARD_BITS;
+	constant FRAC_IN 	: integer := COEF_L + XWIDTH - INT;
 
 	constant S0_OFF0 : integer := 0;
 	constant S0_OFF1 : integer := 4;
@@ -38,19 +41,17 @@ architecture rtl of osr8 is
 	constant NUM_TAPS1 : integer := FIR1_N;
 	constant NUM_TAPS2 : integer := FIR2_N;
 	
-	constant XWIDTH_HB2 : integer := INT+FRAC+1;
+	-- constant XWIDTH_HB2 : integer := INT+FRAC+1;
 
 	signal frame_cnt : std_logic_vector(2 downto 0) := (others => '0');
 	
-	signal x0, x1, x2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
+	-- signal x0, x1, x2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
+	signal x0, x1, x2 	: sfixed(INT_IN downto -FRAC_IN);
 	signal v0, v1, v2 	: std_logic;
 	signal seed 		: std_logic;
 	
-	signal xin_hb2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
-	
-	signal xin_shadow : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	signal xin_lat    : std_logic_vector(XWIDTH-1 downto 0) := (others => '0'); -- ovo HB2 "vidi"
-	signal pending    : std_logic := '0';
+	-- signal xin_hb2 	: std_logic_vector(XWIDTH_HB2-1 downto 0);
+	signal xin_hb2 	: sfixed(INT_IN downto -FRAC_IN);
 
 begin
 
@@ -73,72 +74,18 @@ begin
 	
 	seed <= '1' when (frame_cnt = "000") else '0';
 	
-	-- process(clk)
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- xin_shadow	<= (others => '0');
-				-- xin_lat	 	<= (others => '0');
-				-- pending    	<= '0';
-			-- else
-				-- if strobe = '1' then
-					-- xin_shadow 	<= xin;
-					-- pending 	<= '1';
-				-- end if;
-				
-				-- if frame_cnt = "111" and pending = '1' then
-					-- xin_lat <= xin_shadow;
-					-- pending	<= '0';
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
-	
-	  -- 2) CDC strobe → shadow + pending
-	-- process(clk)
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- xin_shadow	<= (others => '0');
-				-- pending    	<= '0';
-			-- elsif strobe = '1' then
-				-- xin_shadow	<= xin;     -- novi uzorak stigao u clk1
-				-- pending   	<= '1';
-			-- end if;
-		-- end if;
-	-- end process;
-	
-	-- 3) Prirodno poravnanje: menjaš ulaz HB2 SAMO na frame_cnt=0 ako ima pending
-	-- process(clk)
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- xin_lat <= (others => '0');
-			-- elsif frame_cnt = "000" then
-				-- if pending = '1' then
-					-- xin_lat <= xin_shadow;  -- PROMENA ulaza tačno na fazi 0
-					-- pending	<= '0';
-				-- end if;
-			-- ako nema pending, zadržava se stari xin_lat
-			-- end if;
-		-- end if;
-	-- end process;
-	
-	xin_hb2 <= to_slv(
-		resize(
-			to_sfixed(xin, 0, -(XWIDTH-1)),  	-- interpretiraj ulaz kao Q(0.(W-1))
-			INT, -FRAC                         		-- proširi na Q(INT.FRAC) (round/trunc po defaultu)
-		)
-	);
+	xin_hb2 <= resize(
+			to_sfixed(xin, 0, -(XWIDTH-1)),
+			INT_IN, -FRAC_IN
+		);
 	
 	-- Stage 0
 	u_s0: entity work.hb2_sched
 		generic map(
 			STAGE_ID   	=> 0,
 			COEF_L		=> COEF_L,
-			INT    		=> INT,
-			FRAC   		=> FRAC,
-			XWIDTH 		=> XWIDTH_HB2,
+			INT    		=> INT_IN,
+			FRAC   		=> FRAC_IN,
 			NUM_TAPS   	=> NUM_TAPS0,
 			OFF0       	=> S0_OFF0,
 			OFF1       	=> S0_OFF1
@@ -158,9 +105,8 @@ begin
 		generic map(
 			STAGE_ID   	=> 1,
 			COEF_L		=> COEF_L,
-			INT    		=> INT,
-			FRAC   		=> FRAC,
-			XWIDTH 		=> XWIDTH_HB2,
+			INT    		=> INT_IN,
+			FRAC   		=> FRAC_IN,
 			NUM_TAPS   	=> NUM_TAPS1,
 			OFF0       	=> S1_OFF0,
 			OFF1       	=> S1_OFF1
@@ -180,9 +126,8 @@ begin
 		generic map(
 			STAGE_ID   	=> 2,
 			COEF_L		=> COEF_L,
-			INT    		=> INT,
-			FRAC   		=> FRAC,
-			XWIDTH 		=> XWIDTH_HB2,
+			INT    		=> INT_IN,
+			FRAC   		=> FRAC_IN,
 			NUM_TAPS   	=> NUM_TAPS2,
 			OFF0       	=> S2_OFF0,
 			OFF1       	=> S2_OFF1
@@ -198,11 +143,6 @@ begin
 		);
 		
 	vout <= v2;
-	xout <= to_slv(
-		resize(
-			to_sfixed(x2, INT, -FRAC),
-			INT, -(XWIDTH-1-INT)
-		)
-	);
+	xout <= to_slv(resize(x2, INT, -(XWIDTH-1-INT)));
 
 end architecture;

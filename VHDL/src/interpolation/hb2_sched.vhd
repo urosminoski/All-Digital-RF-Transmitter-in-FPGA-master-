@@ -11,8 +11,7 @@ entity hb2_sched is
 		STAGE_ID   	: integer := 0;   -- 0,1,2
 		COEF_L		: integer := 15;
 		INT			: integer := 1;
-		FRAC		: integer := 26;
-		XWIDTH		: integer := 12;
+		FRAC		: integer := 11;
 		NUM_TAPS   	: integer := 42;  -- ef. dužina u ovoj instanci (padujemo nulama ako treba)
 		OFF0       	: integer := 0;   -- seed+OFF0 -> ph0 (even)
 		OFF1       	: integer := 4    -- seed+OFF1 -> ph1 (odd)
@@ -22,8 +21,10 @@ entity hb2_sched is
 		rst        : in  std_logic;
 		seed       : in  std_logic;                  -- 1 clk: novi ulaz za stejdž
 		frame_cnt  : in  std_logic_vector(2 downto 0); -- 0..7 @ 8*fs
-		xin        : in  std_logic_vector(XWIDTH-1 downto 0);
-		xout       : out std_logic_vector(XWIDTH-1 downto 0);
+		-- xin        : in  std_logic_vector(XWIDTH-1 downto 0);
+		-- xout       : out std_logic_vector(XWIDTH + COEF_L + GUARD_BITS downto 0);
+		xin			: in  sfixed(INT downto -FRAC);
+		xout		: out  sfixed(INT downto -FRAC);
 		vout       : out std_logic                   -- 1 clk kada je xout valid
 	);
 end entity;
@@ -31,7 +32,7 @@ end entity;
 architecture rtl of hb2_sched is
 
 	subtype coef_t is sfixed(0 downto -COEF_L);
-	subtype acc_t  is sfixed(INT+4 downto -FRAC);
+	subtype acc_t  is sfixed(xin'high downto xin'low);
 
 	type coef_vec_t  is array (0 to NUM_TAPS-1) of coef_t;
 	type mul_vec_t   is array (0 to NUM_TAPS-1) of acc_t;
@@ -40,7 +41,8 @@ architecture rtl of hb2_sched is
 	signal frame_u     : unsigned(2 downto 0);
 	signal seed_cnt    : unsigned(2 downto 0) := (others => '0');
 
-	signal xin_sf      : sfixed(INT downto -(XWIDTH-INT-1)) := (others => '0');
+	-- signal xin_sf      : sfixed(INT downto -(XWIDTH-INT-1)) := (others => '0');
+	signal xin_sf      : sfixed(xin'high downto xin'low) := (others => '0');
 
 	signal coef_ph0    : coef_vec_t;
 	signal coef_ph1    : coef_vec_t;
@@ -54,20 +56,23 @@ architecture rtl of hb2_sched is
 	signal acc_ph0     : acc_t;
 	signal acc_ph1     : acc_t;
 
-	signal y_ph0_buf   : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	signal y_ph1_buf   : std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	-- signal y_ph0_buf   : std_logic_vector(xout'high downto xout'low) := (others => '0');
+	-- signal y_ph1_buf   : std_logic_vector(xout'high downto xout'low) := (others => '0');
+	
+	signal y_ph0_buf   : sfixed(xin'high downto xin'low) := (others => '0');
+	signal y_ph1_buf   : sfixed(xin'high downto xin'low) := (others => '0');
 
 	signal fire0       : std_logic;
 	signal fire1       : std_logic;
-	
-	signal tmp1, tmp2 : unsigned(2 downto 0);
 
 	function add_mod8(a : unsigned(2 downto 0); b : natural) return unsigned is
 		variable tmp : natural := to_integer(a) + b;
 	begin
 		return to_unsigned(tmp mod 8, 3);
 	end function;
+	
 begin
+
 	frame_u <= unsigned(frame_cnt);
 
 	-- Koefovi: popuni sfixed nizove iz paketa; ako je NUM_TAPS duži, paduj nulama
@@ -103,7 +108,8 @@ begin
 				xin_sf   <= (others => '0');
 				seed_cnt <= (others => '0');
 			elsif seed='1' then
-				xin_sf   <= to_sfixed(xin, xin_sf'high, xin_sf'low);
+				-- xin_sf   <= to_sfixed(xin, xin_sf'high, xin_sf'low);
+				xin_sf   <= xin;
 				seed_cnt <= add_mod8(frame_u, 1);
 			end if;
 		end if;
@@ -149,8 +155,8 @@ begin
 		end if;
 	end process;
 
-	acc_ph0 <= resize(sft_ph0(0) + mul_ph0(0), acc_ph0'high, acc_ph0'low);
-	acc_ph1 <= resize(sft_ph1(0) + mul_ph1(0), acc_ph1'high, acc_ph1'low);
+	acc_ph0 <= resize(2*(sft_ph0(0) + mul_ph0(0)), acc_ph0'high, acc_ph0'low);
+	acc_ph1 <= resize(2*(sft_ph1(0) + mul_ph1(0)), acc_ph1'high, acc_ph1'low);
 
 	-- snimi oba rezultata (ph0/ph1) na seed
 	process(clk)
@@ -160,19 +166,17 @@ begin
 				y_ph0_buf <= (others => '0');
 				y_ph1_buf <= (others => '0');
 			elsif seed='1' then
-				y_ph0_buf <= to_slv(resize(acc_ph0, INT, -(XWIDTH-1-INT)));
-				y_ph1_buf <= to_slv(resize(acc_ph1, INT, -(XWIDTH-1-INT)));
+				-- y_ph0_buf <= to_slv(resize(acc_ph0, INT, -(XWIDTH-1-INT)));
+				-- y_ph1_buf <= to_slv(resize(acc_ph1, INT, -(XWIDTH-1-INT)));
+				y_ph0_buf <= acc_ph0;
+				y_ph1_buf <= acc_ph1;
 			end if;
 		end if;
 	end process;
 	
-	-- tmp1 <= add_mod8(seed_cnt, OFF0);
-	-- tmp2 <= add_mod8(seed_cnt, OFF1);
-	
 	-- fire = seed+OFF (mod 8) i izbacivanje
 	fire0 <= '1' when frame_u = add_mod8(seed_cnt, OFF0) else '0';
 	fire1 <= '1' when frame_u = add_mod8(seed_cnt, OFF1) else '0';
-
 
 	gen_out0: if STAGE_ID = 0 generate
 		process(clk)
