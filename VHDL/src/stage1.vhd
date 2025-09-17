@@ -22,8 +22,8 @@ entity stage1 is
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_i_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
 		xout_q_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
-		xout_i				: out std_logic_vector(3 downto 0);
-		xout_q				: out std_logic_vector(3 downto 0)
+		xout_i				: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_q				: out std_logic_vector(OSR_WIDTH-1 downto 0)
 	);
 end entity;
 
@@ -154,11 +154,15 @@ begin
 	
 	factor <= to_sfixed(4.0, factor'high, factor'low);
 	
+	
+	xout_i <= xout_i_osr8;
+	xout_q <= xout_q_osr8;
+	
 	xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
 	xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
 	
-	xi_2 <= resize(factor * xi_1, 2, -9);
-	xq_2 <= resize(factor * xq_1, 2, -9);
+	xi_2 <= resize(4*xi_1, 2, -9);
+	xq_2 <= resize(4*xq_1, 2, -9);
 	
 	xin_i_ds <= to_slv(
 		resize(
@@ -181,35 +185,35 @@ begin
 	-- xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
 	-- xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
 	
-	deltaSigma_i: entity work.deltaSigma
-		generic map ( XWIDTH => DS_WIDTH )
-		port map (
-			clk		=> clk,
-			rst 	=> rst,
-			x 		=> xin_i_ds,
-			y		=> xout_i_ds
-		);
+	-- deltaSigma_i: entity work.deltaSigma
+		-- generic map ( XWIDTH => DS_WIDTH )
+		-- port map (
+			-- clk		=> clk,
+			-- rst 	=> rst,
+			-- x 		=> xin_i_ds,
+			-- y		=> xout_i_ds
+		-- );
 		
-	deltaSigma_q: entity work.deltaSigma
-		generic map ( XWIDTH => DS_WIDTH )
-		port map (
-			clk		=> clk,
-			rst 	=> rst,
-			x 		=> xin_q_ds,
-			y		=> xout_q_ds
-		);
+	-- deltaSigma_q: entity work.deltaSigma
+		-- generic map ( XWIDTH => DS_WIDTH )
+		-- port map (
+			-- clk		=> clk,
+			-- rst 	=> rst,
+			-- x 		=> xin_q_ds,
+			-- y		=> xout_q_ds
+		-- );
 
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if rst = '1' then
-				xout_i 	<= (others => '0');
-				xout_q 	<= (others => '0');
-			else	
-				xout_i 	<= xout_i_ds;
-				xout_q 	<= xout_q_ds;
-			end if;
-		end if;
-	end process;
+	-- process(clk)
+	-- begin
+		-- if rising_edge(clk) then
+			-- if rst = '1' then
+				-- xout_i 	<= (others => '0');
+				-- xout_q 	<= (others => '0');
+			-- else	
+				-- xout_i 	<= xout_i_ds;
+				-- xout_q 	<= xout_q_ds;
+			-- end if;
+		-- end if;
+	-- end process;
 
 end architecture;
