@@ -27,8 +27,8 @@ architecture tb of tb_stage1 is
 	signal rst      		: std_logic := '1';
 	signal xin_i        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xin_q        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i_osr8_test	: std_logic_vector(DS_WIDTH-1 downto 0) := (others => '0');
-	signal xout_q_osr8_test	: std_logic_vector(DS_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i			: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_q			: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	
