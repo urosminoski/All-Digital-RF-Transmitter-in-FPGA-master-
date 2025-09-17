@@ -42,8 +42,7 @@ architecture rtl of stage1 is
 
 	signal factor 			: sfixed(3 downto -1);
 	signal xi_1, xq_1 		: sfixed(3 downto -(OSR_WIDTH-4));
-	signal xi_2, xq_2 		: sfixed(3 downto -(OSR_WIDTH-4));
-	signal xi_2_ds, xq_2_ds : sfixed(3 downto -(OSR_WIDTH-4));
+	signal xi_2, xq_2 		: sfixed(3 downto -(DS_WIDTH-4));
 	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
@@ -155,6 +154,12 @@ begin
 	
 	factor <= to_sfixed(4.0, factor'high, factor'low);
 	
+	xi_1 <= to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT));
+	xq_1 <= to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT));
+	
+	xi_2 <= resize(factor * xi_1, 3, -(DS_WIDTH-4));
+	xq_2 <= resize(factor * xq_1, 3, -(DS_WIDTH-4));
+	
 	xin_i_ds <= to_slv(
 		resize(
 			factor*to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)),
@@ -170,8 +175,8 @@ begin
 		)
 	);
 	
-	xout_i_osr8_test	<= xin_i_ds;
-	xout_q_osr8_test	<= xin_q_ds;
+	xout_i_osr8_test	<= to_slv(xi_2);
+	xout_q_osr8_test	<= to_slv(xq_2);
 	
 	-- xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
 	-- xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
