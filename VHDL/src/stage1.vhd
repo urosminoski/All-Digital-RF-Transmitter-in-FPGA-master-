@@ -161,8 +161,8 @@ begin
 	xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
 	xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
 	
-	xi_2 <= resize(to_sfixed(4.0, 2, -1) * xi_1, 2, -(16-3));
-	xq_2 <= resize(to_sfixed(4.0, 2, -1) * xq_1, 2, -(16-3));
+	xi_2 <= resize(to_sfixed(3.0, 2, -1) * xi_1, 2, -(16-3));
+	xq_2 <= resize(to_sfixed(3.0, 2, -1) * xq_1, 2, -(16-3));
 	
 	xin_i_ds <= to_slv(
 		resize(
