@@ -15,7 +15,7 @@ architecture tb of tb_stage1 is
 	constant C_CLK0_PERIOD 	: time    := 10240 ps;
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
-	constant XWIDTH			: integer := 16;
+	constant DS_WIDTH		: integer := 16;
 	constant OSR_WIDTH		: integer := 16;
 	constant OSR_COEFF		: integer := 15;
 	constant OSR_INT 		: integer := 0;
@@ -27,8 +27,8 @@ architecture tb of tb_stage1 is
 	signal rst      		: std_logic := '1';
 	signal xin_i        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xin_q        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i_osr8  	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
-	signal xout_q_osr8    	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xout_i_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i			: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_q			: std_logic_vector(3 downto 0) := (others => '0');
 	
@@ -76,22 +76,22 @@ begin
 	
 	uut_i: entity work.stage1
 		generic map (
-			XWIDTH			=> XWIDTH,
+			DS_WIDTH		=> DS_WIDTH,
 			OSR_WIDTH		=> OSR_WIDTH,
 			OSR_COEFF		=> OSR_COEFF,
 			OSR_INT  		=> OSR_INT,
 			OSR_GUARD_BITS 	=> OSR_GUARD_BITS
 		)
 		port map (
-			clk 		=> clk1,
-			rst 		=> rst,
-			strobe		=> stage1_strobe,
-			xin_i   	=> xin_i_stage1,
-			xin_q   	=> xin_q_stage1,
-			xout_i_osr8 => xout_i_osr8,
-			xout_q_osr8 => xout_q_osr8,
-			xout_i 		=> xout_i,
-			xout_q 		=> xout_q
+			clk 				=> clk1,
+			rst 				=> rst,
+			strobe				=> stage1_strobe,
+			xin_i   			=> xin_i_stage1,
+			xin_q   			=> xin_q_stage1,
+			xout_i_osr8_test 	=> xout_i_osr8_test,
+			xout_q_osr8_test 	=> xout_q_osr8_test,
+			xout_i 				=> xout_i,
+			xout_q 				=> xout_q
 		);
 	
 	-- process(clk)
@@ -144,8 +144,8 @@ begin
 	begin
 		if falling_edge(clk1) then
 			if rst = '0' then
-				write(L_i, to_integer(signed(xout_i_osr8)));
-				write(L_q, to_integer(signed(xout_q_osr8)));
+				write(L_i, to_integer(signed(xout_i_osr8_test)));
+				write(L_q, to_integer(signed(xout_q_osr8_test)));
 				writeline(output_file_i_osr8, L_i);
 				writeline(output_file_q_osr8, L_q);
 				
