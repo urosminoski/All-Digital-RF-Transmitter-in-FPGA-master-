@@ -153,7 +153,7 @@ begin
 	-- xi_2_ds <= resize(to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)), xi_2_ds'high, xi_2_ds'low);
 	-- xq_2_ds <= resize(to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)), xq_2_ds'high, xq_2_ds'low);
 	
-	factor <= to_sfixed(30, factor'high, factor'low);
+	factor <= to_sfixed(4.0, factor'high, factor'low);
 	
 	xin_i_ds <= to_slv(
 		resize(
