@@ -40,6 +40,7 @@ architecture rtl of stage1 is
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
 
+	signal factor 			: sfixed(3 downto -1);
 	signal xi_1, xq_1 		: sfixed(3 downto -(OSR_WIDTH-4));
 	signal xi_2, xq_2 		: sfixed(3 downto -(OSR_WIDTH-4));
 	signal xi_2_ds, xq_2_ds : sfixed(3 downto -(OSR_WIDTH-4));
@@ -48,7 +49,7 @@ architecture rtl of stage1 is
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	
 	signal xout_i_osr8, xout_q_osr8 : std_logic_vector(OSR_WIDTH-1 downto 0);
-	signal vout_i, vout_q 	: std_logic := '0';
+	signal vout_i, vout_q 			: std_logic := '0';
 	
 	signal xin_i_ds, xin_q_ds 	: std_logic_vector(DS_WIDTH-1 downto 0);
 	signal xout_i_ds, xout_q_ds	: std_logic_vector(3 downto 0);
@@ -152,16 +153,18 @@ begin
 	-- xi_2_ds <= resize(to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)), xi_2_ds'high, xi_2_ds'low);
 	-- xq_2_ds <= resize(to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)), xq_2_ds'high, xq_2_ds'low);
 	
+	factor <= to_sfixed(30, factor'high, factor'low);
+	
 	xin_i_ds <= to_slv(
 		resize(
-			to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)),
+			factor*to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)),
 			3,
 			-(DS_WIDTH-4)
 		)
 	);
 	xin_q_ds <= to_slv(
 		resize(
-			to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)),
+			factor*to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)),
 			3,
 			-(DS_WIDTH-4)
 		)
