@@ -20,8 +20,8 @@ entity stage1 is
 		strobe				: in  std_logic;
 		xin_i  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_i_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_q_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
 		xout_i				: out std_logic_vector(3 downto 0);
 		xout_q				: out std_logic_vector(3 downto 0)
 	);
@@ -42,7 +42,7 @@ architecture rtl of stage1 is
 
 	signal factor 			: sfixed(3 downto -1);
 	signal xi_1, xq_1 		: sfixed(3 downto -(OSR_WIDTH-4));
-	signal xi_2, xq_2 		: sfixed(3 downto -(OSR_WIDTH-4));
+	signal xi_2, xq_2 		: sfixed(3 downto -(DS_WIDTH-4));
 	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
@@ -154,22 +154,22 @@ begin
 	
 	factor <= to_sfixed(4.0, factor'high, factor'low);
 	
-	xi_1 <= to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT));
-	xq_1 <= to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT));
+	xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
+	xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
 	
-	xi_2 <= resize(factor * xi_1, 3, -(OSR_WIDTH-4));
-	xq_2 <= resize(factor * xq_1, 3, -(OSR_WIDTH-4));
+	xi_2 <= resize(factor * xi_1, 2, -9);
+	xq_2 <= resize(factor * xq_1, 2, -9);
 	
 	xin_i_ds <= to_slv(
 		resize(
-			factor*to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)),
+			factor*to_sfixed(xout_i_osr8, OSR_INT, -(OSR_WIDTH-1-OSR_INT)),
 			3,
 			-(DS_WIDTH-4)
 		)
 	);
 	xin_q_ds <= to_slv(
 		resize(
-			factor*to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)),
+			factor*to_sfixed(xout_q_osr8, OSR_INT, -(OSR_WIDTH-1-OSR_INT)),
 			3,
 			-(DS_WIDTH-4)
 		)
