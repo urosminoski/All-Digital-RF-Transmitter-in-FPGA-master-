@@ -20,8 +20,8 @@ entity stage1 is
 		strobe				: in  std_logic;
 		xin_i  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_i_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_q_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
 		xout_i				: out std_logic_vector(3 downto 0);
 		xout_q				: out std_logic_vector(3 downto 0)
 	);
@@ -95,8 +95,8 @@ begin
 			vout 	=> vout_q
 		);
 		
-	xout_i_osr8_test	<= xout_i_osr8;
-	xout_q_osr8_test	<= xout_q_osr8;
+	-- xout_i_osr8_test	<= xout_i_osr8;
+	-- xout_q_osr8_test	<= xout_q_osr8;
 	
 	-- xout_i_osr8_test	<= to_slv(resize(to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
 	-- xout_q_osr8_test	<= to_slv(resize(to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1)), INT, -(XWIDTH-1-INT)));
@@ -169,6 +169,9 @@ begin
 			-(DS_WIDTH-4)
 		)
 	);
+	
+	xout_i_osr8_test	<= xin_i_ds;
+	xout_q_osr8_test	<= xin_q_ds;
 	
 	-- xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
 	-- xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
