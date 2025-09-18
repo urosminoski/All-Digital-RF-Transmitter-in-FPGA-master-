@@ -154,6 +154,57 @@ begin
 		
 	xout_i_delay_test	<= xout_i_delay;
 	xout_q_delay_test	<= xout_q_delay;
+	
+	-------------------------------------------------------------------------------
+	-- Delta-Sigma Modulation
+	-------------------------------------------------------------------------------
+	
+	xin_i_ds <= to_slv(
+		resize(
+			to_sfixed(xout_i_delay, 3, -(OSR_WIDTH-4)),
+			3,
+			-(DS_WIDTH-4)
+		)
+	);
+	
+	xin_q_ds <= to_slv(
+		resize(
+			to_sfixed(xout_q_delay, 3, -(OSR_WIDTH-4)),
+			3,
+			-(DS_WIDTH-4)
+		)
+	);
+	
+	deltaSigma_i: entity work.deltaSigma
+		generic map ( XWIDTH => DS_WIDTH )
+		port map (
+			clk		=> clk,
+			rst 	=> rst,
+			x 		=> xin_i_ds,
+			y		=> xout_i_ds
+		);
+		
+	deltaSigma_q: entity work.deltaSigma
+		generic map ( XWIDTH => DS_WIDTH )
+		port map (
+			clk		=> clk,
+			rst 	=> rst,
+			x 		=> xin_q_ds,
+			y		=> xout_q_ds
+		);
+
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				xout_i 	<= (others => '0');
+				xout_q 	<= (others => '0');
+			else	
+				xout_i 	<= xout_i_ds;
+				xout_q 	<= xout_q_ds;
+			end if;
+		end if;
+	end process;
 		
 	-- xout_i_osr8_test	<= xout_i_osr8;
 	-- xout_q_osr8_test	<= xout_q_osr8;
@@ -214,10 +265,6 @@ begin
 	-- xq_2_ds <= resize(to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)), xq_2_ds'high, xq_2_ds'low);
 	
 	-- factor <= to_sfixed(4.0, factor'high, factor'low);
-	
-	
-	xout_i <= (others => '0');
-	xout_q <= (others => '0');
 	
 	-- xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
 	-- xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
