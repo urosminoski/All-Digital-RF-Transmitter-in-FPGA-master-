@@ -23,6 +23,10 @@ entity stage1 is
 		xout_q_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_i_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_q_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		
+		xin_i_ds_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
+		xin_q_ds_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
+		
 		xout_i				: out std_logic_vector(3 downto 0);
 		xout_q				: out std_logic_vector(3 downto 0)
 	);
@@ -162,6 +166,9 @@ begin
 			-(DS_WIDTH-4)
 		)
 	);
+	
+	xin_i_ds_test <= xin_i_ds;
+	xin_q_ds_test <= xin_q_ds;
 	
 	deltaSigma_i: entity work.deltaSigma
 		generic map ( XWIDTH => DS_WIDTH )

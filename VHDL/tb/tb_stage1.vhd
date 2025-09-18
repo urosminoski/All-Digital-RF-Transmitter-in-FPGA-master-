@@ -30,6 +30,10 @@ architecture tb of tb_stage1 is
 	signal xout_q_osr8_test		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i_delay_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_q_delay_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	
+	signal xin_i_ds_test	: std_logic_vector(DS_WIDTH-1 downto 0);
+	signal xin_q_ds_test	: std_logic_vector(DS_WIDTH-1 downto 0);
+	
 	signal xout_i				: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_q				: std_logic_vector(3 downto 0) := (others => '0');
 	
@@ -47,6 +51,9 @@ architecture tb of tb_stage1 is
 	
 	file output_file_i_delay  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_delay.txt";
 	file output_file_q_delay  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_delay.txt";
+	
+	file output_file_i_ds 	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_ds.txt";
+	file output_file_q_ds 	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_ds.txt";
 	
 	file output_file_i  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_stage1.txt";
 	file output_file_q  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_stage1.txt";
@@ -95,6 +102,10 @@ begin
 			xout_q_osr8_test 	=> xout_q_osr8_test,
 			xout_i_delay_test	=> xout_i_delay_test,
 			xout_q_delay_test	=> xout_q_delay_test,
+			
+			xin_i_ds_test	=> xin_i_ds_test,
+			xin_q_ds_test	=> xin_q_ds_test,
+			
 			xout_i 				=> xout_i,
 			xout_q 				=> xout_q
 		);
@@ -158,6 +169,11 @@ begin
 				write(L_q, to_integer(signed(xout_i_delay_test)));
 				writeline(output_file_i_delay, L_i);
 				writeline(output_file_q_delay, L_q);
+				
+				write(L_i, to_integer(signed(xin_i_ds_test)));
+				write(L_q, to_integer(signed(xin_q_ds_test)));
+				writeline(output_file_i_ds, L_i);
+				writeline(output_file_q_ds, L_q);
 				
 				write(L_i, to_integer(signed(xout_i)));
 				write(L_q, to_integer(signed(xout_q)));
