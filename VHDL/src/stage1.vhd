@@ -33,9 +33,10 @@ architecture rtl of stage1 is
 	constant OSR_INT 	: integer := 0;
 	
 	constant KERNEL_ID	: integer := 7;
-	constant DELTA 		: real := 5;--0.00390625;
+	constant DELTA 		: real := 0.00390625;
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
+	constant factor		: real := 4.0/(1.0+DELTA);
 	
 	
 	constant COEF_L		: integer := 11;
@@ -104,7 +105,7 @@ begin
 
 	xin_i_delay <= to_slv(
 		resize(
-			to_sfixed(4.0, 3, 0) * to_sfixed(xout_i_osr8, 0, -(OSR_WIDTH-1)),
+			to_sfixed(factor, 3, -8) * to_sfixed(xout_i_osr8, 0, -(OSR_WIDTH-1)),
 			3,
 			-(OSR_WIDTH-4)
 		)
@@ -112,7 +113,7 @@ begin
 	
 	xin_q_delay <= to_slv(
 		resize(
-			to_sfixed(4.0, 3, 0) * to_sfixed(xout_q_osr8, 0, -(OSR_WIDTH-1)),
+			to_sfixed(factor, 3, -8) * to_sfixed(xout_q_osr8, 0, -(OSR_WIDTH-1)),
 			3,
 			-(OSR_WIDTH-4)
 		)
