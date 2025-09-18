@@ -48,8 +48,8 @@ architecture tb of tb_stage1 is
 	file output_file_i_delay  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_delay.txt";
 	file output_file_q_delay  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_delay.txt";
 	
-	file output_file_i  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i.txt";
-	file output_file_q  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q.txt";
+	file output_file_i  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_stage1.txt";
+	file output_file_q  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_stage1.txt";
 
 begin
 
