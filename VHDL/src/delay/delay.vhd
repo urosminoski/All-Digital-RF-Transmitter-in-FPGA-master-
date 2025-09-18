@@ -29,7 +29,7 @@ architecture rtl of delay is
 
 	constant FRAC 		: integer := COEF_L + XWIDTH - INT;
 	constant NUM_TAPS	: integer := KERNEL_ID;
-	constant D 			: integer := (NUM_TAPS - 1) / 2;
+	constant D 			: integer := NUM_TAPS;--(NUM_TAPS - 1) / 2;
 
 	subtype xin_t 	is sfixed(INT downto -(XWIDTH-INT-1));
 	subtype coef_t 	is sfixed(0 downto -COEF_L);
