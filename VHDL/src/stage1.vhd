@@ -33,7 +33,7 @@ architecture rtl of stage1 is
 	constant OSR_INT 	: integer := 0;
 	
 	constant KERNEL_ID	: integer := 7;
-	constant DELTA 		: real := 0.9;--0.00390625;
+	constant DELTA 		: real := 5;--0.00390625;
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
 	
