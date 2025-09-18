@@ -109,7 +109,7 @@ begin
 	
 	xin_i_delay <= to_slv(
 		resize(
-			to_sfixed(4.0, 3, -8) * to_sfixed(xout_i_osr8, OSR_INT, -(OSR_WIDTH-OSR_INT-1)),
+			to_sfixed(factor, 3, -8) * to_sfixed(xout_i_osr8, OSR_INT, -(OSR_WIDTH-OSR_INT-1)),
 			3,
 			-(OSR_WIDTH-4)
 		)
@@ -117,7 +117,7 @@ begin
 	
 	xin_q_delay <= to_slv(
 		resize(
-			to_sfixed(4.0, 3, -8) * to_sfixed(xout_q_osr8, OSR_INT, -(OSR_WIDTH-OSR_INT-1)),
+			to_sfixed(factor, 3, -8) * to_sfixed(xout_q_osr8, OSR_INT, -(OSR_WIDTH-OSR_INT-1)),
 			3,
 			-(OSR_WIDTH-4)
 		)
