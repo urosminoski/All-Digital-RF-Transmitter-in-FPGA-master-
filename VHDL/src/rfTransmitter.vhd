@@ -8,24 +8,21 @@ use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
 
 entity rfTransmitter is
 	generic(
-		LUT_ID		: integer := 3;
-		COEF_L		: integer := 15;
-		XWIDTH		: integer := 12;
-		INT  		: integer := 1;
-		FRAC 		: integer := 26
+		LUT_ID			: integer := 3;
+		KERNEL_ID		: integer := 7;
+		DS_WIDTH		: integer := 12;
+		OSR_WIDTH		: integer := 12;
+		OSR_COEFF		: integer := 15;
+		OSR_GUARD_BITS	: integer := 4
 	);
 	port(
-		clk0	: in std_logic;
-		clk1   	: in  std_logic;
-		clk2  	: in  std_logic;
-		clk3  	: in  std_logic;
-		rst   	: in  std_logic;
-		xin_i  	: in  std_logic_vector(XWIDTH-1 downto 0);
-		xin_q  	: in  std_logic_vector(XWIDTH-1 downto 0);
-		
-		xout_i_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
-		xout_q_osr8_test	: out std_logic_vector(XWIDTH-1 downto 0);
-		
+		clk0			: in std_logic;
+		clk1   			: in  std_logic;
+		clk2  			: in  std_logic;
+		clk3  			: in  std_logic;
+		rst   			: in  std_logic;
+		xin_i  			: in  std_logic_vector(OSR_WIDTH-1 downto 0);
+		xin_q  			: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_i_stage1	: out std_logic_vector(3 downto 0);
 		xout_q_stage1	: out std_logic_vector(3 downto 0);
 		xout_i_stage2	: out std_logic;
@@ -36,7 +33,7 @@ end entity;
 
 architecture rtl of rfTransmitter is
 
-	signal xin_i_stage1_s, xin_q_stage1_s 	: std_logic_vector(XWIDTH-1 downto 0) := (others => '0');
+	signal xin_i_stage1_s, xin_q_stage1_s 	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i_stage1_s, xout_q_stage1_s : std_logic_vector(3 downto 0) := (others => '0');
 	signal stage1_strobe 					: std_logic := '0';
 	
@@ -70,14 +67,14 @@ begin
 			end if;
 		end if;
 	end process;
-	
 
 	stage1_gen : entity work.stage1
 		generic map (
-			COEF_L		=> COEF_L,
-			XWIDTH		=> XWIDTH,
-			INT  		=> INT,
-			FRAC 		=> FRAC
+			KERNEL_ID		=> KERNEL_ID,
+			DS_WIDTH		=> DS_WIDTH,
+			OSR_WIDTH		=> OSR_WIDTH,
+			OSR_COEFF		=> OSR_COEFF,
+			OSR_GUARD_BITS	=> OSR_GUARD_BITS
 		)
 		port map (
 			clk   	=> clk1,
@@ -85,10 +82,6 @@ begin
 			strobe 	=> stage1_strobe,
 			xin_i  	=> xin_i_stage1_s,
 			xin_q  	=> xin_q_stage1_s,
-			
-			xout_i_osr8_test	=> xout_i_osr8_test,
-			xout_q_osr8_test	=> xout_q_osr8_test,
-			
 			xout_i	=> xout_i_stage1_s,
 			xout_q	=> xout_q_stage1_s
 		);

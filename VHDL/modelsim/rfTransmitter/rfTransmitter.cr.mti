@@ -8,7 +8,7 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling entity stage3
 -- Compiling architecture rtl of stage3
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd {0 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -23,9 +23,20 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling architecture tb of tb_rfTransmitter
 -- Loading package fir_coeffs_pkg
 -- Loading entity rfTransmitter
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(77): (vcom-1484) Unknown formal identifier "KERNEL_ID".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(78): (vcom-1484) Unknown formal identifier "DS_WIDTH".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(79): (vcom-1484) Unknown formal identifier "OSR_WIDTH".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(80): (vcom-1484) Unknown formal identifier "OSR_COEFF".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(81): (vcom-1484) Unknown formal identifier "OSR_GUARD_BITS".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(77): (vcom-1484) Unknown formal identifier "KERNEL_ID".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(78): (vcom-1484) Unknown formal identifier "DS_WIDTH".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(79): (vcom-1484) Unknown formal identifier "OSR_WIDTH".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(80): (vcom-1484) Unknown formal identifier "OSR_COEFF".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(81): (vcom-1484) Unknown formal identifier "OSR_GUARD_BITS".
 -- Loading package ENV
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_rfTransmitter.vhd(244): VHDL Compiler exiting
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd
+} {16.0 26.0 27.0 28.0} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/hb2_sched.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -56,21 +67,6 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling entity cdc
 -- Compiling architecture behavioral of cdc
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd
-Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
--- Loading package STANDARD
--- Loading package TEXTIO
--- Loading package std_logic_1164
--- Loading package NUMERIC_STD
--- Loading package fixed_float_types
--- Loading package instance fixed_pkg
--- Loading package fixed_generic_pkg
--- Loading package MATH_REAL
--- Loading package body fixed_generic_pkg
--- Loading package lut_pkg
--- Compiling entity lut_serializer
--- Compiling architecture rtl of lut_serializer
-
 } {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/deltaSigma/deltaSigma.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/deltaSigma/deltaSigma.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
@@ -85,7 +81,7 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling entity deltaSigma
 -- Compiling architecture rti of deltaSigma
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_delay.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_delay.vhd
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/serializator/lut_serializator.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -96,11 +92,9 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Loading package fixed_generic_pkg
 -- Loading package MATH_REAL
 -- Loading package body fixed_generic_pkg
--- Compiling entity tb_delay
--- Compiling architecture tb of tb_delay
--- Loading package delay_kernel_pkg
--- Loading entity delay
--- Loading package ENV
+-- Loading package lut_pkg
+-- Compiling entity lut_serializer
+-- Compiling architecture rtl of lut_serializer
 
 } {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_stage3.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/tb/tb_stage3.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
@@ -134,7 +128,7 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling architecture rtl of osr8
 -- Loading entity hb2_sched
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage0.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage0.vhd
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage1.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage1.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -146,12 +140,35 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Loading package MATH_REAL
 -- Loading package body fixed_generic_pkg
 -- Loading package fir_coeffs_pkg
--- Compiling entity stage0
--- Compiling architecture rtl of stage0
+-- Compiling entity stage1
+-- Compiling architecture rtl of stage1
+-- Loading entity osr8
 -- Loading package delay_kernel_pkg
 -- Loading entity delay
+-- Loading entity deltaSigma
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay.vhd
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd {0 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package fixed_float_types
+-- Loading package instance fixed_pkg
+-- Loading package fixed_generic_pkg
+-- Loading package MATH_REAL
+-- Loading package body fixed_generic_pkg
+-- Loading package fir_coeffs_pkg
+-- Compiling entity rfTransmitter
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(24): (vcom-1136) Unknown identifier "XWIDTH".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(24): ** Error: (vcom-1591) Bad expression in left bound of range expression.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(24): Type error in range expression.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(25): (vcom-1136) Unknown identifier "XWIDTH".
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(25): ** Error: (vcom-1591) Bad expression in left bound of range expression.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(25): Type error in range expression.
+** Error: C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd(32): VHDL Compiler exiting
+
+} {14.0 21.0} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -166,24 +183,21 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling entity delay
 -- Compiling architecture rtl of delay
 
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/rfTransmitter.vhd
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay_kernel_pkg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay_kernel_pkg.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
 -- Loading package std_logic_1164
 -- Loading package NUMERIC_STD
--- Loading package fixed_float_types
--- Loading package instance fixed_pkg
--- Loading package fixed_generic_pkg
--- Loading package MATH_REAL
--- Loading package body fixed_generic_pkg
--- Loading package fir_coeffs_pkg
--- Compiling entity rfTransmitter
--- Compiling architecture rtl of rfTransmitter
--- Loading entity cdc
--- Loading entity stage1
--- Loading entity stage2
--- Loading entity stage3
+-- Compiling package delay_kernel_pkg
+
+} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/fir_coeffs_pkg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/fir_coeffs_pkg.vhd
+Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package fir_coeffs_pkg
 
 } {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage2.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/stage2.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
@@ -200,21 +214,5 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Loading package body fixed_generic_pkg
 -- Loading package lut_pkg
 -- Loading entity lut_serializer
-
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/fir_coeffs_pkg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/interpolation/fir_coeffs_pkg.vhd
-Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
--- Loading package STANDARD
--- Loading package TEXTIO
--- Loading package std_logic_1164
--- Loading package NUMERIC_STD
--- Compiling package fir_coeffs_pkg
-
-} {} {}} C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay_kernel_pkg.vhd {1 {vcom -work work -2008 -explicit -stats=none C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/VHDL/src/delay/delay_kernel_pkg.vhd
-Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
--- Loading package STANDARD
--- Loading package TEXTIO
--- Loading package std_logic_1164
--- Loading package NUMERIC_STD
--- Compiling package delay_kernel_pkg
 
 } {} {}}
