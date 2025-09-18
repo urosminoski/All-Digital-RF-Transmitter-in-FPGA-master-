@@ -75,24 +75,6 @@ begin
 		end generate;
 	end generate;
 	
-	-- Kasnjenje ulaznog signala, da se poravna sa filtriranim signalom
-	-- y = x[n-D] + delta * x_fir[n], D = (N-1)/2
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			if rst = '1' then
-				sft_xin <= (others => (others => '0'));
-			else
-				for i in D-1 to 1 loop
-					sft_xin(i) <= sft_xin(i-1);
-				end loop;
-				sft_xin(0) <= xin_sf;
-			end if;
-		end if;
-	end process;
-	
-	xin_d <= sft_xin(D-1);
-	
 	-- latch ulaza
 	process(clk)
 	begin
@@ -104,6 +86,25 @@ begin
 			end if;
 		end if;
 	end process;
+	
+	-- Kasnjenje ulaznog signala, da se poravna sa filtriranim signalom
+	-- y = x[n-D] + delta * x_fir[n], D = (N-1)/2
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				sft_xin <= (others => (others => '0'));
+			else
+				sft_xin(0) <= xin_sf;
+				
+				for i in D-1 downto 1 loop
+					sft_xin(i) <= sft_xin(i-1);
+				end loop;
+			end if;
+		end if;
+	end process;
+	
+	xin_d <= sft_xin(D-1);
 
 	-- množenja (transposed: trenutni x * svi koefovi)
 	gen_mul: for i in 0 to NUM_TAPS-1 generate
