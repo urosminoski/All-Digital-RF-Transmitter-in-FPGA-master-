@@ -123,8 +123,8 @@ begin
 		)
 	);
 	
-	xin_i_delay <= xout_i_osr8;
-	xin_q_delay <= xout_q_osr8;
+	-- xin_i_delay <= xout_i_osr8;
+	-- xin_q_delay <= xout_q_osr8;
 	
 	delay_i: entity work.delay
 		generic map (
