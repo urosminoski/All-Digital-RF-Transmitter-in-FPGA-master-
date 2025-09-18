@@ -8,7 +8,7 @@ use work.delay_kernel_pkg.all;
 
 entity delay is
 	generic(
-		KERNEL_ID   : integer := 1;   -- 3,5,7
+		KERNEL_ID   : integer := 7;   -- 3,5,7
 		COEF_L		: integer := 15;
 		XWIDTH		: integer := 12;
 		INT  		: integer := 1;
@@ -29,21 +29,26 @@ architecture rtl of delay is
 
 	constant FRAC 		: integer := COEF_L + XWIDTH - INT;
 	constant NUM_TAPS	: integer := KERNEL_ID;
+	constant D 			: integer := (NUM_TAPS - 1) / 2;
 
-	subtype coef_t is sfixed(0 downto -COEF_L);
-	subtype acc_t  is sfixed(INT_IN downto -FRAC);
+	subtype xin_t 	is sfixed(INT downto -(XWIDTH-INT-1));
+	subtype coef_t 	is sfixed(0 downto -COEF_L);
+	subtype acc_t  	is sfixed(INT_IN downto -FRAC);
 
-	type coef_vec_t  is array (0 to NUM_TAPS-1) of coef_t;
-	type mul_vec_t   is array (0 to NUM_TAPS-1) of acc_t;
-	type shift_vec_t is array (0 to NUM_TAPS-1) of acc_t;
+	type xin_vec_t  	is array (0 to D-1) 		of xin_t;
+	type coef_vec_t  	is array (0 to NUM_TAPS-1) 	of coef_t;
+	type mul_vec_t   	is array (0 to NUM_TAPS-1)	of acc_t;
+	type shift_vec_t 	is array (0 to NUM_TAPS-1)	of acc_t;
 
-	signal xin_sf : sfixed(INT downto -(XWIDTH-INT-1)) := (others => '0');
-	signal xout_d : sfixed(INT_IN downto -FRAC) := (others => '0');
+	signal xin_sf 	: xin_t := (others => '0');
+	signal xin_d	: xin_t := (others => '0');
+	signal xout_d 	: acc_t := (others => '0');
 	
-	signal coef	: coef_vec_t	:= (others => (others => '0'));
-	signal mul 	: mul_vec_t		:= (others => (others => '0'));
-	signal sft	: shift_vec_t 	:= (others => (others => '0'));
-	signal acc	: acc_t			:= (others => '0');
+	signal sft_xin	: xin_vec_t 	:= (others => (others => '0'));
+	signal coef		: coef_vec_t	:= (others => (others => '0'));
+	signal mul 		: mul_vec_t		:= (others => (others => '0'));
+	signal sft		: shift_vec_t 	:= (others => (others => '0'));
+	signal acc		: acc_t			:= (others => '0');
 	
 	signal f	: sfixed(0 downto -(INT_IN+FRAC)) := to_sfixed(DELTA, 0, -(INT_IN+FRAC));
 
@@ -69,7 +74,25 @@ begin
 			coef(i) <= to_sfixed(K7_R(i), 0, -COEF_L);
 		end generate;
 	end generate;
-
+	
+	-- Kasnjenje ulaznog signala, da se poravna sa filtriranim signalom
+	-- y = x[n-D] + delta * x_fir[n], D = (N-1)/2
+	process(clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				sft_xin <= (others => (others => '0'));
+			else
+				for i in D-1 to 1 loop
+					sft_xin(i) <= sft_xin(i-1);
+				end loop;
+				sft_xin(0) <= xin_sf;
+			end if;
+		end if;
+	end process;
+	
+	xin_d <= sft_xin(D-1);
+	
 	-- latch ulaza
 	process(clk)
 	begin
@@ -107,7 +130,7 @@ begin
 	
 	acc <= resize(sft(0) + mul(0), acc'high, acc'low);
 	
-	xout_d <= resize(acc*f + xin_sf, xout_d'high, xout_d'low);
+	xout_d <= resize(acc*f + xin_d, xout_d'high, xout_d'low);
 	
 	process(clk)
 	begin
