@@ -38,7 +38,7 @@ architecture rtl of delay is
 	type shift_vec_t is array (0 to NUM_TAPS-1) of acc_t;
 
 	signal xin_sf : sfixed(INT downto -(XWIDTH-INT-1)) := (others => '0');
-	signal xout_d : sfixed(INT downto -FRAC) := (others => '0');
+	signal xout_d : sfixed(INT_IN downto -FRAC) := (others => '0');
 	
 	signal coef	: coef_vec_t	:= (others => (others => '0'));
 	signal mul 	: mul_vec_t		:= (others => (others => '0'));
