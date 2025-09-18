@@ -131,8 +131,25 @@ begin
 		xq_norm'low
 	);
 	
-	xout_i_osr8_test	<= to_slv(xi_norm);
-	xout_q_osr8_test	<= to_slv(xq_norm);
+	
+	xin_i_delay <= to_slv(
+		resize(
+			to_sfixed(4.0, 3, 0) * to_sfixed(xout_i_osr8, 0, -(OSR_WIDTH-1)),
+			3,
+			-(OSR_WIDTH-4)
+		)
+	);
+	
+	xin_q_delay <= to_slv(
+		resize(
+			to_sfixed(4.0, 3, 0) * to_sfixed(xout_q_osr8, 0, -(OSR_WIDTH-1)),
+			3,
+			-(OSR_WIDTH-4)
+		)
+	);
+	
+	xout_i_osr8_test	<= xin_i_delay;--to_slv(xi_norm);
+	xout_q_osr8_test	<= xin_q_delay;--to_slv(xq_norm);
 	
 	-- delay_i: entity work.delay
 		-- generic map (
