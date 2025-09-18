@@ -179,8 +179,8 @@ begin
 		)
 	);
 	
-	xout_i_osr8_test	<= to_slv(xi_2);
-	xout_q_osr8_test	<= to_slv(xq_2);
+	xout_i_osr8_test	<= to_slv(xi_1);
+	xout_q_osr8_test	<= to_slv(xq_1);
 	
 	-- xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
 	-- xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;
