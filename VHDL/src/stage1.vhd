@@ -107,6 +107,22 @@ begin
 	-- Dealay & Normalization to x4 [-4, 4]
 	-------------------------------------------------------------------------------
 	
+	xin_i_delay <= to_slv(
+		resize(
+			to_sfixed(4.0, 3, -8) * to_sfixed(xout_i_osr8, OSR_INT, -(OSR_WIDTH-OSR_INT-1)),
+			3,
+			-(OSR_WIDTH-4)
+		)
+	);
+	
+	xin_q_delay <= to_slv(
+		resize(
+			to_sfixed(4.0, 3, -8) * to_sfixed(xout_q_osr8, OSR_INT, -(OSR_WIDTH-OSR_INT-1)),
+			3,
+			-(OSR_WIDTH-4)
+		)
+	);
+	
 	xin_i_delay <= xout_i_osr8;
 	xin_q_delay <= xout_q_osr8;
 	
@@ -115,7 +131,7 @@ begin
 			KERNEL_ID   => 7,
 			COEF_L		=> OSR_COEFF,
 			XWIDTH		=> OSR_WIDTH,
-			INT  		=> 1,
+			INT  		=> 3,
 			GUARD_BITS	=> 4,
 			DELTA		=> DELTA_I
 		)
@@ -132,7 +148,7 @@ begin
 			KERNEL_ID   => 7,
 			COEF_L		=> OSR_COEFF,
 			XWIDTH		=> OSR_WIDTH,
-			INT  		=> 1,
+			INT  		=> 3,
 			GUARD_BITS	=> 4,
 			DELTA		=> DELTA_Q
 		)
@@ -153,7 +169,7 @@ begin
 	
 	xin_i_ds <= to_slv(
 		resize(
-			to_sfixed(4.0, 3, -8) * to_sfixed(xout_i_delay, 1, -(OSR_WIDTH-2)),
+			to_sfixed(xout_i_delay, 3, -(OSR_WIDTH-4)),
 			3,
 			-(DS_WIDTH-4)
 		)
@@ -161,7 +177,7 @@ begin
 	
 	xin_q_ds <= to_slv(
 		resize(
-			to_sfixed(4.0, 3, -8) * to_sfixed(xout_q_delay, 1, -(OSR_WIDTH-2)),
+			to_sfixed(xout_q_delay, 3, -(OSR_WIDTH-4)),
 			3,
 			-(DS_WIDTH-4)
 		)
