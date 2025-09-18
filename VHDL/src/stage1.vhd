@@ -20,12 +20,12 @@ entity stage1 is
 		strobe				: in  std_logic;
 		xin_i  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
-		-- xout_i_osr8_test		: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		-- xout_q_osr8_test		: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		-- xout_i_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		-- xout_q_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		-- xin_i_ds_test		: out std_logic_vector(DS_WIDTH-1 downto 0);
-		-- xin_q_ds_test		: out std_logic_vector(DS_WIDTH-1 downto 0);
+		xout_i_osr8_test		: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_q_osr8_test		: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_q_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xin_i_ds_test		: out std_logic_vector(DS_WIDTH-1 downto 0);
+		xin_q_ds_test		: out std_logic_vector(DS_WIDTH-1 downto 0);
 		xout_i				: out std_logic_vector(3 downto 0);
 		xout_q				: out std_logic_vector(3 downto 0)
 	);
@@ -62,6 +62,13 @@ architecture rtl of stage1 is
 
 begin
 
+	xout_i_osr8_test	<= xout_i_osr8;
+	xout_q_osr8_test	<= xout_q_osr8;
+	xout_i_delay_test	<= xout_i_delay;
+	xout_q_delay_test	<= xout_q_delay;
+	xin_i_ds_test 		<= xin_i_ds;
+	xin_q_ds_test 		<= xin_q_ds;
+
 	-------------------------------------------------------------------------------
 	-- INTERPOLATION x8
 	-------------------------------------------------------------------------------
@@ -97,9 +104,6 @@ begin
 			xout   	=> xout_q_osr8,
 			vout 	=> vout_q
 		);
-		
-	-- xout_i_osr8_test	<= xout_i_osr8;
-	-- xout_q_osr8_test	<= xout_q_osr8;
 		
 	-------------------------------------------------------------------------------
 	-- Dealay & Normalization to x4 [-4, 4]
@@ -154,9 +158,6 @@ begin
 			xin		=> xin_q_delay,
 			xout	=> xout_q_delay      
 		);
-		
-	-- xout_i_delay_test	<= xout_i_delay;
-	-- xout_q_delay_test	<= xout_q_delay;
 	
 	-------------------------------------------------------------------------------
 	-- Delta-Sigma Modulation
@@ -177,9 +178,6 @@ begin
 			-(DS_WIDTH-4)
 		)
 	);
-	
-	-- xin_i_ds_test <= xin_i_ds;
-	-- xin_q_ds_test <= xin_q_ds;
 	
 	deltaSigma_i: entity work.deltaSigma
 		generic map ( XWIDTH => DS_WIDTH )
