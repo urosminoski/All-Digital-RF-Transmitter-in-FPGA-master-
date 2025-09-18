@@ -11,7 +11,6 @@ entity stage1 is
 		DS_WIDTH		: integer := 12;
 		OSR_WIDTH		: integer := 12;
 		OSR_COEFF		: integer := 11;
-		OSR_INT  		: integer := 0;
 		OSR_GUARD_BITS 	: integer := 4
 	);
 	port(
@@ -20,29 +19,32 @@ entity stage1 is
 		strobe				: in  std_logic;
 		xin_i  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_i_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
-		xout_q_osr8_test	: out std_logic_vector(DS_WIDTH-1 downto 0);
-		xout_i				: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_q				: out std_logic_vector(OSR_WIDTH-1 downto 0)
+		xout_i_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i				: out std_logic_vector(3 downto 0);
+		xout_q				: out std_logic_vector(3 downto 0)
 	);
 end entity;
 
 architecture rtl of stage1 is
 
+	constant OSR_INT 	: integer := 0;
+	
+	constant KERNEL_ID	: integer := 7;
+	constant DELTA 		: real := 0.00390625;
+	constant DELTA_I 	: real := -DELTA;
+	constant DELTA_Q 	: real := DELTA;
+	
+	
 	constant COEF_L		: integer := 11;
 	-- constant XWIDTH		: integer := 12;
 	constant INT		: integer := 0;
 	constant FRAC		: integer := 4;
 
 	constant LUT_ID : integer := 3;
-	
-	constant DELTA 		: real := 0.00390625;
-	constant DELTA_I 	: real := -DELTA;
-	constant DELTA_Q 	: real := DELTA;
 
-	signal factor 			: sfixed(3 downto -1);
-	signal xi_1, xq_1 		: sfixed(0 downto -(OSR_WIDTH-1));
-	signal xi_2, xq_2 		: sfixed(3 downto -(DS_WIDTH-4));
+	signal xi_osr8, xq_osr8	: sfixed(0 downto -(OSR_WIDTH-1));
+	signal xi_norm, xq_norm : sfixed(3 downto -(OSR_WIDTH-4));
 	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
@@ -93,6 +95,80 @@ begin
 			xout   	=> xout_q_osr8,
 			vout 	=> vout_q
 		);
+		
+	-------------------------------------------------------------------------------
+	-- Dealay
+	-------------------------------------------------------------------------------
+	
+	-- xin_i_delay <= to_slv(
+		-- resize(
+			-- to_sfixed(4.0, 3, 0) * to_sfixed(xout_i_osr8, OSR_INT, -OSR_FRAC),
+			-- 3,
+			-- -(OSR_FRAC-4)
+		-- )
+	-- );
+	
+	-- xin_q_delay <= to_slv(
+		-- resize(
+			-- to_sfixed(4.0, 3, 0) * to_sfixed(xout_q_osr8, OSR_INT, -OSR_FRAC),
+			-- 3,
+			-- -(OSR_FRAC-4)
+		-- )
+	-- );
+	
+	xi_osr8 <= to_sfixed(xout_i_osr8, xi_osr8'high, xi_osr8'low);
+	xq_osr8 <= to_sfixed(xout_q_osr8, xq_osr8'high, xq_osr8'low);
+	
+	xi_norm <= resize(
+		to_sfixed(4.0, 3, 0) * xi_osr8,
+		xi_norm'high,
+		xi_norm'low
+	);
+	
+	xq_norm <= resize(
+		to_sfixed(4.0, 3, 0) * xq_osr8,
+		xq_norm'high,
+		xq_norm'low
+	);
+	
+	xout_i_osr8_test	<= to_slv(xi_norm);
+	xout_q_osr8_test	<= to_slv(xq_norm);
+	
+	-- delay_i: entity work.delay
+		-- generic map (
+			-- KERNEL_ID   => 7,
+			-- COEF_L		=> OSR_COEFF,
+			-- XWIDTH		=> OSR_WIDTH,
+			-- INT  		=> 3,
+			-- NUM_TAPS   	=> 7,
+			-- DELTA		=> DELTA_I
+		-- )
+		-- port map (
+			-- clk		=> clk,
+			-- rst		=> rst, 
+			-- en		=> '1', 		
+			-- xin		=> xin_i_delay,
+			-- xout	=> xout_i_delay      
+		-- );
+		
+	-- delay_q: entity work.delay
+		-- generic map (
+			-- KERNEL_ID   => 7,
+			-- COEF_L		=> COEF_L,
+			-- XWIDTH		=> XWIDTH,
+			-- INT  		=> 3,
+			-- FRAC 		=> XWIDTH-4,
+			-- NUM_TAPS   	=> 7,
+			-- DELTA		=> DELTA_Q
+		-- )
+		-- port map (
+			-- clk		=> clk,
+			-- rst		=> rst, 
+			-- en		=> '1', 		
+			-- xin		=> xin_q_delay,
+			-- xout	=> xout_q_delay      
+		-- );
+	
 		
 	-- xout_i_osr8_test	<= xout_i_osr8;
 	-- xout_q_osr8_test	<= xout_q_osr8;
@@ -152,35 +228,35 @@ begin
 	-- xi_2_ds <= resize(to_sfixed(xout_i_osr8, INT, -(OSR_WIDTH-1-INT)), xi_2_ds'high, xi_2_ds'low);
 	-- xq_2_ds <= resize(to_sfixed(xout_q_osr8, INT, -(OSR_WIDTH-1-INT)), xq_2_ds'high, xq_2_ds'low);
 	
-	factor <= to_sfixed(4.0, factor'high, factor'low);
+	-- factor <= to_sfixed(4.0, factor'high, factor'low);
 	
 	
-	xout_i <= xout_i_osr8;
-	xout_q <= xout_q_osr8;
+	xout_i <= (others => '0');
+	xout_q <= (others => '0');
 	
-	xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
-	xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
+	-- xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
+	-- xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
 	
-	xi_2 <= resize(to_sfixed(4, 3, 0)*xi_1, xi_2'high, xi_2'low);
-	xq_2 <= resize(to_sfixed(4, 3, 0)*xq_1, xi_2'high, xi_2'low);
+	-- xi_2 <= resize(to_sfixed(4, 3, 0)*xi_1, xi_2'high, xi_2'low);
+	-- xq_2 <= resize(to_sfixed(4, 3, 0)*xq_1, xi_2'high, xi_2'low);
 	
-	xout_i_osr8_test	<= to_slv(xi_2);
-	xout_q_osr8_test	<= to_slv(xq_2);
+	-- xout_i_osr8_test	<= to_slv(xi_2);
+	-- xout_q_osr8_test	<= to_slv(xq_2);
 	
-	xin_i_ds <= to_slv(
-		resize(
-			factor*to_sfixed(xout_i_osr8, OSR_INT, -(OSR_WIDTH-1-OSR_INT)),
-			3,
-			-(DS_WIDTH-4)
-		)
-	);
-	xin_q_ds <= to_slv(
-		resize(
-			factor*to_sfixed(xout_q_osr8, OSR_INT, -(OSR_WIDTH-1-OSR_INT)),
-			3,
-			-(DS_WIDTH-4)
-		)
-	);
+	-- xin_i_ds <= to_slv(
+		-- resize(
+			-- factor*to_sfixed(xout_i_osr8, OSR_INT, -(OSR_WIDTH-1-OSR_INT)),
+			-- 3,
+			-- -(DS_WIDTH-4)
+		-- )
+	-- );
+	-- xin_q_ds <= to_slv(
+		-- resize(
+			-- factor*to_sfixed(xout_q_osr8, OSR_INT, -(OSR_WIDTH-1-OSR_INT)),
+			-- 3,
+			-- -(DS_WIDTH-4)
+		-- )
+	-- );
 	
 	-- xin_i_ds <= to_slv(xi_2_ds);--xin_i_delay;--xout_i_delay;
 	-- xin_q_ds <= to_slv(xq_2_ds);--xin_q_delay;--xout_q_delay;

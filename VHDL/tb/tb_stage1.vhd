@@ -18,7 +18,6 @@ architecture tb of tb_stage1 is
 	constant DS_WIDTH		: integer := 12;
 	constant OSR_WIDTH		: integer := 16;
 	constant OSR_COEFF		: integer := 15;
-	constant OSR_INT 		: integer := 0;
 	constant OSR_GUARD_BITS : integer := 4;
 
 	signal clk0   			: std_logic := '1';
@@ -27,10 +26,10 @@ architecture tb of tb_stage1 is
 	signal rst      		: std_logic := '1';
 	signal xin_i        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xin_q        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i_osr8_test	: std_logic_vector(DS_WIDTH-1 downto 0) := (others => '0');
-	signal xout_q_osr8_test	: std_logic_vector(DS_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i			: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_q			: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i			: std_logic_vector(3 downto 0) := (others => '0');
+	signal xout_q			: std_logic_vector(3 downto 0) := (others => '0');
 	
 	signal xin_i_stage1		: std_logic_vector(xin_i'high downto xin_i'low);
 	signal xin_q_stage1		: std_logic_vector(xin_q'high downto xin_q'low);
@@ -79,7 +78,6 @@ begin
 			DS_WIDTH		=> DS_WIDTH,
 			OSR_WIDTH		=> OSR_WIDTH,
 			OSR_COEFF		=> OSR_COEFF,
-			OSR_INT  		=> OSR_INT,
 			OSR_GUARD_BITS 	=> OSR_GUARD_BITS
 		)
 		port map (

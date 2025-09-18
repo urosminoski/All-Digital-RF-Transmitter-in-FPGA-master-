@@ -12,8 +12,6 @@ entity delay is
 		COEF_L		: integer := 15;
 		XWIDTH		: integer := 12;
 		INT  		: integer := 1;
-		FRAC 		: integer := 26;
-		NUM_TAPS   	: integer := 7;
 		DELTA		: real := 0.5
 	);
 	port(
@@ -25,6 +23,9 @@ entity delay is
 end entity;
 
 architecture rtl of delay is
+
+	constant FRAC 		: integer := COEF_L + XWIDTH - INT;
+	constant NUM_TAPS	: integer := KERNEL_ID;
 
 	subtype coef_t is sfixed(0 downto -COEF_L);
 	subtype acc_t  is sfixed(INT downto -FRAC);
