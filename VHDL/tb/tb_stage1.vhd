@@ -154,7 +154,7 @@ begin
 		end if;
 	end process;
 	
-	write_stage1 : process(clk1)
+	write_osr8 : process(clk1)
 		variable L_i, L_q : line;
 		variable L_i_test, L_q_test : line;
 	begin
@@ -164,17 +164,44 @@ begin
 				write(L_q, to_integer(signed(xout_q_osr8_test)));
 				writeline(output_file_i_osr8, L_i);
 				writeline(output_file_q_osr8, L_q);
-				
+			end if;
+		end if;
+	end process;
+	
+	write_delay : process(clk1)
+		variable L_i, L_q : line;
+		variable L_i_test, L_q_test : line;
+	begin
+		if falling_edge(clk1) then
+			if rst = '0' then
 				write(L_i, to_integer(signed(xout_i_delay_test)));
-				write(L_q, to_integer(signed(xout_i_delay_test)));
+				write(L_q, to_integer(signed(xout_q_delay_test)));
 				writeline(output_file_i_delay, L_i);
 				writeline(output_file_q_delay, L_q);
-				
+			end if;
+		end if;
+	end process;
+	
+	write_dsin : process(clk1)
+		variable L_i, L_q : line;
+		variable L_i_test, L_q_test : line;
+	begin
+		if falling_edge(clk1) then
+			if rst = '0' then
 				write(L_i, to_integer(signed(xin_i_ds_test)));
 				write(L_q, to_integer(signed(xin_q_ds_test)));
 				writeline(output_file_i_ds, L_i);
 				writeline(output_file_q_ds, L_q);
-				
+			end if;
+		end if;
+	end process;
+	
+	write_stage1 : process(clk1)
+		variable L_i, L_q : line;
+		variable L_i_test, L_q_test : line;
+	begin
+		if falling_edge(clk1) then
+			if rst = '0' then
 				write(L_i, to_integer(signed(xout_i)));
 				write(L_q, to_integer(signed(xout_q)));
 				writeline(output_file_i, L_i);
@@ -184,3 +211,9 @@ begin
 	end process;
 
 end architecture;
+
+
+
+
+				
+
