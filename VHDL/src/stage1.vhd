@@ -42,7 +42,7 @@ architecture rtl of stage1 is
 
 	signal factor 			: sfixed(3 downto -1);
 	signal xi_1, xq_1 		: sfixed(0 downto -(OSR_WIDTH-1));
-	signal xi_2, xq_2 		: sfixed(2 downto -(DS_WIDTH-3));
+	signal xi_2, xq_2 		: sfixed(3 downto -(DS_WIDTH-4));
 	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
@@ -161,8 +161,8 @@ begin
 	xi_1 <= to_sfixed(xout_i_osr8, 0, -15);
 	xq_1 <= to_sfixed(xout_q_osr8, 0, -15);
 	
-	xi_2 <= resize(to_sfixed(3.9, 2, 0)*xi_1, xi_2'high, xi_2'low);
-	xq_2 <= resize(to_sfixed(3.9, 2, 0)*xq_1, xi_2'high, xi_2'low);
+	xi_2 <= resize(to_sfixed(4, 3, 0)*xi_1, xi_2'high, xi_2'low);
+	xq_2 <= resize(to_sfixed(4, 3, 0)*xq_1, xi_2'high, xi_2'low);
 	
 	xout_i_osr8_test	<= to_slv(xi_2);
 	xout_q_osr8_test	<= to_slv(xq_2);
