@@ -21,6 +21,8 @@ entity stage1 is
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_i_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_q_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_q_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_i				: out std_logic_vector(3 downto 0);
 		xout_q				: out std_logic_vector(3 downto 0)
 	);
@@ -42,9 +44,6 @@ architecture rtl of stage1 is
 	constant FRAC		: integer := 4;
 
 	constant LUT_ID : integer := 3;
-
-	signal xi_osr8, xq_osr8	: sfixed(0 downto -(OSR_WIDTH-1));
-	signal xi_norm, xq_norm : sfixed(3 downto -(OSR_WIDTH-4));
 	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
@@ -96,42 +95,13 @@ begin
 			vout 	=> vout_q
 		);
 		
+	xout_i_osr8_test	<= xout_i_osr8;
+	xout_q_osr8_test	<= xout_q_osr8;
+		
 	-------------------------------------------------------------------------------
-	-- Dealay
+	-- Dealay & Normalization to x4 [-4, 4]
 	-------------------------------------------------------------------------------
-	
-	-- xin_i_delay <= to_slv(
-		-- resize(
-			-- to_sfixed(4.0, 3, 0) * to_sfixed(xout_i_osr8, OSR_INT, -OSR_FRAC),
-			-- 3,
-			-- -(OSR_FRAC-4)
-		-- )
-	-- );
-	
-	-- xin_q_delay <= to_slv(
-		-- resize(
-			-- to_sfixed(4.0, 3, 0) * to_sfixed(xout_q_osr8, OSR_INT, -OSR_FRAC),
-			-- 3,
-			-- -(OSR_FRAC-4)
-		-- )
-	-- );
-	
-	xi_osr8 <= to_sfixed(xout_i_osr8, xi_osr8'high, xi_osr8'low);
-	xq_osr8 <= to_sfixed(xout_q_osr8, xq_osr8'high, xq_osr8'low);
-	
-	xi_norm <= resize(
-		to_sfixed(4.0, 3, 0) * xi_osr8,
-		xi_norm'high,
-		xi_norm'low
-	);
-	
-	xq_norm <= resize(
-		to_sfixed(4.0, 3, 0) * xq_osr8,
-		xq_norm'high,
-		xq_norm'low
-	);
-	
-	
+
 	xin_i_delay <= to_slv(
 		resize(
 			to_sfixed(4.0, 3, 0) * to_sfixed(xout_i_osr8, 0, -(OSR_WIDTH-1)),
@@ -148,44 +118,42 @@ begin
 		)
 	);
 	
-	xout_i_osr8_test	<= xin_i_delay;--to_slv(xi_norm);
-	xout_q_osr8_test	<= xin_q_delay;--to_slv(xq_norm);
-	
-	-- delay_i: entity work.delay
-		-- generic map (
-			-- KERNEL_ID   => 7,
-			-- COEF_L		=> OSR_COEFF,
-			-- XWIDTH		=> OSR_WIDTH,
-			-- INT  		=> 3,
-			-- NUM_TAPS   	=> 7,
-			-- DELTA		=> DELTA_I
-		-- )
-		-- port map (
-			-- clk		=> clk,
-			-- rst		=> rst, 
-			-- en		=> '1', 		
-			-- xin		=> xin_i_delay,
-			-- xout	=> xout_i_delay      
-		-- );
+	delay_i: entity work.delay
+		generic map (
+			KERNEL_ID   => 7,
+			COEF_L		=> OSR_COEFF,
+			XWIDTH		=> OSR_WIDTH,
+			INT  		=> 3,
+			GUARD_BITS	=> 4,
+			DELTA		=> DELTA_I
+		)
+		port map (
+			clk		=> clk,
+			rst		=> rst, 
+			en		=> '1', 		
+			xin		=> xin_i_delay,
+			xout	=> xout_i_delay      
+		);
 		
-	-- delay_q: entity work.delay
-		-- generic map (
-			-- KERNEL_ID   => 7,
-			-- COEF_L		=> COEF_L,
-			-- XWIDTH		=> XWIDTH,
-			-- INT  		=> 3,
-			-- FRAC 		=> XWIDTH-4,
-			-- NUM_TAPS   	=> 7,
-			-- DELTA		=> DELTA_Q
-		-- )
-		-- port map (
-			-- clk		=> clk,
-			-- rst		=> rst, 
-			-- en		=> '1', 		
-			-- xin		=> xin_q_delay,
-			-- xout	=> xout_q_delay      
-		-- );
-	
+	delay_q: entity work.delay
+		generic map (
+			KERNEL_ID   => 7,
+			COEF_L		=> OSR_COEFF,
+			XWIDTH		=> OSR_WIDTH,
+			INT  		=> 3,
+			GUARD_BITS	=> 4,
+			DELTA		=> DELTA_Q
+		)
+		port map (
+			clk		=> clk,
+			rst		=> rst, 
+			en		=> '1', 		
+			xin		=> xin_q_delay,
+			xout	=> xout_q_delay      
+		);
+		
+	xout_i_delay_test	<= xout_i_delay;
+	xout_q_delay_test	<= xout_q_delay;
 		
 	-- xout_i_osr8_test	<= xout_i_osr8;
 	-- xout_q_osr8_test	<= xout_q_osr8;

@@ -20,16 +20,18 @@ architecture tb of tb_stage1 is
 	constant OSR_COEFF		: integer := 15;
 	constant OSR_GUARD_BITS : integer := 4;
 
-	signal clk0   			: std_logic := '1';
-	signal clk1   			: std_logic := '1';
-	signal stage1_strobe   	: std_logic := '1';
-	signal rst      		: std_logic := '1';
-	signal xin_i        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xin_q        	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_q_osr8_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
-	signal xout_i			: std_logic_vector(3 downto 0) := (others => '0');
-	signal xout_q			: std_logic_vector(3 downto 0) := (others => '0');
+	signal clk0   				: std_logic := '1';
+	signal clk1   				: std_logic := '1';
+	signal stage1_strobe   		: std_logic := '1';
+	signal rst      			: std_logic := '1';
+	signal xin_i        		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xin_q        		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i_osr8_test		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_q_osr8_test		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i_delay_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_q_delay_test	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xout_i				: std_logic_vector(3 downto 0) := (others => '0');
+	signal xout_q				: std_logic_vector(3 downto 0) := (others => '0');
 	
 	signal xin_i_stage1		: std_logic_vector(xin_i'high downto xin_i'low);
 	signal xin_q_stage1		: std_logic_vector(xin_q'high downto xin_q'low);
@@ -42,6 +44,9 @@ architecture tb of tb_stage1 is
 	
 	file output_file_i_osr8  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_osr8.txt";
 	file output_file_q_osr8  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_osr8.txt";
+	
+	file output_file_i_delay  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i_delay.txt";
+	file output_file_q_delay  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q_delay.txt";
 	
 	file output_file_i  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_i.txt";
 	file output_file_q  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\stage1_test\xout_q.txt";
@@ -88,6 +93,8 @@ begin
 			xin_q   			=> xin_q_stage1,
 			xout_i_osr8_test 	=> xout_i_osr8_test,
 			xout_q_osr8_test 	=> xout_q_osr8_test,
+			xout_i_delay_test	=> xout_i_delay_test,
+			xout_q_delay_test	=> xout_q_delay_test,
 			xout_i 				=> xout_i,
 			xout_q 				=> xout_q
 		);
@@ -146,6 +153,11 @@ begin
 				write(L_q, to_integer(signed(xout_q_osr8_test)));
 				writeline(output_file_i_osr8, L_i);
 				writeline(output_file_q_osr8, L_q);
+				
+				write(L_i, to_integer(signed(xout_i_delay_test)));
+				write(L_q, to_integer(signed(xout_i_delay_test)));
+				writeline(output_file_i_delay, L_i);
+				writeline(output_file_q_delay, L_q);
 				
 				write(L_i, to_integer(signed(xout_i)));
 				write(L_q, to_integer(signed(xout_q)));

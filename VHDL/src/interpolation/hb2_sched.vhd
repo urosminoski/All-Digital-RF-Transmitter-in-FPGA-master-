@@ -17,15 +17,15 @@ entity hb2_sched is
 		OFF1       	: integer := 4    -- seed+OFF1 -> ph1 (odd)
 	);
 	port(
-		clk        : in  std_logic;
-		rst        : in  std_logic;
-		seed       : in  std_logic;                  -- 1 clk: novi ulaz za stejdž
-		frame_cnt  : in  std_logic_vector(2 downto 0); -- 0..7 @ 8*fs
+		clk        	: in  std_logic;
+		rst        	: in  std_logic;
+		seed       	: in  std_logic;                  -- 1 clk: novi ulaz za stejdž
+		frame_cnt  	: in  std_logic_vector(2 downto 0); -- 0..7 @ 8*fs
 		-- xin        : in  std_logic_vector(XWIDTH-1 downto 0);
 		-- xout       : out std_logic_vector(XWIDTH + COEF_L + GUARD_BITS downto 0);
 		xin			: in  sfixed(INT downto -FRAC);
 		xout		: out  sfixed(INT downto -FRAC);
-		vout       : out std_logic                   -- 1 clk kada je xout valid
+		vout       	: out std_logic                   -- 1 clk kada je xout valid
 	);
 end entity;
 

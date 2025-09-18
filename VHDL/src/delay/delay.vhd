@@ -12,6 +12,7 @@ entity delay is
 		COEF_L		: integer := 15;
 		XWIDTH		: integer := 12;
 		INT  		: integer := 1;
+		GUARD_BITS	: integer := 1;
 		DELTA		: real := 0.5
 	);
 	port(
@@ -24,26 +25,27 @@ end entity;
 
 architecture rtl of delay is
 
+	constant INT_IN : integer := INT+GUARD_BITS;
+
 	constant FRAC 		: integer := COEF_L + XWIDTH - INT;
 	constant NUM_TAPS	: integer := KERNEL_ID;
 
 	subtype coef_t is sfixed(0 downto -COEF_L);
-	subtype acc_t  is sfixed(INT downto -FRAC);
+	subtype acc_t  is sfixed(INT_IN downto -FRAC);
 
 	type coef_vec_t  is array (0 to NUM_TAPS-1) of coef_t;
 	type mul_vec_t   is array (0 to NUM_TAPS-1) of acc_t;
 	type shift_vec_t is array (0 to NUM_TAPS-1) of acc_t;
 
-	signal xin_sf      : sfixed(0 downto -(XWIDTH-1)) := (others => '0');
+	signal xin_sf : sfixed(INT downto -(XWIDTH-INT-1)) := (others => '0');
+	signal xout_d : sfixed(INT downto -FRAC) := (others => '0');
 	
 	signal coef	: coef_vec_t	:= (others => (others => '0'));
 	signal mul 	: mul_vec_t		:= (others => (others => '0'));
 	signal sft	: shift_vec_t 	:= (others => (others => '0'));
 	signal acc	: acc_t			:= (others => '0');
 	
-	signal xout_d : sfixed(INT downto -FRAC);
-	
-	signal f	: sfixed(0 downto -(INT+FRAC)) := to_sfixed(DELTA, 0, -(INT+FRAC));
+	signal f	: sfixed(0 downto -(INT_IN+FRAC)) := to_sfixed(DELTA, 0, -(INT_IN+FRAC));
 
 begin
 
@@ -113,7 +115,7 @@ begin
 			if rst = '1' then
 				xout <= (others => '0');
 			elsif en = '1' then
-				xout <= to_slv(resize(xout_d, 0, -(XWIDTH-1)));
+				xout <= to_slv(resize(xout_d, INT, -(XWIDTH-INT-1)));
 			end if;
 		end if;
 	end process;
