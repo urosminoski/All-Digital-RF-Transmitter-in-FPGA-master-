@@ -131,8 +131,8 @@ begin
 	
 	acc <= resize(sft(0) + mul(0), acc'high, acc'low);
 	
-	-- xout_d <= resize(acc*f + xin_d, xout_d'high, xout_d'low);
-	xout_d <= acc;
+	xout_d <= resize(-acc*f + xin_d, xout_d'high, xout_d'low);
+	-- xout_d <= acc;
 	
 	process(clk)
 	begin
