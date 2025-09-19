@@ -149,7 +149,7 @@ begin
 			rst   	=> rst,
 			strobe 	=> stage2_strobe,
 			xin_i  	=> xin_i_stage2,
-			xin_q  	=> xin_i_stage2,
+			xin_q  	=> xin_q_stage2,
 			xout_i	=> xout_i_stage2,
 			xout_q	=> xout_q_stage2
 		);
