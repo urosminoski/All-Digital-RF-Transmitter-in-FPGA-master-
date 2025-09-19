@@ -16,8 +16,8 @@ architecture tb of tb_stage23 is
 	constant C_CLK2_PERIOD 	: time    := 40 ps;
 	constant C_CLK3_PERIOD 	: time    := 10	ps;
 	
-	constant DS_WIDTH		: integer := 12;
-	constant OSR_WIDTH		: integer := 12;
+	constant DS_WIDTH		: integer := 24;
+	constant OSR_WIDTH		: integer := 24;
 	constant OSR_COEFF		: integer := 17;
 	constant OSR_GUARD_BITS : integer := 4;
 	constant LUT_ID 		: integer := 3;
