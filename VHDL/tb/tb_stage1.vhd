@@ -15,8 +15,8 @@ architecture tb of tb_stage1 is
 	constant C_CLK0_PERIOD 	: time    := 10240 ps;
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
-	constant DS_WIDTH		: integer := 15;
-	constant OSR_WIDTH		: integer := 15;
+	constant DS_WIDTH		: integer := 16;
+	constant OSR_WIDTH		: integer := 16;
 	constant OSR_COEFF		: integer := 15;
 	constant OSR_GUARD_BITS : integer := 4;
 
@@ -109,21 +109,6 @@ begin
 			xout_i 				=> xout_i,
 			xout_q 				=> xout_q
 		);
-	
-	-- process(clk)
-	-- begin
-		-- if rising_edge(clk) then
-			-- if rst = '1' then
-				-- tb_cnt <= 0;
-			-- else
-				-- if tb_cnt = 7 then
-					-- tb_cnt <= 0;
-				-- else
-					-- tb_cnt <= tb_cnt + 1;
-				-- end if;
-			-- end if;
-		-- end if;
-	-- end process;
 	
 	read_files : process(clk0)
 		variable L_i, L_q : line;
