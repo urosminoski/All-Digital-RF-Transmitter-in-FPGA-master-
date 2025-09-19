@@ -28,6 +28,9 @@ architecture tb of tb_stage23 is
 	signal rst      			: std_logic := '1';
 	signal xin_i        		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xin_q        		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	
+	signal xin_i_ds_test		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
+	signal xin_q_ds_test		: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i_ds_test		: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_q_ds_test		: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_i_stage2_test	: std_logic := '0';
@@ -53,6 +56,9 @@ architecture tb of tb_stage23 is
 
 	file input_file_i  	: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_i_delay.txt";
 	file input_file_q  	: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xin_q_delay.txt";
+	
+	file output_file_i_dsin  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_i_dsin.txt";
+	file output_file_q_dsin  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_q_dsin.txt";
 	
 	file output_file_i_ds  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_i_ds.txt";
 	file output_file_q_ds  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\VHDL\data\delay_test\xout_q_ds.txt";
@@ -120,9 +126,9 @@ begin
 			strobe		=> stage2_strobe
 		);
 	
-	process(clk1)
+	process(clk2)
 	begin
-		if rising_edge(clk1) then
+		if rising_edge(clk2) then
 			if rst = '1' then
 				xin_i_stage2 	<= (others => '0');
 				xin_q_stage2 	<= (others => '0');
@@ -227,6 +233,20 @@ begin
 	-------------------------------------------------------------------------------
 	-- Write Output Data
 	-------------------------------------------------------------------------------
+	
+	write_dsin : process(clk2)
+		variable L_i, L_q : line;
+		variable L_i_test, L_q_test : line;
+	begin
+		if falling_edge(clk1) then
+			if rst = '0' then
+				write(L_i, to_integer(signed(xin_i_ds_test)));
+				write(L_q, to_integer(signed(xin_q_ds_test)));
+				writeline(output_file_i_dsin, L_i);
+				writeline(output_file_q_dsin, L_q);
+			end if;
+		end if;
+	end process;
 	
 	write_ds : process(clk2)
 		variable L_i, L_q : line;
