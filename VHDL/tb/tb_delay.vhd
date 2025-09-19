@@ -19,9 +19,9 @@ architecture tb of tb_delay is
 	constant DELTA_Q 	: real := DELTA;
 	constant factor		: real := 1.0/(1.0+DELTA);
 	
-	constant DS_WIDTH		: integer := 16;
-	constant OSR_WIDTH		: integer := 16;
-	constant OSR_COEFF		: integer := 17;
+	constant DS_WIDTH		: integer := 32;
+	constant OSR_WIDTH		: integer := 32;
+	constant OSR_COEFF		: integer := 31;
 	constant OSR_GUARD_BITS : integer := 4;
 	constant LUT_ID 		: integer := 3;
 	constant KERNEL_ID		: integer := 7;
