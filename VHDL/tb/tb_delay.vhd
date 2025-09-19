@@ -14,7 +14,7 @@ architecture tb of tb_delay is
 
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	
-	constant DELTA 		: real := 0.00390625;
+	constant DELTA 		: real := 0.0;--0.00390625;
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
 	constant factor		: real := 1.0/(1.0+DELTA);
