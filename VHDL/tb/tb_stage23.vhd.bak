@@ -7,10 +7,10 @@ use ieee.fixed_pkg.all;
 library std;
 use std.textio.all;
 
-entity tb_stage23 is
+entity tb_stage1 is
 end entity;
 
-architecture tb of tb_stage23 is
+architecture tb of tb_stage1 is
 
 	constant C_CLK1_PERIOD 	: time    := 1280 ps;
 	constant C_CLK2_PERIOD 	: time    := 40 ps;
@@ -20,7 +20,6 @@ architecture tb of tb_stage23 is
 	constant OSR_WIDTH		: integer := 12;
 	constant OSR_COEFF		: integer := 17;
 	constant OSR_GUARD_BITS : integer := 4;
-	constant LUT_ID 		: integer := 3;
 
 	signal clk1   				: std_logic := '1';
 	signal clk2   				: std_logic := '1';
@@ -32,7 +31,10 @@ architecture tb of tb_stage23 is
 	signal xout_q_ds_test		: std_logic_vector(3 downto 0) := (others => '0');
 	signal xout_i_stage2_test	: std_logic := '0';
 	signal xout_q_stage2_test	: std_logic := '0';
+	signal xout_i_stage3_test	: std_logic := '0';
+	signal xout_q_stage3_test	: std_logic := '0';
 	signal xout_iq_test			: std_logic := '0';
+
 	
 	signal xin_i_ds 		: std_logic_vector(DS_WIDTH-1 downto 0) := (others => '0');
 	signal xin_q_ds 		: std_logic_vector(DS_WIDTH-1 downto 0) := (others => '0');
@@ -126,7 +128,7 @@ begin
 			if rst = '1' then
 				xin_i_stage2 	<= (others => '0');
 				xin_q_stage2 	<= (others => '0');
-			elsif stage2_strobe = '1' then
+			elsif stage1_strobe = '1' then
 				xin_i_stage2	<= xout_i_ds;
 				xin_q_stage2 	<= xout_q_ds;
 			end if;
@@ -248,8 +250,8 @@ begin
 	begin
 		if falling_edge(clk1) then
 			if rst = '0' then
-				write(L_i, xout_i_stage2_test);
-				write(L_q, xout_q_stage2_test);
+				write(L_i, to_integer(signed(xout_i_stage2_test)));
+				write(L_q, to_integer(signed(xout_q_stage2_test)));
 				writeline(output_file_i_stage2, L_i);
 				writeline(output_file_q_stage2, L_q);
 			end if;
@@ -261,7 +263,7 @@ begin
 	begin
 		if falling_edge(clk1) then
 			if rst = '0' then
-				write(L, xout_iq_test);
+				write(L, to_integer(signed(xout_iq_test)));
 				writeline(output_file_stage3, L);
 			end if;
 		end if;
