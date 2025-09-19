@@ -237,7 +237,7 @@ begin
 	-- Write Output Data
 	-------------------------------------------------------------------------------
 	
-	write_dsin : process(clk2)
+	write_dsin : process(clk1)
 		variable L_i, L_q : line;
 		variable L_i_test, L_q_test : line;
 	begin
@@ -251,7 +251,7 @@ begin
 		end if;
 	end process;
 	
-	write_ds : process(clk2)
+	write_ds : process(clk1)
 		variable L_i, L_q : line;
 		variable L_i_test, L_q_test : line;
 	begin
@@ -265,11 +265,11 @@ begin
 		end if;
 	end process;
 	
-	write_stage2 : process(clk1)
+	write_stage2 : process(clk2)
 		variable L_i, L_q : line;
 		variable L_i_test, L_q_test : line;
 	begin
-		if falling_edge(clk1) then
+		if falling_edge(clk2) then
 			if rst = '0' then
 				write(L_i, xout_i_stage2_test);
 				write(L_q, xout_q_stage2_test);
@@ -279,10 +279,10 @@ begin
 		end if;
 	end process;
 	
-	write_stage3 : process(clk1)
+	write_stage3 : process(clk3)
 		variable L : line;
 	begin
-		if falling_edge(clk1) then
+		if falling_edge(clk3) then
 			if rst = '0' then
 				write(L, xout_iq_test);
 				writeline(output_file_stage3, L);
