@@ -76,7 +76,7 @@ begin
 	
 	xin_i_ds <= to_slv(
 		resize(
-			to_sfixed(xin_i, 3, -(OSR_WIDTH-4)),
+			to_sfixed(4.0, 3, 0) * to_sfixed(xin_i, 0, -(OSR_WIDTH-1)),
 			3,
 			-(DS_WIDTH-4)
 		)
@@ -84,7 +84,7 @@ begin
 	
 	xin_q_ds <= to_slv(
 		resize(
-			to_sfixed(xin_q, 3, -(OSR_WIDTH-4)),
+			to_sfixed(4.0, 3, 0) * to_sfixed(xin_q, 0, -(OSR_WIDTH-1)),
 			3,
 			-(DS_WIDTH-4)
 		)
