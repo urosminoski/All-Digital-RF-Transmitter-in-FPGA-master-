@@ -4,15 +4,19 @@ use ieee.numeric_std.all;
 use ieee.fixed_float_types.all;
 use ieee.fixed_pkg.all;
 
-use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
+use work.fir_coeffs_pkg.all;
 
 entity stage1 is
-	generic(
-		KERNEL_ID		: integer := 7;
-		DS_WIDTH		: integer := 12;
+	generic (
+		-- OSR Parameters
 		OSR_WIDTH		: integer := 12;
 		OSR_COEFF		: integer := 11;
-		OSR_GUARD_BITS 	: integer := 4
+		OSR_GUARD_BITS 	: integer := 4;
+		-- Fract Delay Parameters
+		KERNEL_ID		: integer := 7;
+		DELTA			: real := 0.00390625;
+		-- Delta-Sigma Parameters
+		DS_WIDTH		: integer := 12
 	);
 	port(
 		clk   				: in  std_logic;
@@ -20,8 +24,8 @@ entity stage1 is
 		strobe				: in  std_logic;
 		xin_i  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_q  				: in  std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_i_osr8_test		: out std_logic_vector(OSR_WIDTH-1 downto 0);
-		xout_q_osr8_test		: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_i_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
+		xout_q_osr8_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_i_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xout_q_delay_test	: out std_logic_vector(OSR_WIDTH-1 downto 0);
 		xin_i_ds_test		: out std_logic_vector(DS_WIDTH-1 downto 0);
@@ -34,20 +38,11 @@ end entity;
 architecture rtl of stage1 is
 
 	constant OSR_INT 	: integer := 0;
-	
-	constant DELTA 		: real := 0.00390625;
+
 	constant DELTA_I 	: real := -DELTA;
 	constant DELTA_Q 	: real := DELTA;
 	constant factor		: real := 4.0/(1.0+DELTA);
-	
-	
-	constant COEF_L		: integer := 11;
-	-- constant XWIDTH		: integer := 12;
-	constant INT		: integer := 0;
-	constant FRAC		: integer := 4;
 
-	constant LUT_ID : integer := 3;
-	
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	signal xout_i_delay, xout_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
 	
@@ -57,9 +52,6 @@ architecture rtl of stage1 is
 	signal xin_i_ds, xin_q_ds 	: std_logic_vector(DS_WIDTH-1 downto 0);
 	signal xout_i_ds, xout_q_ds	: std_logic_vector(3 downto 0);
 	
-	signal cnt 		: unsigned(2 downto 0) := (others => '0');
-	signal delay_en : std_logic := '0';
-
 begin
 
 	xout_i_osr8_test	<= xout_i_osr8;

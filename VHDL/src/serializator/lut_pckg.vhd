@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 package lut_pkg is
 	-- VHDL-2008: unconstrained row; svaka tabela ima svoj N (broj kolona)
@@ -125,4 +126,54 @@ package lut_pkg is
 		15	=> "0000100000000010000"
 	);
 	constant LUT5_LEN : natural := 19;	-- kolona
+	
+	--------------------------------------------------------------------
+	-- API funkcije (deklaracije)
+	--------------------------------------------------------------------
+	function lut_len(id : integer) return natural;
+	function get_row(id : integer; idx : integer) return row_t;
+	
+	-- mapiranje ulaza: [-2^(W-1) .. 2^(W-1)-1] -> 0..2^W-1 uz flip
+	-- prima vektor proizvoljne širine i vraća unsigned iste širine
+	function map_row_index(d : std_logic_vector) return unsigned;
+
 end package;
+
+package body lut_pkg is
+
+  function lut_len(id : integer) return natural is
+  begin
+    case id is
+      when 1      => return LUT1_LEN;
+      when 2      => return LUT2_LEN;
+      when 3      => return LUT3_LEN;
+      when 4      => return LUT4_LEN;
+      when 5      => return LUT5_LEN;
+      when others => return LUT1_LEN;
+    end case;
+  end function;
+
+  function get_row(id : integer; idx : integer) return row_t is
+  begin
+    case id is
+      when 1      => return LUT1_ROM(idx);
+      when 2      => return LUT2_ROM(idx);
+      when 3      => return LUT3_ROM(idx);
+      when 4      => return LUT4_ROM(idx);
+      when 5      => return LUT5_ROM(idx);
+      when others => return LUT1_ROM(idx);
+    end case;
+  end function;
+
+  function map_row_index(d : std_logic_vector) return unsigned is
+    constant W    : natural := d'length;
+    constant BIAS : signed(d'range) := to_signed(2**(W-1), W);
+    variable u    : unsigned(d'range);
+  begin
+    -- shift u 0..2^W-1
+    u := unsigned(signed(d) + BIAS);
+    -- flip: (2^W-1) - u  == bitwise not za tačnu širinu
+    return not u;
+  end function;
+
+end package body;

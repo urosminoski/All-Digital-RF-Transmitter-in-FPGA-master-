@@ -5,6 +5,7 @@ use ieee.fixed_float_types.all;
 use ieee.fixed_pkg.all;
 
 use work.fir_coeffs_pkg.all;  -- FIR0/1/2_PHx_R i *_N
+use work.lut_pkg.all;
 
 entity rfTransmitter is
 	generic(
@@ -32,6 +33,9 @@ entity rfTransmitter is
 end entity;
 
 architecture rtl of rfTransmitter is
+	
+	constant LUT_N 	: natural := lut_len(LUT_ID);
+	constant DELTA	: real := 1.0 / (8.0 * real(LUT_N));
 
 	signal xin_i_stage1_s, xin_q_stage1_s 	: std_logic_vector(OSR_WIDTH-1 downto 0) := (others => '0');
 	signal xout_i_stage1_s, xout_q_stage1_s : std_logic_vector(3 downto 0) := (others => '0');
@@ -70,11 +74,12 @@ begin
 
 	stage1_gen : entity work.stage1
 		generic map (
-			KERNEL_ID		=> KERNEL_ID,
-			DS_WIDTH		=> DS_WIDTH,
 			OSR_WIDTH		=> OSR_WIDTH,
 			OSR_COEFF		=> OSR_COEFF,
-			OSR_GUARD_BITS	=> OSR_GUARD_BITS
+			OSR_GUARD_BITS	=> OSR_GUARD_BITS,
+			KERNEL_ID		=> KERNEL_ID,
+			DELTA			=> DELTA,
+			DS_WIDTH		=> DS_WIDTH
 		)
 		port map (
 			clk   	=> clk1,
