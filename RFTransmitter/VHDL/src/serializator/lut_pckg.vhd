@@ -167,7 +167,7 @@ package body lut_pkg is
 
   function map_row_index(d : std_logic_vector) return unsigned is
     constant W    : natural := d'length;
-    constant BIAS : signed(d'range) := to_signed(2**(W-1), W);
+    constant BIAS : signed(d'range) := to_signed(2**(W-1)-1, W);
     variable u    : unsigned(d'range);
   begin
     -- shift u 0..2^W-1
