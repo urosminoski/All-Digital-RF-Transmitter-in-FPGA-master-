@@ -34,3 +34,12 @@ Exception c0000005 has occurred at address 649d24f2. Traceback:
 # Platform = win32pe
 
 Exception c0000005 has occurred at address 0076b738. Traceback:
+# Current time Mon Sep 22 13:01:49 2025
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vish
+# Id = "10.5b"
+# Version = "2016.10"
+# Date = "Oct  5 2016"
+# Platform = win32pe
+
+Exception c0000005 has occurred at address 0076d8b9. Traceback:

@@ -1,41 +1,24 @@
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.fixed_float_types.all;
 use ieee.fixed_pkg.all;
-use work.lut_pkg.all;
 
 library std;
 use std.textio.all;
 
 entity tb_rfTransmitter is
-	generic (
-		LUT_ID				: integer := 3;
-		IN_FILE_I         	: string := "xin_i_test.txt";
-		IN_FILE_Q         	: string := "xin_q_test.txt";
-		OUT_FILE_I_STAGE1 	: string := "xout_i_stage1.txt";
-		OUT_FILE_Q_STAGE1 	: string := "xout_q_stage1.txt";
-		OUT_FILE_I_STAGE2 	: string := "xout_i_stage2.txt";
-		OUT_FILE_Q_STAGE2 	: string := "xout_q_stage2.txt";
-		OUT_FILE_STAGE3   	: string := "xout_stage3.txt"
-	);
 end entity;
 
 architecture tb of tb_rfTransmitter is
+	-- constant C_CLK_FREQ   	: integer := 150_000_000;
+	constant C_CLK0_PERIOD 	: time    := 10240 ps;
+	constant C_CLK1_PERIOD 	: time    := 1280 ps;
+	constant C_CLK2_PERIOD 	: time    := 40 ps;
+	constant C_CLK3_PERIOD 	: time    := 10	ps;
 	
-	constant LUT_N 	: natural := lut_len(LUT_ID);
-	
-	constant C_CLK3_PERIOD 	: time	:= 10 ps;
-	constant C_CLK2_PERIOD 	: time 	:= C_CLK3_PERIOD * 4;
-	constant C_CLK1_PERIOD 	: time 	:= C_CLK2_PERIOD * LUT_N;
-	constant C_CLK0_PERIOD 	: time 	:= C_CLK1_PERIOD * 8;
-
-	
-	-- constant C_CLK0_PERIOD 	: time    := 10240 ps;
-	-- constant C_CLK1_PERIOD 	: time    := 1280 ps;
-	-- constant C_CLK2_PERIOD 	: time    := 40 ps;
-	-- constant C_CLK3_PERIOD 	: time    := 10	ps;
-	
+	constant LUT_ID			: integer := 3;
 	constant KERNEL_ID		: integer := 7;
 	constant DS_WIDTH		: integer := 16;
 	constant OSR_WIDTH		: integer := 16;
@@ -55,16 +38,16 @@ architecture tb of tb_rfTransmitter is
 	signal xout_q_stage2	: std_logic := '0';
 	signal xout_stage3		: std_logic := '0';
 
-	file input_file_i  	: text open read_mode   is IN_FILE_I;
-	file input_file_q 	: text open read_mode   is IN_FILE_Q;
+	file input_file_i  	: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xin_i_test.txt";
+	file input_file_q 	: text open read_mode   is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xin_q_test.txt";
 	
-	file output_file_i_stage1  	: text open write_mode  is OUT_FILE_I_STAGE1;
-	file output_file_q_stage1  	: text open write_mode  is OUT_FILE_Q_STAGE1;
+	file output_file_i_stage1  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xout_i_stage1.txt";
+	file output_file_q_stage1  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xout_q_stage1.txt";
 	
-	file output_file_i_stage2  	: text open write_mode  is OUT_FILE_I_STAGE2;
-	file output_file_q_stage2  	: text open write_mode  is OUT_FILE_Q_STAGE2;
+	file output_file_i_stage2  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xout_i_stage2.txt";
+	file output_file_q_stage2  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xout_q_stage2.txt";
 	
-	file output_file_stage3  	: text open write_mode  is OUT_FILE_STAGE3;
+	file output_file_stage3  	: text open write_mode  is "C:\Users\Korisnik\Desktop\FAKS\MASTER\All-Digital-RF-Transmitter-in-FPGA-master-\RFTransmitter\VHDL\data\rfTransmitter_test\xout_stage3.txt";
 	
 begin
 
@@ -129,6 +112,7 @@ begin
 	
 	write_stage1 : process(clk1)
 		variable L_i, L_q : line;
+		variable L_i_test, L_q_test : line;
 	begin
 		if falling_edge(clk1) then
 			if rst = '0' then
@@ -139,6 +123,33 @@ begin
 			end if;
 		end if;
 	end process;
+
+	write_stage2 : process(clk2)
+		variable L_i, L_q : line;
+	begin
+		if falling_edge(clk2) then
+			if rst = '0' then
+				write(L_i, xout_i_stage2);
+				write(L_q, xout_q_stage2);
+				writeline(output_file_i_stage2, L_i);
+				writeline(output_file_q_stage2, L_q);
+			end if;
+		end if;
+	end process;
+	
+	write_stage3 : process(clk3)
+		variable L : line;
+	begin
+		if falling_edge(clk3) then
+			if rst = '0' then
+				write(L, xout_stage3);
+				writeline(output_file_stage3, L);
+			end if;
+		end if;
+	end process;
+
+end architecture;
+
 
 	write_stage2 : process(clk2)
 		variable L_i, L_q : line;
