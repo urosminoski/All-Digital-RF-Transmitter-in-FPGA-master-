@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" version="28.2.3">
   <diagram name="Page-1" id="pEPi_JN1sJmoPVMVXcNB">
-    <mxGraphModel dx="453" dy="232" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="548" dy="281" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -82,12 +82,6 @@
             <mxPoint x="680" y="249.77999999999997" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ps-ontqsnGCl3ai26Atb-21" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="640" y="269.78" as="sourcePoint" />
-            <mxPoint x="680" y="269.78" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="ps-ontqsnGCl3ai26Atb-22" value="Rec" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="680" y="240" width="40" height="40" as="geometry" />
         </mxCell>
@@ -111,6 +105,24 @@
             <mxPoint x="720" y="259.57" as="sourcePoint" />
             <mxPoint x="760" y="259.57" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="ps-ontqsnGCl3ai26Atb-29" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="210" width="230" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ps-ontqsnGCl3ai26Atb-30" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="210.22" width="70" height="99.78" as="geometry" />
+        </mxCell>
+        <mxCell id="ps-ontqsnGCl3ai26Atb-32" value="Podsistem I" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="340" y="180" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ps-ontqsnGCl3ai26Atb-33" value="Podsistem II" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="575" y="180.22" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ps-ontqsnGCl3ai26Atb-34" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="665" y="210" width="70" height="99.78" as="geometry" />
+        </mxCell>
+        <mxCell id="ps-ontqsnGCl3ai26Atb-35" value="Podsistem III" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="665" y="180" width="80" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
