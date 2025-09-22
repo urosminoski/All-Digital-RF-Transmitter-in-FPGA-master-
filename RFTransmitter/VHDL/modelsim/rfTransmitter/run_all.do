@@ -7,9 +7,9 @@ set	ROOT	[file normalize [file join $THISDIR ../../../]]
 
 # I/O folderi
 set	IN_DIR	"$ROOT/data/input/"
-set	OUT1	"$ROOT/data/output/stage1/"
-set	OUT2	"$ROOT/data/output/stage2/"
-set	OUT3	"$ROOT/data/output/stage3/"
+set	OUT1	"$ROOT/data/output/12bit/LUT3/stage1/"
+set	OUT2	"$ROOT/data/output/12bit/LUT3/stage2/"
+set	OUT3	"$ROOT/data/output/12bit/LUT3/stage3/"
 file	mkdir	$OUT1
 file	mkdir	$OUT2
 file	mkdir	$OUT3
