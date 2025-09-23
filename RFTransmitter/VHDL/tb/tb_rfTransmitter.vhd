@@ -11,6 +11,7 @@ use std.textio.all;
 entity tb_rfTransmitter is
 	generic (
 		LUT_ID				: integer := 3;
+		KERNEL_ID			: integer := 7;
 		IN_FILE_I         	: string := "xin_i_test.txt";
 		IN_FILE_Q         	: string := "xin_q_test.txt";
 		OUT_FILE_I_STAGE1 	: string := "xout_i_stage1.txt";
@@ -36,7 +37,6 @@ architecture tb of tb_rfTransmitter is
 	-- constant C_CLK2_PERIOD 	: time    := 40 ps;
 	-- constant C_CLK3_PERIOD 	: time    := 10	ps;
 	
-	constant KERNEL_ID		: integer := 7;
 	constant DS_WIDTH		: integer := 12;
 	constant OSR_WIDTH		: integer := 12;
 	constant OSR_COEFF		: integer := 15;

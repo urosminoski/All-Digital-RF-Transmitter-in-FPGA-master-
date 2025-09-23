@@ -7,9 +7,9 @@ set	ROOT	[file normalize [file join $THISDIR ../../../]]
 
 # I/O folderi
 set	IN_DIR	"$ROOT/data/input/"
-set	OUT1	"$ROOT/data/output/12bit/LUT3/stage1/"
-set	OUT2	"$ROOT/data/output/12bit/LUT3/stage2/"
-set	OUT3	"$ROOT/data/output/12bit/LUT3/stage3/"
+set	OUT1	"$ROOT/data/output/16bit/LUT3/kernel3/stage1/"
+set	OUT2	"$ROOT/data/output/16bit/LUT3/kernel3/stage2/"
+set	OUT3	"$ROOT/data/output/16bit/LUT3/kernel3/stage3/"
 file	mkdir	$OUT1
 file	mkdir	$OUT2
 file	mkdir	$OUT3
@@ -23,6 +23,7 @@ vmap	work	work
 
 # Parametri TB/DUT (po potrebi promeni)
 set	G_LUT_ID	3
+set G_KERNEL_ID 3
 
 # Helperi
 proc	base_no_ext {path} { return [file rootname [file tail $path]] }
@@ -115,6 +116,7 @@ foreach rec $PAIRS {
 	set vsim_args [list \
 		vsim -c -voptargs=+acc work.tb_rfTransmitter \
 		-gLUT_ID=$G_LUT_ID \
+        -gKERNEL_ID=$G_KERNEL_ID \
 		-gIN_FILE_I="$fi" \
 		-gIN_FILE_Q="$fq" \
 		-gOUT_FILE_I_STAGE1="$OUT_I_S1" \
