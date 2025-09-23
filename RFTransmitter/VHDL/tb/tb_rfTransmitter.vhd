@@ -37,8 +37,8 @@ architecture tb of tb_rfTransmitter is
 	-- constant C_CLK2_PERIOD 	: time    := 40 ps;
 	-- constant C_CLK3_PERIOD 	: time    := 10	ps;
 	
-	constant DS_WIDTH		: integer := 12;
-	constant OSR_WIDTH		: integer := 12;
+	constant DS_WIDTH		: integer := 16;
+	constant OSR_WIDTH		: integer := 16;
 	constant OSR_COEFF		: integer := 15;
 	constant OSR_GUARD_BITS	: integer := 4;
 
