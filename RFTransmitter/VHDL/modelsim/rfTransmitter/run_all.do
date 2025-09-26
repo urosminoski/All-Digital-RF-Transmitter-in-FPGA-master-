@@ -6,10 +6,10 @@ set	THISDIR	[file dirname [file normalize [info script]]]
 set	ROOT	[file normalize [file join $THISDIR ../../../]]
 
 # I/O folderi
-set	IN_DIR	"$ROOT/data/input/tmp/"
-set	OUT1	"$ROOT/data/output/tmp/stage1/"
-set	OUT2	"$ROOT/data/output/tmp/stage2/"
-set	OUT3	"$ROOT/data/output/tmp/stage3/"
+set	IN_DIR	"$ROOT/data/input/"
+set	OUT1	"$ROOT/data/output/16bit/LUT5/stage1/"
+set	OUT2	"$ROOT/data/output/16bit/LUT5/stage2/"
+set	OUT3	"$ROOT/data/output/16bit/LUT5/stage3/"
 file	mkdir	$OUT1
 file	mkdir	$OUT2
 file	mkdir	$OUT3
