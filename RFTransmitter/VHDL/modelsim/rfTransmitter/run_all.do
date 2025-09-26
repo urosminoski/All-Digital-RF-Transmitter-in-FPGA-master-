@@ -24,7 +24,7 @@ vmap	work	work
 # Parametri TB/DUT (po potrebi promeni)
 set	G_LUT_ID	3
 set G_KERNEL_ID 3
-set G_DTYPE 0
+set G_DTYPE 1
 
 # Helperi
 proc	base_no_ext {path} { return [file rootname [file tail $path]] }

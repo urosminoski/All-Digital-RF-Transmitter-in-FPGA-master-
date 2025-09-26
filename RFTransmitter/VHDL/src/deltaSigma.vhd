@@ -79,9 +79,9 @@ begin
 				k_code := resize(y_i, k_code'high, k_code'low);
 				k_reexp := resize(k_code, k_reexp'high, k_reexp'low);
 				if (y_i < 0) and (y_i /= k_reexp) then
-				  k_code := k_code - to_sfixed(1, k_code);
+				  k_code := resize(k_code - to_sfixed(1, k_code), k_code'high, k_code'low);
 				end if;
-				v_fb   := resize(k_code, v_fb'high, v_fb'low) + to_sfixed(0.5, v_fb);
+				v_fb   := resize(k_code + to_sfixed(0.5, 0, -1),  v_fb'high, v_fb'low);
 				e      := resize(y_i - v_fb, e'high, e'low);
 			end if;
 			-- if v(v'right) = '0' then
