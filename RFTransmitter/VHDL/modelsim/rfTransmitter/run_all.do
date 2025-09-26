@@ -22,7 +22,7 @@ if {![file isdirectory work]} {
 vmap	work	work
 
 # Parametri TB/DUT (po potrebi promeni)
-set	G_LUT_ID	3
+set	G_LUT_ID	5
 set G_KERNEL_ID 3
 set G_DTYPE 1
 

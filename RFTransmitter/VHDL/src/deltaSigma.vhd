@@ -70,25 +70,17 @@ begin
 			
 		elsif rising_edge(clk) then
 			x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
-			y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
-			-- y_i      := resize(x + y_iir, y_i'high, y_i'low);
-			-- if DTYPE = 0 then
-				-- v := resize(y_i, v'high, v'low);
-				-- e := resize(y_i - v, e'high, e'low);
-			-- else
-				-- k_code := resize(y_i, k_code'high, k_code'low);
-				-- k_reexp := resize(k_code, k_reexp'high, k_reexp'low);
-				-- if (y_i < 0) and (y_i /= k_reexp) then
-				  -- k_code := resize(k_code - to_sfixed(1, k_code), k_code'high, k_code'low);
-				-- end if;
-				-- v_fb   := resize(k_code + to_sfixed(0.5, 0, -1),  v_fb'high, v_fb'low);
-				-- e      := resize(y_i - v_fb, e'high, e'low);
-			-- end if;
+			-- y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
+			if DTYPE=0 then
+				y_i := resize(x_sfixed + y_iir, y_i'high, y_i'low);
+			else
+				y_i := resize(x_sfixed + y_iir + to_sfixed(0.5, 0, -1), y_i'high, y_i'low);
+			end if;
 			v := resize(y_i, v'high, v'low);
 			e := resize(y_i - v, e'high, e'low);
-			if v(v'right) = '0' then
-				v := resize(v + to_sfixed(1, v), v'high, v'low);
-			end if;
+			-- if v(v'right) = '0' then
+				-- v := resize(v + to_sfixed(1, v), v'high, v'low);
+			-- end if;
 
 			x0  := resize(b00*e + a01*x0d,            	x0'high, x0'low);
 			w1  := resize(e + a11*w1d - a12*w1dd,     	w1'high, w1'low);
@@ -99,12 +91,6 @@ begin
 			x0d := x0;  w1dd := w1d;  w1d := w1;  w2dd := w2d;  w2d := w2;
 		end if;
 		y_sfixed <= v;
-		-- if DTYPE = 0 then
-			-- y_sfixed <= v;
-		-- else
-			-- y_sfixed <= k_code;
-		-- end if;
-		-- y <= v;
 	end process;
 
 	y <= to_slv(y_sfixed);                                   -- sfixed → std_logic_vector:contentReference[oaicite:2]{index=2}
