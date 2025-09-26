@@ -135,7 +135,7 @@ package lut_pkg is
 	
 	-- mapiranje ulaza: [-2^(W-1) .. 2^(W-1)-1] -> 0..2^W-1 uz flip
 	-- prima vektor proizvoljne širine i vraća unsigned iste širine
-	function map_row_index(d : std_logic_vector) return unsigned;
+	function map_row_index(d : std_logic_vector; dtype : integer) return unsigned;
 
 end package;
 
@@ -165,14 +165,18 @@ package body lut_pkg is
 		end case;
 	end function;
 
-	function map_row_index(d : std_logic_vector) return unsigned is
+	function map_row_index(d : std_logic_vector; dtype : integer) return unsigned is
 		constant W    : natural := d'length;
 		constant MAXU : integer := 2**W - 1;
 		variable i    : integer;
 		variable u    : integer;
 	begin
 		i := to_integer(signed(d));      -- [-2^(W-1) .. 2^(W-1)-1]
-		u := i + 2**(W-1);               -- [0 .. 2^W-1]
+		if dtype=0 then
+			u := i + 2**(W-1);               -- [0 .. 2^W-1]
+		else
+			u := i + 2**(W-1)-1;
+		end if;
 		return to_unsigned(MAXU - u, W); -- flip
 	end function;
 

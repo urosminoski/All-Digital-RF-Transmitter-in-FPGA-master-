@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 entity stage2 is
 	generic(
+		DTYPE	: integer := 0;
 		LUT_ID	: integer := 3;
 		XWIDTH	: integer := 4
 	);

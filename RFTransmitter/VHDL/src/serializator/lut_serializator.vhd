@@ -8,6 +8,7 @@ use work.lut_pkg.all;
 
 entity lut_serializer is
 	generic(
+		DTYPE	: integer := 0;
 		LUT_ID  : integer := 3;
 		XWIDTH  : integer := 4              -- širina ulaza (npr. 4 bita za -8..+7)
 	);
@@ -78,7 +79,7 @@ begin
 				col 		<= (others => '0');
 			else
 				if enable = '1' then
-					row_idx_v 	:= map_row_index(xin);
+					row_idx_v 	:= map_row_index(xin, DTYPE);
 					row_reg 	<= get_row(LUT_ID, to_integer(row_idx_v));
 					col 		<= (others => '0');
 				else

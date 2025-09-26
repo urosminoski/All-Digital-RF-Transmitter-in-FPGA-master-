@@ -128,6 +128,7 @@ begin
 		
 	stage2_gen : entity work.stage2
 		generic map (
+			DTYPE		=> DTYPE,
 			LUT_ID		=> LUT_ID,
 			XWIDTH		=> 4
 		)
