@@ -6,6 +6,7 @@ use ieee.fixed_pkg.all;
 
 entity deltaSigma is
 	generic (
+		DTYPE	: integer := 0; 	-- 0 - mid-tread, 1 - mid-rise
 		XWIDTH	: integer := 12
 	);
 	port (
@@ -49,6 +50,10 @@ begin
 		variable x1, w1, w1d, w1dd   : sfixed(3 downto -(2*XWIDTH-4));
 		variable x2, w2, w2d, w2dd   : sfixed(3 downto -(2*XWIDTH-4));
 		variable v                   : sfixed(3 downto 0);
+		
+		variable k_code 	: sfixed(3 downto 0);
+		variable k_reexp 	: sfixed(y_i'high downto y_i'low);
+		variable v_fb 		: sfixed(3 downto -1);
 	begin
 		if rst = '1' then
 			y_iir := to_sfixed(0, y_iir);  y_i := to_sfixed(0, y_i);  e := to_sfixed(0, e);
@@ -58,16 +63,31 @@ begin
 			v  := to_sfixed(0, v);
 			x_sfixed <= to_sfixed(0, x_sfixed);
 			y_sfixed <= to_sfixed(0, y_sfixed);
+			
+			k_code 	:= (others => '0');
+			k_reexp := (others => '0');
+			v_fb 	:= (others => '0');
+			
 		elsif rising_edge(clk) then
 			x_sfixed <= to_sfixed(x, x_sfixed'high, x_sfixed'low);
 			y_i      := resize(x_sfixed + y_iir, y_i'high, y_i'low);
 			-- y_i      := resize(x + y_iir, y_i'high, y_i'low);
-			v        := resize(y_i, v'high, v'low);
+			if DTYPE = 0 then
+				v := resize(y_i, v'high, v'low);
+				e := resize(y_i - v, e'high, e'low);
+			else
+				k_code := resize(y_i, k_code'high, k_code'low);
+				k_reexp := resize(k_code, k_reexp'high, k_reexp'low);
+				if (y_i < 0) and (y_i /= k_reexp) then
+				  k_code := k_code - to_sfixed(1, k_code);
+				end if;
+				v_fb   := resize(k_code, v_fb'high, v_fb'low) + to_sfixed(0.5, v_fb);
+				e      := resize(y_i - v_fb, e'high, e'low);
+			end if;
 			-- if v(v'right) = '0' then
 				-- v := resize(v + to_sfixed(1, v), v'high, v'low);
 			-- end if;
 
-			e   := resize(y_i - v, 						e'high, e'low);
 			x0  := resize(b00*e + a01*x0d,            	x0'high, x0'low);
 			w1  := resize(e + a11*w1d - a12*w1dd,     	w1'high, w1'low);
 			x1  := resize(b10*w1 - b11*w1d,           	x1'high, x1'low);
@@ -76,7 +96,12 @@ begin
 			y_iir := resize(x0 + x1 + x2,             	y_iir'high, y_iir'low);
 			x0d := x0;  w1dd := w1d;  w1d := w1;  w2dd := w2d;  w2d := w2;
 		end if;
-		y_sfixed <= v;
+		
+		if DTYPE = 0 then
+			y_sfixed <= v;
+		else
+			y_sfixed <= k_code;
+		end if;
 		-- y <= v;
 	end process;
 

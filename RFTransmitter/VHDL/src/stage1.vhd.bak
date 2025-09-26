@@ -16,7 +16,6 @@ entity stage1 is
 		KERNEL_ID		: integer := 7;
 		DELTA			: real := 0.00390625;
 		-- Delta-Sigma Parameters
-		DTYPE			: integer := 0;
 		DS_WIDTH		: integer := 12
 	);
 	port(
@@ -40,8 +39,8 @@ architecture rtl of stage1 is
 
 	constant OSR_INT 	: integer := 0;
 
-	constant DELTA_I 	: real := -DELTA;
-	constant DELTA_Q 	: real := DELTA;
+	constant DELTA_I 	: real :=0;-- -DELTA;
+	constant DELTA_Q 	: real :=0;-- DELTA;
 	constant factor		: real := 4.0/(1.0+DELTA);
 
 	signal xin_i_delay, xin_q_delay 	: std_logic_vector(OSR_WIDTH-1 downto 0);
@@ -173,10 +172,7 @@ begin
 	);
 	
 	deltaSigma_i: entity work.deltaSigma
-		generic map ( 
-			DTYPE	=> DTYPE,
-			XWIDTH 	=> DS_WIDTH 
-		)
+		generic map ( XWIDTH => DS_WIDTH )
 		port map (
 			clk		=> clk,
 			rst 	=> rst,
@@ -185,10 +181,7 @@ begin
 		);
 		
 	deltaSigma_q: entity work.deltaSigma
-		generic map ( 
-			DTYPE	=> DTYPE,
-			XWIDTH 	=> DS_WIDTH 
-		)
+		generic map ( XWIDTH => DS_WIDTH )
 		port map (
 			clk		=> clk,
 			rst 	=> rst,

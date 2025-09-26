@@ -8,8 +8,11 @@ use work.lut_pkg.all;
 library std;
 use std.textio.all;
 
+--do "C:/Users/Korisnik/Desktop/FAKS/MASTER/All-Digital-RF-Transmitter-in-FPGA-master-/RFTransmitter/VHDL/modelsim/rfTransmitter/run_all.do"
+
 entity tb_rfTransmitter is
 	generic (
+		DTYPE				: integer := 0;
 		LUT_ID				: integer := 3;
 		KERNEL_ID			: integer := 7;
 		IN_FILE_I         	: string := "xin_i_test.txt";
@@ -76,6 +79,7 @@ begin
 	
 	uut_i: entity work.rfTransmitter
 		generic map (
+			DTYPE			=> DTYPE,
 			LUT_ID 			=> LUT_ID,
 			KERNEL_ID		=> KERNEL_ID,
 			DS_WIDTH		=> DS_WIDTH,

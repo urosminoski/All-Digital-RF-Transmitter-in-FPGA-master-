@@ -9,6 +9,7 @@ use work.lut_pkg.all;
 
 entity rfTransmitter is
 	generic(
+		DTYPE			: integer := 0;
 		LUT_ID			: integer := 3;
 		KERNEL_ID		: integer := 7;
 		DS_WIDTH		: integer := 12;
